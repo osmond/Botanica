@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+*.swp
+
+# Xcode
+xcuserdata/
+DerivedData/
+*.xccheckout
+*.xcuserstate
+*.moved-aside
+
+# Swift Package Manager
+.build/
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Cocoapods (if ever added)
+Pods/
+

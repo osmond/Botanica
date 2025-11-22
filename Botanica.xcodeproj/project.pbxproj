@@ -1,0 +1,624 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00001001F00000100000001 /* BotanicaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000001 /* BotanicaApp.swift */; };
+		A00001001F00000100000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000002 /* ContentView.swift */; };
+		A00001001F00000100000003 /* Core/Theme/BotanicaTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000003 /* Core/Theme/BotanicaTheme.swift */; };
+		A00001001F00000100000004 /* Core/Utilities/ErrorMessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000004 /* Core/Utilities/ErrorMessageFormatter.swift */; };
+		A00001001F00000100000005 /* Core/Utilities/HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000005 /* Core/Utilities/HapticManager.swift */; };
+		A00001001F00000100000006 /* Core/Utilities/SecureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000006 /* Core/Utilities/SecureStorage.swift */; };
+		A00001001F00000100000007 /* Models/DataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000007 /* Models/DataModels.swift */; };
+		A00001001F00000100000008 /* Models/MockDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000008 /* Models/MockDataGenerator.swift */; };
+		A00001001F00000100000009 /* Models/ModelExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000009 /* Models/ModelExtensions.swift */; };
+		A00001001F0000010000000A /* Services/AIPlantCoach.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000A /* Services/AIPlantCoach.swift */; };
+		A00001001F0000010000000B /* Services/AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000B /* Services/AIService.swift */; };
+		A00001001F0000010000000C /* Services/AdvancedAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000C /* Services/AdvancedAnalytics.swift */; };
+		A00001001F0000010000000D /* Services/CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000D /* Services/CameraCapture.swift */; };
+		A00001001F0000010000000E /* Services/CareCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000E /* Services/CareCalculator.swift */; };
+		A00001001F0000010000000F /* Services/NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000F /* Services/NotificationManager.swift */; };
+		A00001001F00000100000010 /* Services/OpenAIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000010 /* Services/OpenAIConfig.swift */; };
+		A00001001F00000100000011 /* Services/OpenAIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000011 /* Services/OpenAIModels.swift */; };
+		A00001001F00000100000012 /* Services/PlantAnalyticsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000012 /* Services/PlantAnalyticsEngine.swift */; };
+		A00001001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift */; };
+		A00001001F00000100000014 /* Services/WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000014 /* Services/WeatherService.swift */; };
+		A00001001F00000100000015 /* Utils/AnimationPerformance.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000015 /* Utils/AnimationPerformance.swift */; };
+		A00001001F00000100000016 /* Utils/PerformanceOptimization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000016 /* Utils/PerformanceOptimization.swift */; };
+		A00001001F00000100000017 /* Views/AI/AICareAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000017 /* Views/AI/AICareAssistantView.swift */; };
+		A00001001F00000100000018 /* Views/AI/AICoachView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000018 /* Views/AI/AICoachView.swift */; };
+		A00001001F00000100000019 /* Views/AI/AIPlantIdentification.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000019 /* Views/AI/AIPlantIdentification.swift */; };
+		A00001001F0000010000001A /* Views/AI/AISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001A /* Views/AI/AISettingsView.swift */; };
+		A00001001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift */; };
+		A00001001F0000010000001C /* Views/AI/PlantHealthVisionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */; };
+		A00001001F0000010000001D /* Views/AI/PlantIdentificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */; };
+		A00001001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift */; };
+		A00001001F0000010000001F /* Views/Analytics/AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001F /* Views/Analytics/AnalyticsView.swift */; };
+		A00001001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift */; };
+		A00001001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift */; };
+		A00001001F00000100000022 /* Views/Analytics/HealthTrendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000022 /* Views/Analytics/HealthTrendsView.swift */; };
+		A00001001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift */; };
+		A00001001F00000100000024 /* Views/Components/ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000024 /* Views/Components/ErrorBanner.swift */; };
+		A00001001F00000100000025 /* Views/Components/FeedbackSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000025 /* Views/Components/FeedbackSystem.swift */; };
+		A00001001F00000100000026 /* Views/Components/FloatingActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000026 /* Views/Components/FloatingActionButton.swift */; };
+		A00001001F00000100000027 /* Views/Components/LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000027 /* Views/Components/LoadingView.swift */; };
+		A00001001F00000100000028 /* Views/Navigation/MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000028 /* Views/Navigation/MainTabView.swift */; };
+		A00001001F00000100000029 /* Views/Plants/AddCareEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000029 /* Views/Plants/AddCareEventView.swift */; };
+		A00001001F0000010000002A /* Views/Plants/AddPlant/AddPlantBasicInfoSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000002A /* Views/Plants/AddPlant/AddPlantBasicInfoSection.swift */; };
+		A00001001F0000010000002B /* Views/Plants/AddPlant/AddPlantBotanicalSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000002B /* Views/Plants/AddPlant/AddPlantBotanicalSection.swift */; };
+		A00001001F0000010000002C /* Views/Plants/AddPlant/AddPlantCareRequirementsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000002C /* Views/Plants/AddPlant/AddPlantCareRequirementsSection.swift */; };
+		A00001001F0000010000002D /* Views/Plants/AddPlant/AddPlantLocationNotesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000002D /* Views/Plants/AddPlant/AddPlantLocationNotesSection.swift */; };
+		A00001001F0000010000002E /* Views/Plants/AddPlant/AddPlantPhotoSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000002E /* Views/Plants/AddPlant/AddPlantPhotoSection.swift */; };
+		A00001001F0000010000002F /* Views/Plants/AddPlantComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000002F /* Views/Plants/AddPlantComponents.swift */; };
+		A00001001F00000100000030 /* Views/Plants/AddPlantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000030 /* Views/Plants/AddPlantView.swift */; };
+		A00001001F00000100000031 /* Views/Plants/CareEventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000031 /* Views/Plants/CareEventRow.swift */; };
+		A00001001F00000100000032 /* Views/Plants/CareHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000032 /* Views/Plants/CareHistoryView.swift */; };
+		A00001001F00000100000033 /* Views/Plants/CareStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000033 /* Views/Plants/CareStatistics.swift */; };
+		A00001001F00000100000034 /* Views/Plants/DetailSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000034 /* Views/Plants/DetailSection.swift */; };
+		A00001001F00000100000035 /* Views/Plants/EditPlantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000035 /* Views/Plants/EditPlantView.swift */; };
+		A00001001F00000100000036 /* Views/Plants/MyPlantsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000036 /* Views/Plants/MyPlantsView.swift */; };
+		A00001001F00000100000037 /* Views/Plants/PersonalizedTipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000037 /* Views/Plants/PersonalizedTipsView.swift */; };
+		A00001001F00000100000038 /* Views/Plants/PhotoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000038 /* Views/Plants/PhotoDetailView.swift */; };
+		A00001001F00000100000039 /* Views/Plants/PhotoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000039 /* Views/Plants/PhotoManager.swift */; };
+		A00001001F0000010000003A /* Views/Plants/PlantDetailComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000003A /* Views/Plants/PlantDetailComponents.swift */; };
+		A00001001F0000010000003B /* Views/Plants/PlantDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000003B /* Views/Plants/PlantDetailView.swift */; };
+		A00001001F0000010000003C /* Views/Plants/QuickPhotoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000003C /* Views/Plants/QuickPhotoCapture.swift */; };
+		A00001001F0000010000003D /* Views/Plants/StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000003D /* Views/Plants/StatCard.swift */; };
+		A00001001F0000010000003E /* Views/Settings/AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000003E /* Views/Settings/AboutView.swift */; };
+		A00001001F0000010000003F /* Views/Settings/DataManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000003F /* Views/Settings/DataManagementView.swift */; };
+		A00001001F00000100000040 /* Views/Settings/ExportDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000040 /* Views/Settings/ExportDataView.swift */; };
+		A00001001F00000100000041 /* Views/Settings/NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000041 /* Views/Settings/NotificationSettingsView.swift */; };
+		A00001001F00000100000042 /* Views/Settings/SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000042 /* Views/Settings/SettingsComponents.swift */; };
+		A00001001F00000100000043 /* Views/Settings/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000043 /* Views/Settings/SettingsView.swift */; };
+		A00001001F00000100000045 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000045 /* Assets.xcassets */; };
+		B0F000011111111100000001 /* Core/Imaging/ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F000021111111100000001 /* Core/Imaging/ImageCache.swift */; };
+		B0F000011111111100000002 /* Views/Components/PlantThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F000021111111100000002 /* Views/Components/PlantThumbnail.swift */; };
+		B0F000011111111100000003 /* Services/CoachEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F000021111111100000003 /* Services/CoachEngine.swift */; };
+		B0F000011111111100000004 /* Views/Components/CoachCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F000021111111100000004 /* Views/Components/CoachCard.swift */; };
+		B0F000011111111100000005 /* Models/PlantListTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F000021111111100000005 /* Models/PlantListTypes.swift */; };
+		B0F000011111111100000006 /* Services/CoachRules/OverdueWateringRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F000021111111100000006 /* Services/CoachRules/OverdueWateringRule.swift */; };
+		B0F000011111111100000007 /* Services/CoachRules/StreakNudgeRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F000021111111100000007 /* Services/CoachRules/StreakNudgeRule.swift */; };
+		C0F100000000000000000001 /* Services/DataImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000001 /* Services/DataImportService.swift */; };
+		C0F100000000000000000002 /* Views/Settings/ImportDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000002 /* Views/Settings/ImportDataView.swift */; };
+		C0F100000000000000000003 /* Services/DevBlossomSeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000003 /* Services/DevBlossomSeedData.swift */; };
+		C0F100000000000000000004 /* Services/DevBlossomSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000004 /* Services/DevBlossomSeeder.swift */; };
+		C0F100000000000000000005 /* Views/RootBootstrapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000005 /* Views/RootBootstrapView.swift */; };
+		C0F100000000000000000006 /* Services/DataMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000006 /* Services/DataMigrationService.swift */; };
+		C0F100000000000000000007 /* Services/PlantImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000007 /* Services/PlantImageService.swift */; };
+		C0F100000000000000000007 /* Services/PlantImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000007 /* Services/PlantImageService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		06FAEB4C2E97E67900FE29F6 /* Botanica.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Botanica.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00002001F00000100000001 /* BotanicaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BotanicaApp.swift; sourceTree = "<group>"; };
+		A00002001F00000100000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000003 /* Core/Theme/BotanicaTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Theme/BotanicaTheme.swift; sourceTree = "<group>"; };
+		A00002001F00000100000004 /* Core/Utilities/ErrorMessageFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Utilities/ErrorMessageFormatter.swift; sourceTree = "<group>"; };
+		A00002001F00000100000005 /* Core/Utilities/HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Utilities/HapticManager.swift; sourceTree = "<group>"; };
+		A00002001F00000100000006 /* Core/Utilities/SecureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Utilities/SecureStorage.swift; sourceTree = "<group>"; };
+		A00002001F00000100000007 /* Models/DataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/DataModels.swift; sourceTree = "<group>"; };
+		A00002001F00000100000008 /* Models/MockDataGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/MockDataGenerator.swift; sourceTree = "<group>"; };
+		A00002001F00000100000009 /* Models/ModelExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ModelExtensions.swift; sourceTree = "<group>"; };
+		A00002001F0000010000000A /* Services/AIPlantCoach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AIPlantCoach.swift; sourceTree = "<group>"; };
+		A00002001F0000010000000B /* Services/AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AIService.swift; sourceTree = "<group>"; };
+		A00002001F0000010000000C /* Services/AdvancedAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AdvancedAnalytics.swift; sourceTree = "<group>"; };
+		A00002001F0000010000000D /* Services/CameraCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CameraCapture.swift; sourceTree = "<group>"; };
+		A00002001F0000010000000E /* Services/CareCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CareCalculator.swift; sourceTree = "<group>"; };
+		A00002001F0000010000000F /* Services/NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/NotificationManager.swift; sourceTree = "<group>"; };
+		A00002001F00000100000010 /* Services/OpenAIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OpenAIConfig.swift; sourceTree = "<group>"; };
+		A00002001F00000100000011 /* Services/OpenAIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OpenAIModels.swift; sourceTree = "<group>"; };
+		A00002001F00000100000012 /* Services/PlantAnalyticsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlantAnalyticsEngine.swift; sourceTree = "<group>"; };
+		A00002001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlantHealthVisionAnalyzer.swift; sourceTree = "<group>"; };
+		A00002001F00000100000014 /* Services/WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/WeatherService.swift; sourceTree = "<group>"; };
+		A00002001F00000100000015 /* Utils/AnimationPerformance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/AnimationPerformance.swift; sourceTree = "<group>"; };
+		A00002001F00000100000016 /* Utils/PerformanceOptimization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/PerformanceOptimization.swift; sourceTree = "<group>"; };
+		A00002001F00000100000017 /* Views/AI/AICareAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/AICareAssistantView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000018 /* Views/AI/AICoachView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/AICoachView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000019 /* Views/AI/AIPlantIdentification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/AIPlantIdentification.swift; sourceTree = "<group>"; };
+		A00002001F0000010000001A /* Views/AI/AISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/AISettingsView.swift; sourceTree = "<group>"; };
+		A00002001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/PlantHealthSelectionView.swift; sourceTree = "<group>"; };
+		A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/PlantHealthVisionView.swift; sourceTree = "<group>"; };
+		A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/PlantIdentificationView.swift; sourceTree = "<group>"; };
+		A00002001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/AdvancedAnalyticsView.swift; sourceTree = "<group>"; };
+		A00002001F0000010000001F /* Views/Analytics/AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/AnalyticsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/EnvironmentAnalyticsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/GrowthPatternsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000022 /* Views/Analytics/HealthTrendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/HealthTrendsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/MLAnalyticsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000024 /* Views/Components/ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/ErrorBanner.swift; sourceTree = "<group>"; };
+		A00002001F00000100000025 /* Views/Components/FeedbackSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/FeedbackSystem.swift; sourceTree = "<group>"; };
+		A00002001F00000100000026 /* Views/Components/FloatingActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/FloatingActionButton.swift; sourceTree = "<group>"; };
+		A00002001F00000100000027 /* Views/Components/LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/LoadingView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000028 /* Views/Navigation/MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Navigation/MainTabView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000029 /* Views/Plants/AddCareEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddCareEventView.swift; sourceTree = "<group>"; };
+		A00002001F0000010000002A /* Views/Plants/AddPlant/AddPlantBasicInfoSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddPlant/AddPlantBasicInfoSection.swift; sourceTree = "<group>"; };
+		A00002001F0000010000002B /* Views/Plants/AddPlant/AddPlantBotanicalSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddPlant/AddPlantBotanicalSection.swift; sourceTree = "<group>"; };
+		A00002001F0000010000002C /* Views/Plants/AddPlant/AddPlantCareRequirementsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddPlant/AddPlantCareRequirementsSection.swift; sourceTree = "<group>"; };
+		A00002001F0000010000002D /* Views/Plants/AddPlant/AddPlantLocationNotesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddPlant/AddPlantLocationNotesSection.swift; sourceTree = "<group>"; };
+		A00002001F0000010000002E /* Views/Plants/AddPlant/AddPlantPhotoSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddPlant/AddPlantPhotoSection.swift; sourceTree = "<group>"; };
+		A00002001F0000010000002F /* Views/Plants/AddPlantComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddPlantComponents.swift; sourceTree = "<group>"; };
+		A00002001F00000100000030 /* Views/Plants/AddPlantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddPlantView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000031 /* Views/Plants/CareEventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/CareEventRow.swift; sourceTree = "<group>"; };
+		A00002001F00000100000032 /* Views/Plants/CareHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/CareHistoryView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000033 /* Views/Plants/CareStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/CareStatistics.swift; sourceTree = "<group>"; };
+		A00002001F00000100000034 /* Views/Plants/DetailSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/DetailSection.swift; sourceTree = "<group>"; };
+		A00002001F00000100000035 /* Views/Plants/EditPlantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/EditPlantView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000036 /* Views/Plants/MyPlantsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/MyPlantsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000037 /* Views/Plants/PersonalizedTipsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/PersonalizedTipsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000038 /* Views/Plants/PhotoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/PhotoDetailView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000039 /* Views/Plants/PhotoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/PhotoManager.swift; sourceTree = "<group>"; };
+		A00002001F0000010000003A /* Views/Plants/PlantDetailComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/PlantDetailComponents.swift; sourceTree = "<group>"; };
+		A00002001F0000010000003B /* Views/Plants/PlantDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/PlantDetailView.swift; sourceTree = "<group>"; };
+		A00002001F0000010000003C /* Views/Plants/QuickPhotoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/QuickPhotoCapture.swift; sourceTree = "<group>"; };
+		A00002001F0000010000003D /* Views/Plants/StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/StatCard.swift; sourceTree = "<group>"; };
+		A00002001F0000010000003E /* Views/Settings/AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/AboutView.swift; sourceTree = "<group>"; };
+		A00002001F0000010000003F /* Views/Settings/DataManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/DataManagementView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000040 /* Views/Settings/ExportDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/ExportDataView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000041 /* Views/Settings/NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/NotificationSettingsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000042 /* Views/Settings/SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/SettingsComponents.swift; sourceTree = "<group>"; };
+		A00002001F00000100000043 /* Views/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000045 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A00002001F00000100000046 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B0F000021111111100000001 /* Core/Imaging/ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Imaging/ImageCache.swift; sourceTree = "<group>"; };
+		B0F000021111111100000002 /* Views/Components/PlantThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/PlantThumbnail.swift; sourceTree = "<group>"; };
+		B0F000021111111100000003 /* Services/CoachEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CoachEngine.swift; sourceTree = "<group>"; };
+		B0F000021111111100000004 /* Views/Components/CoachCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/CoachCard.swift; sourceTree = "<group>"; };
+		B0F000021111111100000005 /* Models/PlantListTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/PlantListTypes.swift; sourceTree = "<group>"; };
+		B0F000021111111100000006 /* Services/CoachRules/OverdueWateringRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CoachRules/OverdueWateringRule.swift; sourceTree = "<group>"; };
+		B0F000021111111100000007 /* Services/CoachRules/StreakNudgeRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CoachRules/StreakNudgeRule.swift; sourceTree = "<group>"; };
+		C0F200000000000000000001 /* Services/DataImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DataImportService.swift; sourceTree = "<group>"; };
+		C0F200000000000000000002 /* Views/Settings/ImportDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/ImportDataView.swift; sourceTree = "<group>"; };
+		C0F200000000000000000003 /* Services/DevBlossomSeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DevBlossomSeedData.swift; sourceTree = "<group>"; };
+		C0F200000000000000000004 /* Services/DevBlossomSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DevBlossomSeeder.swift; sourceTree = "<group>"; };
+		C0F200000000000000000005 /* Views/RootBootstrapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/RootBootstrapView.swift; sourceTree = "<group>"; };
+		C0F200000000000000000006 /* Services/DataMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DataMigrationService.swift; sourceTree = "<group>"; };
+		C0F200000000000000000007 /* Services/PlantImageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlantImageService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00003001F00000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00004001F00000100000001 = {
+			isa = PBXGroup;
+			children = (
+				A00005001F00000100000001 /* Botanica */,
+			);
+			sourceTree = "<group>";
+		};
+		A00005001F00000100000001 /* Botanica */ = {
+			isa = PBXGroup;
+			children = (
+				A00002001F00000100000046 /* Info.plist */,
+				A00006001F00000100000001 /* Sources */,
+				A00006001F00000100000002 /* Resources */,
+				06FAEB4C2E97E67900FE29F6 /* Botanica.app */,
+			);
+			name = Botanica;
+			sourceTree = "<group>";
+		};
+		A00006001F00000100000001 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A00002001F00000100000001 /* BotanicaApp.swift */,
+				A00002001F00000100000002 /* ContentView.swift */,
+				A00002001F00000100000003 /* Core/Theme/BotanicaTheme.swift */,
+				A00002001F00000100000004 /* Core/Utilities/ErrorMessageFormatter.swift */,
+				A00002001F00000100000005 /* Core/Utilities/HapticManager.swift */,
+				A00002001F00000100000006 /* Core/Utilities/SecureStorage.swift */,
+				B0F000021111111100000001 /* Core/Imaging/ImageCache.swift */,
+				A00002001F00000100000007 /* Models/DataModels.swift */,
+				A00002001F00000100000008 /* Models/MockDataGenerator.swift */,
+				A00002001F00000100000009 /* Models/ModelExtensions.swift */,
+				B0F000021111111100000005 /* Models/PlantListTypes.swift */,
+				A00002001F0000010000000A /* Services/AIPlantCoach.swift */,
+				A00002001F0000010000000B /* Services/AIService.swift */,
+				A00002001F0000010000000C /* Services/AdvancedAnalytics.swift */,
+				A00002001F0000010000000D /* Services/CameraCapture.swift */,
+				A00002001F0000010000000E /* Services/CareCalculator.swift */,
+				A00002001F0000010000000F /* Services/NotificationManager.swift */,
+				A00002001F00000100000010 /* Services/OpenAIConfig.swift */,
+				A00002001F00000100000011 /* Services/OpenAIModels.swift */,
+				A00002001F00000100000012 /* Services/PlantAnalyticsEngine.swift */,
+				A00002001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift */,
+				A00002001F00000100000014 /* Services/WeatherService.swift */,
+				B0F000021111111100000003 /* Services/CoachEngine.swift */,
+				B0F000021111111100000006 /* Services/CoachRules/OverdueWateringRule.swift */,
+				B0F000021111111100000007 /* Services/CoachRules/StreakNudgeRule.swift */,
+				A00002001F00000100000015 /* Utils/AnimationPerformance.swift */,
+				A00002001F00000100000016 /* Utils/PerformanceOptimization.swift */,
+				A00002001F00000100000017 /* Views/AI/AICareAssistantView.swift */,
+				A00002001F00000100000018 /* Views/AI/AICoachView.swift */,
+				A00002001F00000100000019 /* Views/AI/AIPlantIdentification.swift */,
+				A00002001F0000010000001A /* Views/AI/AISettingsView.swift */,
+				A00002001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift */,
+				A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */,
+				A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */,
+				A00002001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift */,
+				A00002001F0000010000001F /* Views/Analytics/AnalyticsView.swift */,
+				A00002001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift */,
+				A00002001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift */,
+				A00002001F00000100000022 /* Views/Analytics/HealthTrendsView.swift */,
+				A00002001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift */,
+				A00002001F00000100000024 /* Views/Components/ErrorBanner.swift */,
+				A00002001F00000100000025 /* Views/Components/FeedbackSystem.swift */,
+				A00002001F00000100000026 /* Views/Components/FloatingActionButton.swift */,
+				A00002001F00000100000027 /* Views/Components/LoadingView.swift */,
+				B0F000021111111100000004 /* Views/Components/CoachCard.swift */,
+				B0F000021111111100000002 /* Views/Components/PlantThumbnail.swift */,
+				A00002001F00000100000028 /* Views/Navigation/MainTabView.swift */,
+				A00002001F00000100000029 /* Views/Plants/AddCareEventView.swift */,
+				A00002001F0000010000002A /* Views/Plants/AddPlant/AddPlantBasicInfoSection.swift */,
+				A00002001F0000010000002B /* Views/Plants/AddPlant/AddPlantBotanicalSection.swift */,
+				A00002001F0000010000002C /* Views/Plants/AddPlant/AddPlantCareRequirementsSection.swift */,
+				A00002001F0000010000002D /* Views/Plants/AddPlant/AddPlantLocationNotesSection.swift */,
+				A00002001F0000010000002E /* Views/Plants/AddPlant/AddPlantPhotoSection.swift */,
+				A00002001F0000010000002F /* Views/Plants/AddPlantComponents.swift */,
+				A00002001F00000100000030 /* Views/Plants/AddPlantView.swift */,
+				A00002001F00000100000031 /* Views/Plants/CareEventRow.swift */,
+				A00002001F00000100000032 /* Views/Plants/CareHistoryView.swift */,
+				A00002001F00000100000033 /* Views/Plants/CareStatistics.swift */,
+				A00002001F00000100000034 /* Views/Plants/DetailSection.swift */,
+				A00002001F00000100000035 /* Views/Plants/EditPlantView.swift */,
+				A00002001F00000100000036 /* Views/Plants/MyPlantsView.swift */,
+				A00002001F00000100000037 /* Views/Plants/PersonalizedTipsView.swift */,
+				A00002001F00000100000038 /* Views/Plants/PhotoDetailView.swift */,
+				A00002001F00000100000039 /* Views/Plants/PhotoManager.swift */,
+				A00002001F0000010000003A /* Views/Plants/PlantDetailComponents.swift */,
+				A00002001F0000010000003B /* Views/Plants/PlantDetailView.swift */,
+				A00002001F0000010000003C /* Views/Plants/QuickPhotoCapture.swift */,
+				A00002001F0000010000003D /* Views/Plants/StatCard.swift */,
+				A00002001F0000010000003E /* Views/Settings/AboutView.swift */,
+				A00002001F0000010000003F /* Views/Settings/DataManagementView.swift */,
+				A00002001F00000100000040 /* Views/Settings/ExportDataView.swift */,
+				A00002001F00000100000041 /* Views/Settings/NotificationSettingsView.swift */,
+				A00002001F00000100000042 /* Views/Settings/SettingsComponents.swift */,
+				A00002001F00000100000043 /* Views/Settings/SettingsView.swift */,
+				C0F200000000000000000001 /* Services/DataImportService.swift */,
+				C0F200000000000000000002 /* Views/Settings/ImportDataView.swift */,
+				C0F200000000000000000003 /* Services/DevBlossomSeedData.swift */,
+				C0F200000000000000000004 /* Services/DevBlossomSeeder.swift */,
+				C0F200000000000000000005 /* Views/RootBootstrapView.swift */,
+				C0F200000000000000000006 /* Services/DataMigrationService.swift */,
+				C0F200000000000000000007 /* Services/PlantImageService.swift */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		A00006001F00000100000002 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A00002001F00000100000045 /* Assets.xcassets */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00007001F00000100000001 /* Botanica */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A0000A001F00000100000001 /* Build configuration list for PBXNativeTarget "Botanica" */;
+			buildPhases = (
+				A00008001F00000100000001 /* Sources */,
+				A00003001F00000100000001 /* Frameworks */,
+				A00009001F00000100000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Botanica;
+			productName = Botanica;
+			productReference = 06FAEB4C2E97E67900FE29F6 /* Botanica.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000001F00000100000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2610;
+			};
+			buildConfigurationList = A00000001F00000100000002 /* Build configuration list for PBXProject "Botanica" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A00004001F00000100000001;
+			productRefGroup = A00005001F00000100000001 /* Botanica */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00007001F00000100000001 /* Botanica */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A00009001F00000100000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00001001F00000100000045 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00008001F00000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00001001F00000100000001 /* BotanicaApp.swift in Sources */,
+				A00001001F00000100000002 /* ContentView.swift in Sources */,
+				A00001001F00000100000003 /* Core/Theme/BotanicaTheme.swift in Sources */,
+				A00001001F00000100000004 /* Core/Utilities/ErrorMessageFormatter.swift in Sources */,
+				A00001001F00000100000005 /* Core/Utilities/HapticManager.swift in Sources */,
+				A00001001F00000100000006 /* Core/Utilities/SecureStorage.swift in Sources */,
+				B0F000011111111100000001 /* Core/Imaging/ImageCache.swift in Sources */,
+				A00001001F00000100000007 /* Models/DataModels.swift in Sources */,
+				A00001001F00000100000008 /* Models/MockDataGenerator.swift in Sources */,
+				A00001001F00000100000009 /* Models/ModelExtensions.swift in Sources */,
+				B0F000011111111100000005 /* Models/PlantListTypes.swift in Sources */,
+				A00001001F0000010000000A /* Services/AIPlantCoach.swift in Sources */,
+				A00001001F0000010000000B /* Services/AIService.swift in Sources */,
+				A00001001F0000010000000C /* Services/AdvancedAnalytics.swift in Sources */,
+				A00001001F0000010000000D /* Services/CameraCapture.swift in Sources */,
+				A00001001F0000010000000E /* Services/CareCalculator.swift in Sources */,
+				A00001001F0000010000000F /* Services/NotificationManager.swift in Sources */,
+				A00001001F00000100000010 /* Services/OpenAIConfig.swift in Sources */,
+				A00001001F00000100000011 /* Services/OpenAIModels.swift in Sources */,
+				A00001001F00000100000012 /* Services/PlantAnalyticsEngine.swift in Sources */,
+				A00001001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift in Sources */,
+				A00001001F00000100000014 /* Services/WeatherService.swift in Sources */,
+				B0F000011111111100000003 /* Services/CoachEngine.swift in Sources */,
+				A00001001F00000100000015 /* Utils/AnimationPerformance.swift in Sources */,
+				A00001001F00000100000016 /* Utils/PerformanceOptimization.swift in Sources */,
+				A00001001F00000100000017 /* Views/AI/AICareAssistantView.swift in Sources */,
+				A00001001F00000100000018 /* Views/AI/AICoachView.swift in Sources */,
+				A00001001F00000100000019 /* Views/AI/AIPlantIdentification.swift in Sources */,
+				A00001001F0000010000001A /* Views/AI/AISettingsView.swift in Sources */,
+				A00001001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift in Sources */,
+				A00001001F0000010000001C /* Views/AI/PlantHealthVisionView.swift in Sources */,
+				A00001001F0000010000001D /* Views/AI/PlantIdentificationView.swift in Sources */,
+				A00001001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift in Sources */,
+				A00001001F0000010000001F /* Views/Analytics/AnalyticsView.swift in Sources */,
+				A00001001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift in Sources */,
+				A00001001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift in Sources */,
+				A00001001F00000100000022 /* Views/Analytics/HealthTrendsView.swift in Sources */,
+				A00001001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift in Sources */,
+				A00001001F00000100000024 /* Views/Components/ErrorBanner.swift in Sources */,
+				A00001001F00000100000025 /* Views/Components/FeedbackSystem.swift in Sources */,
+				A00001001F00000100000026 /* Views/Components/FloatingActionButton.swift in Sources */,
+				A00001001F00000100000027 /* Views/Components/LoadingView.swift in Sources */,
+				B0F000011111111100000004 /* Views/Components/CoachCard.swift in Sources */,
+				B0F000011111111100000002 /* Views/Components/PlantThumbnail.swift in Sources */,
+				B0F000011111111100000006 /* Services/CoachRules/OverdueWateringRule.swift in Sources */,
+				B0F000011111111100000007 /* Services/CoachRules/StreakNudgeRule.swift in Sources */,
+				A00001001F00000100000028 /* Views/Navigation/MainTabView.swift in Sources */,
+				A00001001F00000100000029 /* Views/Plants/AddCareEventView.swift in Sources */,
+				A00001001F0000010000002A /* Views/Plants/AddPlant/AddPlantBasicInfoSection.swift in Sources */,
+				A00001001F0000010000002B /* Views/Plants/AddPlant/AddPlantBotanicalSection.swift in Sources */,
+				A00001001F0000010000002C /* Views/Plants/AddPlant/AddPlantCareRequirementsSection.swift in Sources */,
+				A00001001F0000010000002D /* Views/Plants/AddPlant/AddPlantLocationNotesSection.swift in Sources */,
+				A00001001F0000010000002E /* Views/Plants/AddPlant/AddPlantPhotoSection.swift in Sources */,
+				A00001001F0000010000002F /* Views/Plants/AddPlantComponents.swift in Sources */,
+				A00001001F00000100000030 /* Views/Plants/AddPlantView.swift in Sources */,
+				A00001001F00000100000031 /* Views/Plants/CareEventRow.swift in Sources */,
+				A00001001F00000100000032 /* Views/Plants/CareHistoryView.swift in Sources */,
+				A00001001F00000100000033 /* Views/Plants/CareStatistics.swift in Sources */,
+				A00001001F00000100000034 /* Views/Plants/DetailSection.swift in Sources */,
+				A00001001F00000100000035 /* Views/Plants/EditPlantView.swift in Sources */,
+				A00001001F00000100000036 /* Views/Plants/MyPlantsView.swift in Sources */,
+				A00001001F00000100000037 /* Views/Plants/PersonalizedTipsView.swift in Sources */,
+				A00001001F00000100000038 /* Views/Plants/PhotoDetailView.swift in Sources */,
+				A00001001F00000100000039 /* Views/Plants/PhotoManager.swift in Sources */,
+				A00001001F0000010000003A /* Views/Plants/PlantDetailComponents.swift in Sources */,
+				A00001001F0000010000003B /* Views/Plants/PlantDetailView.swift in Sources */,
+				A00001001F0000010000003C /* Views/Plants/QuickPhotoCapture.swift in Sources */,
+				A00001001F0000010000003D /* Views/Plants/StatCard.swift in Sources */,
+				A00001001F0000010000003E /* Views/Settings/AboutView.swift in Sources */,
+				A00001001F0000010000003F /* Views/Settings/DataManagementView.swift in Sources */,
+				A00001001F00000100000040 /* Views/Settings/ExportDataView.swift in Sources */,
+				A00001001F00000100000041 /* Views/Settings/NotificationSettingsView.swift in Sources */,
+				A00001001F00000100000042 /* Views/Settings/SettingsComponents.swift in Sources */,
+				A00001001F00000100000043 /* Views/Settings/SettingsView.swift in Sources */,
+				C0F100000000000000000001 /* Services/DataImportService.swift in Sources */,
+				C0F100000000000000000002 /* Views/Settings/ImportDataView.swift in Sources */,
+				C0F100000000000000000003 /* Services/DevBlossomSeedData.swift in Sources */,
+				C0F100000000000000000004 /* Services/DevBlossomSeeder.swift in Sources */,
+				C0F100000000000000000005 /* Views/RootBootstrapView.swift in Sources */,
+				C0F100000000000000000006 /* Services/DataMigrationService.swift in Sources */,
+				C0F100000000000000000007 /* Services/PlantImageService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A00000001F00000100000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
+				DEVELOPMENT_TEAM = W8MK4F6XR6;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.Botanica;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A00000001F00000100000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
+				DEVELOPMENT_TEAM = W8MK4F6XR6;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.Botanica;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A0000A001F00000100000002 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.Botanica;
+				PRODUCT_NAME = Botanica;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A0000A001F00000100000003 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.Botanica;
+				PRODUCT_NAME = Botanica;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A00000001F00000100000002 /* Build configuration list for PBXProject "Botanica" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000001F00000100000003 /* Debug */,
+				A00000001F00000100000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A0000A001F00000100000001 /* Build configuration list for PBXNativeTarget "Botanica" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0000A001F00000100000002 /* Debug */,
+				A0000A001F00000100000003 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000001F00000100000001 /* Project object */;
+}
