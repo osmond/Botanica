@@ -60,6 +60,8 @@ final class PlantImageService {
     /// descriptor. Callers are responsible for ensuring that the plant does not
     /// already have a user photo.
     func referenceImage(for descriptor: PlantImageDescriptor) async -> UIImage? {
+        guard config.isConfigured, config.useAIReferenceImages else { return nil }
+        
         let key = cacheKey(for: descriptor)
         
         if let cached = inMemoryCache.object(forKey: key as NSString) {
@@ -70,8 +72,6 @@ final class PlantImageService {
             inMemoryCache.setObject(diskImage, forKey: key as NSString)
             return diskImage
         }
-        
-        guard config.isConfigured, config.useAIReferenceImages else { return nil }
         
         guard let generated = try? await generateImage(for: descriptor) else {
             return nil
