@@ -97,7 +97,8 @@
 			D10000000000000000000085 /* Services/AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000005 /* Services/AnalyticsService.swift */; };
 			D10000000000000000000086 /* ViewModels/PlantFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000006 /* ViewModels/PlantFormViewModel.swift */; };
 			D10000000000000000000087 /* ViewModels/MainTabCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000007 /* ViewModels/MainTabCoordinator.swift */; };
-			D10000000000000000000088 /* ViewModels/AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000008 /* ViewModels/AnalyticsViewModel.swift */; };
+		D10000000000000000000088 /* ViewModels/AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000008 /* ViewModels/AnalyticsViewModel.swift */; };
+		D20000000000000000000001 /* ViewModels/PlantDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000002 /* ViewModels/PlantDetailViewModel.swift */; };
 			D10000000000000000000089 /* Views/Components/LoadStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000009 /* Views/Components/LoadStateView.swift */; };
 			D10000000000000000000090 /* PlantFormViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000021 /* PlantFormViewModelTests.swift */; };
 			D100000000000000000000A2 /* Views/Plants/MyPlantsSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000000A /* Views/Plants/MyPlantsSections.swift */; };
@@ -185,7 +186,9 @@
 			D10000000000000000000008 /* ViewModels/AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModel.swift; sourceTree = "<group>"; };
 			D1000000000000000000000A /* Views/Plants/MyPlantsSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/MyPlantsSections.swift; sourceTree = "<group>"; };
 			D10000000000000000000009 /* Views/Components/LoadStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/LoadStateView.swift; sourceTree = "<group>"; };
-			D10000000000000000000021 /* PlantFormViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantFormViewModelTests.swift; sourceTree = "<group>"; };
+		D10000000000000000000021 /* PlantFormViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantFormViewModelTests.swift; sourceTree = "<group>"; };
+		D20000000000000000000002 /* ViewModels/PlantDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantDetailViewModel.swift; sourceTree = "<group>"; };
+		D20000000000000000000002 /* ViewModels/PlantDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantDetailViewModel.swift; sourceTree = "<group>"; };
 			D10000000000000000000022 /* BotanicaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BotanicaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 			D10000000000000000000009 /* Views/Components/LoadStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/LoadStateView.swift; sourceTree = "<group>"; };
 			B0F000021111111100000001 /* Core/Imaging/ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Imaging/ImageCache.swift; sourceTree = "<group>"; };
@@ -352,6 +355,7 @@
 					D10000000000000000000008 /* ViewModels/AnalyticsViewModel.swift */,
 					D10000000000000000000006 /* ViewModels/PlantFormViewModel.swift */,
 					D10000000000000000000007 /* ViewModels/MainTabCoordinator.swift */,
+					D20000000000000000000002 /* ViewModels/PlantDetailViewModel.swift */,
 				);
 				path = ViewModels;
 				sourceTree = "<group>";
@@ -560,9 +564,10 @@
 				D10000000000000000000084 /* Services/NotificationService.swift in Sources */,
 				D10000000000000000000085 /* Services/AnalyticsService.swift in Sources */,
 				D10000000000000000000086 /* ViewModels/PlantFormViewModel.swift in Sources */,
-					D10000000000000000000087 /* ViewModels/MainTabCoordinator.swift in Sources */,
-					D10000000000000000000088 /* ViewModels/AnalyticsViewModel.swift in Sources */,
-				);
+				D10000000000000000000087 /* ViewModels/MainTabCoordinator.swift in Sources */,
+				D10000000000000000000088 /* ViewModels/AnalyticsViewModel.swift in Sources */,
+				D20000000000000000000001 /* ViewModels/PlantDetailViewModel.swift in Sources */,
+			);
 				runOnlyForDeploymentPostprocessing = 0;
 			};
 			D10000000000000000000024 /* Sources */ = {

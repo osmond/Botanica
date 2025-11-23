@@ -14,14 +14,13 @@ struct PlantDetailView: View {
     
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var vm = PlantDetailViewModel()
     
     @State private var showingEditPlant = false
     @State private var showingAddCareEvent = false
     @State private var selectedTab = 0
     @State private var showingPhotoManager = false
     @State private var referenceImage: UIImage?
-    @State private var actionError: String?
-    @State private var isPerformingAction = false
 
     // MARK: - Formatting Helpers
     private var shortDateFormatter: DateFormatter {
@@ -117,12 +116,12 @@ struct PlantDetailView: View {
             PhotoManager(plant: plant)
         }
         .alert("Action Failed", isPresented: Binding(
-            get: { actionError != nil },
-            set: { _ in actionError = nil }
+            get: { vm.actionError != nil },
+            set: { _ in vm.actionError = nil }
         )) {
-            Button("OK", role: .cancel) { actionError = nil }
+            Button("OK", role: .cancel) { vm.actionError = nil }
         } message: {
-            Text(actionError ?? "Something went wrong.")
+            Text(vm.actionError ?? "Something went wrong.")
         }
     }
     
@@ -318,7 +317,7 @@ struct PlantDetailView: View {
                                 .font(.system(size: 14, weight: .medium))
                             Spacer()
                             Button("Water Now") {
-                                quickWaterPlant()
+                                vm.quickWaterPlant(plant, context: modelContext)
                             }
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(.white)
@@ -343,7 +342,7 @@ struct PlantDetailView: View {
                             .font(.system(size: 14, weight: .medium))
                         Spacer()
                         Button("Fertilize") {
-                            quickFertilizePlant()
+                            vm.quickFertilizePlant(plant, context: modelContext)
                         }
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.white)
@@ -379,7 +378,7 @@ struct PlantDetailView: View {
                     color: BotanicaTheme.Colors.waterBlue,
                     isUrgent: plant.isWateringOverdue
                 ) {
-                    quickWaterPlant()
+                    vm.quickWaterPlant(plant, context: modelContext)
                 }
                 
                 QuickActionButton(
@@ -388,7 +387,7 @@ struct PlantDetailView: View {
                     color: BotanicaTheme.Colors.leafGreen,
                     isUrgent: plant.isFertilizingOverdue
                 ) {
-                    quickFertilizePlant()
+                    vm.quickFertilizePlant(plant, context: modelContext)
                 }
                 
                 QuickActionButton(
@@ -400,7 +399,7 @@ struct PlantDetailView: View {
                     showingAddCareEvent = true
                 }
             }
-            .disabled(isPerformingAction)
+            .disabled(vm.isPerformingAction)
         }
         .padding(BotanicaTheme.Spacing.lg)
         .background(
@@ -579,46 +578,6 @@ struct PlantDetailView: View {
     
     // MARK: - Helper Functions
     
-    private func quickWaterPlant() {
-        guard !isPerformingAction else { return }
-        isPerformingAction = true
-        let wateringEvent = CareEvent(
-            type: .watering,
-            date: Date(),
-            amount: Double(plant.recommendedWateringAmount.amount),
-            notes: "Quick watering - \(plant.recommendedWateringAmount.amount)\(plant.recommendedWateringAmount.unit)"
-        )
-        wateringEvent.plant = plant
-        modelContext.insert(wateringEvent)
-        do {
-            try modelContext.save()
-            HapticManager.shared.success()
-        } catch {
-            actionError = error.localizedDescription
-            HapticManager.shared.error()
-        }
-        isPerformingAction = false
-    }
-    
-    private func quickFertilizePlant() {
-        guard !isPerformingAction else { return }
-        isPerformingAction = true
-        let fertilizingEvent = CareEvent(
-            type: .fertilizing,
-            date: Date(),
-            notes: "Quick fertilizing"
-        )
-        fertilizingEvent.plant = plant
-        modelContext.insert(fertilizingEvent)
-        do {
-            try modelContext.save()
-            HapticManager.shared.success()
-        } catch {
-            actionError = error.localizedDescription
-            HapticManager.shared.error()
-        }
-        isPerformingAction = false
-    }
 }
 
 // MARK: - Helper Views
