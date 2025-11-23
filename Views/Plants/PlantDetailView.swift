@@ -21,6 +21,12 @@ struct PlantDetailView: View {
     @State private var selectedTab = 0
     @State private var showingPhotoManager = false
     @State private var referenceImage: UIImage?
+    
+    private var waterAmountText: String {
+        let amount = plant.recommendedWateringAmount.amount
+        let unit = plant.recommendedWateringAmount.unit
+        return "\(amount) \(unit)"
+    }
 
     // MARK: - Formatting Helpers
     private var shortDateFormatter: DateFormatter {
@@ -355,7 +361,8 @@ struct PlantDetailView: View {
                     icon: "drop.fill",
                     title: "Water",
                     color: BotanicaTheme.Colors.waterBlue,
-                    isUrgent: plant.isWateringOverdue
+                    isUrgent: plant.isWateringOverdue,
+                    subtitle: waterAmountText
                 ) {
                     vm.quickWaterPlant(plant, context: modelContext)
                 }
@@ -560,13 +567,30 @@ struct QuickActionButton: View {
     let title: String
     let color: Color
     let isUrgent: Bool
+    let subtitle: String?
     let action: () -> Void
+    
+    init(
+        icon: String,
+        title: String,
+        color: Color,
+        isUrgent: Bool,
+        subtitle: String? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.icon = icon
+        self.title = title
+        self.color = color
+        self.isUrgent = isUrgent
+        self.subtitle = subtitle
+        self.action = action
+    }
     
     var body: some View {
         Button {
             action()
         } label: {
-            VStack(spacing: BotanicaTheme.Spacing.sm) {
+            VStack(spacing: BotanicaTheme.Spacing.xs) {
                 ZStack {
                     Circle()
                         .fill(color.opacity(0.15))
@@ -577,15 +601,25 @@ struct QuickActionButton: View {
                         .foregroundStyle(color)
                 }
                 
-                Text(title)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(isUrgent ? color : BotanicaTheme.Colors.textPrimary)
+                VStack(spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(isUrgent ? color : BotanicaTheme.Colors.textPrimary)
+                    
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    }
+                }
             }
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(title)
+        .accessibilityLabel(
+            subtitle != nil ? "\(title). \(subtitle!)" : title
+        )
         .accessibilityHint("Quick action: \(title)")
     }
 }
