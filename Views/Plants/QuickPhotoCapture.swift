@@ -318,7 +318,7 @@ struct QuickPhotoCapture: View {
             category: selectedCategory,
             isPrimary: nil
         )
-        
+
         do {
             try modelContext.save()
             HapticManager.shared.success()

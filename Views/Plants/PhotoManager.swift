@@ -223,6 +223,7 @@ struct PhotoManager: View {
     // MARK: - Helper Methods
     
     private func savePhoto(image: UIImage, category: PhotoCategory) async {
+        // Normalize image data for consistency/caching
         guard let imageData = ImageProcessor.normalizedJPEGData(from: image) else { return }
         loadState = .loading
         
@@ -247,8 +248,12 @@ struct PhotoManager: View {
     private func loadSelectedPhotos() async {
         loadState = .loading
         for item in selectedPhotoItems {
-            if let data = try? await item.loadTransferable(type: Data.self),
-               let image = UIImage(data: data) {
+            guard let data = try? await item.loadTransferable(type: Data.self) else {
+                errorMessage = "Unable to load photo from library."
+                continue
+            }
+            // Decode using shared thumbnail decoder to match other components
+            if let image = await ThumbnailDecode.decodeThumbnail(data, maxDimension: 1600) {
                 await savePhoto(image: image, category: .general)
             }
         }
