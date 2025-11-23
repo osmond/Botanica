@@ -647,29 +647,39 @@ struct AnalyticsView: View {
     }
     
     private func calculateCareConsistency(for plant: Plant) -> Double {
-        let recentEvents = plant.careEvents.filter { $0.date >= Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date() }
-        let expectedFrequency = Double(plant.wateringFrequency + plant.fertilizingFrequency) / 2.0
-        let actualFrequency = Double(recentEvents.count)
-        let expectedEvents = 30.0 / max(expectedFrequency, 1.0)
-        return min(actualFrequency / expectedEvents, 1.0)
+        let calendar = Calendar.current
+        let windowStart = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        let recentEvents = plant.careEvents.filter { $0.date >= windowStart }
+        // Expected watering + fertilizing events over 30 days
+        let expectedWater = plant.wateringFrequency > 0 ? 30.0 / Double(plant.wateringFrequency) : 0
+        let expectedFertilize = plant.fertilizingFrequency > 0 ? 30.0 / Double(plant.fertilizingFrequency) : 0
+        let expectedEvents = max(expectedWater + expectedFertilize, 1.0)
+        return min(Double(recentEvents.count) / expectedEvents, 1.0)
     }
     
     private func calculateGrowthRate(for plant: Plant) -> Double {
-        return min(plant.healthScore + Double.random(in: -0.1...0.1), 1.0)
+        // Use normalized health score as a proxy for growth stability
+        return min(max(plant.healthScore, 0.0), 1.0)
     }
     
     private func calculateSeasonalAdaptation(for plant: Plant) -> Double {
-        return Double.random(in: 0.7...0.95)
+        // Rough heuristic: align light level with season
+        let season = BotanicalSeason.current
+        switch (season, plant.lightLevel) {
+        case (.summer, .bright), (.summer, .direct), (.spring, .bright), (.spring, .medium):
+            return 0.9
+        case (.winter, .low), (.winter, .medium):
+            return 0.85
+        default:
+            return 0.75
+        }
     }
     
     private func determineTrend(for plant: Plant) -> UIHealthTrend {
-        let recentScore = plant.healthScore
-        if recentScore > 0.8 {
-            return Bool.random() ? .improving : .stable
-        } else if recentScore > 0.6 {
-            return .stable
-        } else {
-            return .declining
+        switch plant.healthStatus {
+        case .excellent, .healthy: return .improving
+        case .fair: return .stable
+        case .poor, .critical: return .declining
         }
     }
     
