@@ -17,6 +17,7 @@ struct AICoachView: View {
     @State private var healthLoadState: LoadState = .idle
     @State private var healthErrorMessage: String?
     @State private var showingHealthError = false
+    @State private var chatStorageKey: String = ""
     @State private var lastQuestion: String?
     
     // Pre-defined quick questions for common plant care concerns
@@ -59,6 +60,10 @@ struct AICoachView: View {
                     .foregroundColor(BotanicaTheme.Colors.primary)
                 }
             }
+        }
+        .onAppear {
+            chatStorageKey = "aiChat.\(plant.id.uuidString)"
+            restoreConversation()
         }
     }
     
@@ -287,6 +292,7 @@ struct AICoachView: View {
                     conversationHistory.append(aiMessage)
                     chatLoadState = .loaded
                     selectedQuickQuestion = nil
+                    persistConversation()
                 }
             } catch {
                 await MainActor.run {
@@ -299,6 +305,7 @@ struct AICoachView: View {
                     conversationHistory.append(errorMessage)
                     chatLoadState = .failed(error.localizedDescription)
                     selectedQuickQuestion = nil
+                    persistConversation()
                 }
             }
         }
@@ -325,6 +332,7 @@ struct AICoachView: View {
                 await MainActor.run {
                     conversationHistory.append(aiMessage)
                     chatLoadState = .loaded
+                    persistConversation()
                 }
             } catch {
                 await MainActor.run {
@@ -357,7 +365,7 @@ struct AICoachView: View {
             }
         }
     }
-
+    
     // MARK: - Conversation Builder
     
     @ViewBuilder
@@ -384,11 +392,29 @@ struct AICoachView: View {
             .padding(.vertical, BotanicaTheme.Spacing.md)
         }
     }
+    
+    // MARK: - Persistence
+    
+    private func persistConversation() {
+        guard !chatStorageKey.isEmpty else { return }
+        if let data = try? JSONEncoder().encode(conversationHistory) {
+            UserDefaults.standard.set(data, forKey: chatStorageKey)
+        }
+    }
+    
+    private func restoreConversation() {
+        guard !chatStorageKey.isEmpty else { return }
+        if let data = UserDefaults.standard.data(forKey: chatStorageKey),
+           let decoded = try? JSONDecoder().decode([ConversationMessage].self, from: data) {
+            conversationHistory = decoded
+            chatLoadState = .loaded
+        }
+    }
 }
 
 // MARK: - Supporting Models
 
-struct ConversationMessage: Identifiable {
+struct ConversationMessage: Identifiable, Codable {
     let id: UUID
     let content: String
     let isFromUser: Bool
