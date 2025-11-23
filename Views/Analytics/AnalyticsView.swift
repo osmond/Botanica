@@ -219,22 +219,7 @@ struct AnalyticsView: View {
                 )
             }
         }
-        .padding(BotanicaTheme.Spacing.xl)
-        .background(
-            LinearGradient(
-                colors: [
-                    BotanicaTheme.Colors.leafGreen.opacity(0.1),
-                    BotanicaTheme.Colors.waterBlue.opacity(0.05)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.xlarge))
-        .overlay(
-            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.xlarge)
-                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-        )
+        .cardStyle()
     }
     
     private var modernTimeRangeSelector: some View {

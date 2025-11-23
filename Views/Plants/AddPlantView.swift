@@ -166,29 +166,40 @@ struct AddPlantView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(spacing: BotanicaTheme.Spacing.xl) {
-                        // Hero header
-                        headerSection
-                        
-                        // Photo Section
-                        photoSection
-                        
-                        // Basic Information
-                        basicInfoSection(proxy: proxy)
-                        
-                        // Botanical Details
-                        botanicalDetailsSection
-                        
-                        // Care Requirements
-                        careRequirementsSection
-                        
-                        // Care History
-                        careHistorySection
-                        
-                        // Location & Notes
-                        locationNotesSection
-                        
-                        // Bottom spacing for save button
-                        Spacer(minLength: 80)
+                            // Hero header
+                            headerSection
+                            
+                            if let validation = formViewModel.validationMessage {
+                                Text(validation)
+                                    .font(BotanicaTheme.Typography.caption)
+                                    .foregroundColor(BotanicaTheme.Colors.error)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.red.opacity(0.08))
+                                    .cornerRadius(BotanicaTheme.CornerRadius.medium)
+                                    .accessibilityLabel("Validation: \(validation)")
+                            }
+                            
+                            // Photo Section
+                            photoSection
+                            
+                            // Basic Information
+                            basicInfoSection(proxy: proxy)
+                            
+                            // Botanical Details
+                            botanicalDetailsSection
+                            
+                            // Care Requirements
+                            careRequirementsSection
+                            
+                            // Care History
+                            careHistorySection
+                            
+                            // Location & Notes
+                            locationNotesSection
+                            
+                            // Bottom spacing for save button
+                            Spacer(minLength: 80)
                         }
                         .padding(BotanicaTheme.Spacing.lg)
                         .padding(.bottom, keyboardHeight)
@@ -981,6 +992,14 @@ struct AddPlantView: View {
                 lastFertilized: hasBeenFertilized ? lastFertilized : nil,
                 photosData: photoData
             )
+            
+            guard formViewModel.validate(formData) else {
+                alertMessage = formViewModel.validationMessage ?? "Please correct the highlighted fields."
+                showingAlert = true
+                HapticManager.shared.error()
+                isSaving = false
+                return
+            }
             
             _ = try formViewModel.saveNewPlant(formData, in: modelContext)
             HapticManager.shared.success()

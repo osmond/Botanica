@@ -43,6 +43,18 @@ final class PlantFormViewModel: ViewModel {
             validationMessage = "Watering frequency must be greater than zero."
             return false
         }
+        if data.fertilizingFrequency < 0 {
+            validationMessage = "Fertilizing frequency cannot be negative."
+            return false
+        }
+        if data.potSize <= 0 {
+            validationMessage = "Pot size must be greater than zero."
+            return false
+        }
+        if data.humidityPreference < 0 || data.humidityPreference > 100 {
+            validationMessage = "Humidity should be between 0 and 100%."
+            return false
+        }
         validationMessage = nil
         return true
     }
