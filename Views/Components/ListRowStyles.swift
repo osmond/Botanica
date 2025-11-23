@@ -15,5 +15,26 @@ extension View {
             .listClearRow()
             .padding(.vertical, padding)
     }
+    
+    /// Consistent card styling for dashboard elements
+    func cardStyle(
+        cornerRadius: CGFloat = BotanicaTheme.CornerRadius.large,
+        background: Color = Color(.secondarySystemGroupedBackground),
+        strokeColor: Color = BotanicaTheme.Colors.primary.opacity(0.06),
+        shadow: Color = Color.black.opacity(0.04),
+        shadowRadius: CGFloat = 8,
+        shadowY: CGFloat = 2
+    ) -> some View {
+        self
+            .padding(BotanicaTheme.Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(background)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(strokeColor, lineWidth: 1)
+                    )
+            )
+            .shadow(color: shadow, radius: shadowRadius, x: 0, y: shadowY)
+    }
 }
-
