@@ -330,6 +330,8 @@ struct AnalyticsView: View {
                 .buttonStyle(PlainButtonStyle())
             }
         }
+        .cardStyle()
+        .accessibilityLabel("Advanced analytics section")
     }
     
     private var plantPerformanceDashboard: some View {
