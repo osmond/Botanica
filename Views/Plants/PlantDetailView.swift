@@ -27,6 +27,14 @@ struct PlantDetailView: View {
         let unit = plant.recommendedWateringAmount.unit
         return "\(amount) \(unit)"
     }
+    
+    private var fertilizerAmountText: String {
+        let rec = plant.recommendedFertilizerAmount
+        let amountString: String = rec.amount.truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", rec.amount)
+            : String(format: "%.1f", rec.amount)
+        return "\(amountString) \(rec.unit)"
+    }
 
     // MARK: - Formatting Helpers
     private var shortDateFormatter: DateFormatter {
@@ -371,7 +379,8 @@ struct PlantDetailView: View {
                     icon: "leaf.arrow.circlepath",
                     title: "Fertilize",
                     color: BotanicaTheme.Colors.leafGreen,
-                    isUrgent: plant.isFertilizingOverdue
+                    isUrgent: plant.isFertilizingOverdue,
+                    subtitle: fertilizerAmountText
                 ) {
                     vm.quickFertilizePlant(plant, context: modelContext)
                 }
