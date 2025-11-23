@@ -23,6 +23,8 @@ struct QuickPhotoCapture: View {
     @State private var selectedCategory: PhotoCategory = .general
     @State private var caption = ""
     @State private var showingPlantPicker = false
+    @State private var loadState: LoadState = .idle
+    @State private var errorMessage: String?
     
     @StateObject private var cameraPermission = CameraPermissionManager()
     
@@ -66,6 +68,25 @@ struct QuickPhotoCapture: View {
             Task {
                 await loadSelectedPhoto()
             }
+        }
+        .overlay(alignment: .bottom) {
+            if loadState == .loading {
+                HStack(spacing: BotanicaTheme.Spacing.sm) {
+                    ProgressView()
+                    Text("Saving photo…")
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, BotanicaTheme.Spacing.md)
+            }
+        }
+        .alert("Photo Error", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { _ in errorMessage = nil }
+        )) {
+            Button("OK", role: .cancel) { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "Something went wrong.")
         }
     }
     
@@ -287,6 +308,7 @@ struct QuickPhotoCapture: View {
         guard let plant = selectedPlant,
               let image = capturedImage,
               let imageData = ImageProcessor.normalizedJPEGData(from: image) else { return }
+        loadState = .loading
         
         plant.addPhoto(
             from: imageData,
@@ -301,8 +323,9 @@ struct QuickPhotoCapture: View {
             dismiss()
         } catch {
             HapticManager.shared.error()
-            print("Failed to save photo: \(error)")
+            errorMessage = error.localizedDescription
         }
+        loadState = .loaded
     }
 }
 
