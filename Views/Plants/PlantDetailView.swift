@@ -20,6 +20,8 @@ struct PlantDetailView: View {
     @State private var selectedTab = 0
     @State private var showingPhotoManager = false
     @State private var referenceImage: UIImage?
+    @State private var actionError: String?
+    @State private var isPerformingAction = false
 
     // MARK: - Formatting Helpers
     private var shortDateFormatter: DateFormatter {
@@ -113,6 +115,14 @@ struct PlantDetailView: View {
         }
         .sheet(isPresented: $showingPhotoManager) {
             PhotoManager(plant: plant)
+        }
+        .alert("Action Failed", isPresented: Binding(
+            get: { actionError != nil },
+            set: { _ in actionError = nil }
+        )) {
+            Button("OK", role: .cancel) { actionError = nil }
+        } message: {
+            Text(actionError ?? "Something went wrong.")
         }
     }
     
@@ -390,6 +400,7 @@ struct PlantDetailView: View {
                     showingAddCareEvent = true
                 }
             }
+            .disabled(isPerformingAction)
         }
         .padding(BotanicaTheme.Spacing.lg)
         .background(
@@ -569,6 +580,8 @@ struct PlantDetailView: View {
     // MARK: - Helper Functions
     
     private func quickWaterPlant() {
+        guard !isPerformingAction else { return }
+        isPerformingAction = true
         let wateringEvent = CareEvent(
             type: .watering,
             date: Date(),
@@ -577,11 +590,19 @@ struct PlantDetailView: View {
         )
         wateringEvent.plant = plant
         modelContext.insert(wateringEvent)
-        HapticManager.shared.success()
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+            HapticManager.shared.success()
+        } catch {
+            actionError = error.localizedDescription
+            HapticManager.shared.error()
+        }
+        isPerformingAction = false
     }
     
     private func quickFertilizePlant() {
+        guard !isPerformingAction else { return }
+        isPerformingAction = true
         let fertilizingEvent = CareEvent(
             type: .fertilizing,
             date: Date(),
@@ -589,8 +610,14 @@ struct PlantDetailView: View {
         )
         fertilizingEvent.plant = plant
         modelContext.insert(fertilizingEvent)
-        HapticManager.shared.success()
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+            HapticManager.shared.success()
+        } catch {
+            actionError = error.localizedDescription
+            HapticManager.shared.error()
+        }
+        isPerformingAction = false
     }
 }
 
