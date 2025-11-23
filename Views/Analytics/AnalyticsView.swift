@@ -2,63 +2,6 @@ import SwiftUI
 import SwiftData
 import Charts
 
-// MARK: - Analytics TimeRange
-enum AnalyticsTimeRange: String, CaseIterable {
-    case week = "Week"
-    case month = "Month" 
-    case quarter = "Quarter"
-    case year = "Year"
-    
-    var days: Int {
-        switch self {
-        case .week: return 7
-        case .month: return 30
-        case .quarter: return 90
-        case .year: return 365
-        }
-    }
-    
-    var startDate: Date {
-        Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-    }
-}
-
-// MARK: - Botanical Season Analysis
-enum BotanicalSeason: String, CaseIterable {
-    case spring = "Spring"
-    case summer = "Summer"
-    case fall = "Fall"
-    case winter = "Winter"
-    
-    var careModifications: String {
-        switch self {
-        case .spring: return "Increase watering frequency, begin fertilizing, repot if needed"
-        case .summer: return "Peak watering needs, regular fertilizing, monitor for pests"
-        case .fall: return "Reduce watering gradually, stop fertilizing, prepare for dormancy"
-        case .winter: return "Minimal watering, no fertilizing, focus on humidity"
-        }
-    }
-    
-    var primaryColor: Color {
-        switch self {
-        case .spring: return BotanicaTheme.Colors.leafGreen
-        case .summer: return BotanicaTheme.Colors.sunYellow
-        case .fall: return BotanicaTheme.Colors.nutrientOrange
-        case .winter: return BotanicaTheme.Colors.waterBlue
-        }
-    }
-    
-    static var current: BotanicalSeason {
-        let month = Calendar.current.component(.month, from: Date())
-        switch month {
-        case 3...5: return .spring
-        case 6...8: return .summer
-        case 9...11: return .fall
-        default: return .winter
-        }
-    }
-}
-
 // MARK: - Plant Performance Analytics
 struct PlantHealthMetrics {
     let careConsistency: Double
@@ -107,6 +50,7 @@ enum UIHealthTrend {
 struct AnalyticsView: View {
     @Query private var plants: [Plant]
     @Query private var careEvents: [CareEvent]
+    @StateObject private var viewModel = AnalyticsViewModel()
     @State private var selectedTimeRange: AnalyticsTimeRange = .month
     @State private var showingSeasonalGuidance = false
     @State private var selectedPlantForDetails: Plant?
@@ -114,41 +58,81 @@ struct AnalyticsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: BotanicaTheme.Spacing.xl) {
-                    // Hero Section with Collection Health Score
-                    collectionHealthHero
-                    
-                    // Time range selector
-                    modernTimeRangeSelector
-                    
-                    // Seasonal Botanical Guidance
-                    seasonalGuidanceCard
-                    
-                    // Advanced Analytics Quick Access
-                    advancedAnalyticsSection
-                    
-                    // Plant Performance Dashboard
-                    plantPerformanceDashboard
-                    
-                    // Care Effectiveness Analytics
-                    careEffectivenessSection
-                    
-                    // Health & Growth Trends
-                    healthTrendsSection
-                    
-                    // Species-Specific Insights
-                    speciesInsightsSection
-                    
-                    // Botanical Achievements
-                    botanicalAchievementsSection
-                    
-                    // Smart Recommendations
-                    smartRecommendationsSection
+            LoadStateView(
+                state: viewModel.loadState,
+                retry: { viewModel.refresh(plants: plants, careEvents: careEvents, range: selectedTimeRange) },
+                loading: {
+                    if plants.isEmpty {
+                        VStack(spacing: BotanicaTheme.Spacing.md) {
+                            Image(systemName: "leaf")
+                                .font(.largeTitle)
+                                .foregroundColor(BotanicaTheme.Colors.primary)
+                            Text("Add a plant to see analytics")
+                                .font(BotanicaTheme.Typography.body)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        VStack(spacing: BotanicaTheme.Spacing.md) {
+                            ProgressView("Analyzing collection…")
+                                .progressViewStyle(.circular)
+                            Text("Crunching health and care trends")
+                                .font(BotanicaTheme.Typography.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                },
+                content: {
+                    if plants.isEmpty {
+                        VStack(spacing: BotanicaTheme.Spacing.md) {
+                            Image(systemName: "leaf")
+                                .font(.largeTitle)
+                                .foregroundColor(BotanicaTheme.Colors.primary)
+                            Text("Add a plant to see analytics")
+                                .font(BotanicaTheme.Typography.body)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: BotanicaTheme.Spacing.xl) {
+                                // Hero Section with Collection Health Score
+                                collectionHealthHero
+                                
+                                // Time range selector
+                                modernTimeRangeSelector
+                                
+                                // Seasonal Botanical Guidance
+                                seasonalGuidanceCard
+                                
+                                // Advanced Analytics Quick Access
+                                advancedAnalyticsSection
+                                
+                                // Plant Performance Dashboard
+                                plantPerformanceDashboard
+                                
+                                // Care Effectiveness Analytics
+                                careEffectivenessSection
+                                
+                                // Health & Growth Trends
+                                healthTrendsSection
+                                
+                                // Species-Specific Insights
+                                speciesInsightsSection
+                                
+                                // Botanical Achievements
+                                botanicalAchievementsSection
+                                
+                                // Smart Recommendations
+                                smartRecommendationsSection
+                            }
+                            .padding(.horizontal, BotanicaTheme.Spacing.lg)
+                            .padding(.bottom, BotanicaTheme.Spacing.jumbo)
+                        }
+                    }
                 }
-                .padding(.horizontal, BotanicaTheme.Spacing.lg)
-                .padding(.bottom, BotanicaTheme.Spacing.jumbo)
-            }
+            )
             .navigationTitle("Plant Analytics")
             .navigationBarTitleDisplayMode(.large)
             .sheet(isPresented: $showingSeasonalGuidance) {
@@ -159,6 +143,15 @@ struct AnalyticsView: View {
             }
             .sheet(isPresented: $showingAdvancedAnalytics) {
                 AdvancedAnalyticsView()
+            }
+            .task(id: selectedTimeRange) {
+                viewModel.refresh(plants: plants, careEvents: careEvents, range: selectedTimeRange)
+            }
+            .onChange(of: plants.count) { _, _ in
+                viewModel.refresh(plants: plants, careEvents: careEvents, range: selectedTimeRange)
+            }
+            .onChange(of: careEvents.count) { _, _ in
+                viewModel.refresh(plants: plants, careEvents: careEvents, range: selectedTimeRange)
             }
         }
     }
@@ -491,21 +484,21 @@ struct AnalyticsView: View {
                 ], spacing: BotanicaTheme.Spacing.md) {
                     HealthTrendCard(
                         title: "Improving",
-                        count: plantsWithTrend(.improving).count,
+                        count: healthTrendCounts.improving,
                         color: BotanicaTheme.Colors.success,
                         icon: "arrow.up.circle.fill"
                     )
                     
                     HealthTrendCard(
                         title: "Stable",
-                        count: plantsWithTrend(.stable).count,
+                        count: healthTrendCounts.stable,
                         color: BotanicaTheme.Colors.waterBlue,
                         icon: "minus.circle.fill"
                     )
                     
                     HealthTrendCard(
                         title: "Declining",
-                        count: plantsWithTrend(.declining).count,
+                        count: healthTrendCounts.declining,
                         color: BotanicaTheme.Colors.warning,
                         icon: "arrow.down.circle.fill"
                     )
@@ -584,9 +577,7 @@ struct AnalyticsView: View {
     }
     
     private var collectionHealthScore: Double {
-        guard !plants.isEmpty else { return 0 }
-        let totalScore = plants.reduce(0.0) { $0 + $1.healthScore }
-        return (totalScore / Double(plants.count)) * 100
+        viewModel.snapshot?.summary.healthScore ?? 0
     }
     
     private var collectionHealthGrade: String {
@@ -607,13 +598,9 @@ struct AnalyticsView: View {
         }
     }
     
-    private var healthyPlantsCount: Int {
-        plants.filter { $0.healthStatus == .healthy || $0.healthStatus == .excellent }.count
-    }
+    private var healthyPlantsCount: Int { viewModel.snapshot?.summary.healthyCount ?? 0 }
     
-    private var attentionNeededCount: Int {
-        plants.filter { $0.healthStatus == .fair || $0.healthStatus == .poor || $0.healthStatus == .critical }.count
-    }
+    private var attentionNeededCount: Int { viewModel.snapshot?.summary.attentionCount ?? 0 }
     
     private var topPerformingPlants: [Plant] {
         plants.sorted { $0.healthScore > $1.healthScore }
@@ -628,55 +615,18 @@ struct AnalyticsView: View {
         }
     }
     
-    private var currentCareStreak: Int {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        var streak = 0
-        
-        for i in 0..<30 { // Check last 30 days
-            let date = calendar.date(byAdding: .day, value: -i, to: today) ?? today
-            let dayEvents = careEvents.filter {
-                calendar.isDate($0.date, inSameDayAs: date)
-            }
-            
-            if dayEvents.isEmpty {
-                break
-            } else {
-                streak += 1
-            }
-        }
-        
-        return streak
-    }
+    private var currentCareStreak: Int { viewModel.snapshot?.summary.careStreak ?? 0 }
     
     private var completionData: [CompletionDataPoint] {
-        let calendar = Calendar.current
-        let days = selectedTimeRange.days
-        
-        return (0..<min(days, 30)).compactMap { dayOffset in
-            let date = calendar.date(byAdding: .day, value: -dayOffset, to: Date()) ?? Date()
-            let completionRate = calculateCompletionRate(for: date)
-            
-            return CompletionDataPoint(
-                date: date,
-                completionRate: completionRate
-            )
-        }.reversed()
-    }
-    
-    private func calculateCompletionRate(for date: Date) -> Double {
-        // Simplified completion rate calculation
-        let dayEvents = careEvents.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
-        let expectedCare = max(1, plants.count / 7) // Assume weekly care
-        return min(Double(dayEvents.count) / Double(expectedCare), 1.0)
+        viewModel.snapshot?.completionData ?? []
     }
     
     private var averageCompletionRate: Double {
-        guard !plants.isEmpty else { return 0.0 }
-        let totalEvents = careEventsInRange.count
-        let expectedEvents = plants.count * selectedTimeRange.days / 7 // Approximate weekly care
-        guard expectedEvents > 0 else { return 1.0 }
-        return min(Double(totalEvents) / Double(expectedEvents), 1.0)
+        viewModel.snapshot?.averageCompletionRate ?? 0
+    }
+    
+    private var healthTrendCounts: HealthTrendBreakdown {
+        viewModel.snapshot?.healthTrends ?? HealthTrendBreakdown(improving: 0, stable: 0, declining: 0)
     }
     
     // MARK: - Plant Analysis Functions
@@ -723,54 +673,8 @@ struct AnalyticsView: View {
         }
     }
     
-    private func plantsWithTrend(_ trend: UIHealthTrend) -> [Plant] {
-        return plants.filter { determineTrend(for: $0) == trend }
-    }
-    
     private var topSpeciesInsights: [SpeciesInsight] {
-        let speciesGroups = Dictionary(grouping: plants) { $0.scientificName }
-        let insights = speciesGroups.compactMap { species, plantsInSpecies -> SpeciesInsight? in
-            let avgHealth = plantsInSpecies.reduce(0.0) { $0 + $1.healthScore } / Double(plantsInSpecies.count)
-            let careNeeds = determineCareNeeds(for: species)
-            
-            return SpeciesInsight(
-                species: species,
-                count: plantsInSpecies.count,
-                averageHealth: avgHealth,
-                careRecommendation: careNeeds,
-                seasonalNote: getSeasonalNote(for: species)
-            )
-        }
-        return insights.sorted { $0.count > $1.count }.prefix(3).map { $0 }
-    }
-    
-    private func determineCareNeeds(for species: String) -> String {
-        switch species.lowercased() {
-        case let s where s.contains("monstera"):
-            return "Bright indirect light, weekly watering, high humidity"
-        case let s where s.contains("pothos"):
-            return "Low to bright indirect light, water when soil dry"
-        case let s where s.contains("snake"):
-            return "Low light tolerant, water every 2-3 weeks"
-        case let s where s.contains("rubber"):
-            return "Bright indirect light, weekly watering, dust leaves"
-        default:
-            return "Monitor soil moisture, provide appropriate light"
-        }
-    }
-    
-    private func getSeasonalNote(for species: String) -> String {
-        let season = BotanicalSeason.current
-        switch season {
-        case .spring:
-            return "Growing season - increase watering and fertilizing"
-        case .summer:
-            return "Peak growth - maintain consistent care schedule"
-        case .fall:
-            return "Prepare for dormancy - reduce fertilizing"
-        case .winter:
-            return "Dormant period - reduce watering frequency"
-        }
+        viewModel.snapshot?.speciesInsights ?? []
     }
     
     private var botanicalAchievements: [BotanicalAchievement] {
@@ -875,22 +779,6 @@ struct AnalyticsView: View {
         
         return recommendations
     }
-}
-
-// MARK: - Supporting Data Types
-
-struct CompletionDataPoint: Identifiable {
-    let id = UUID()
-    let date: Date
-    let completionRate: Double
-}
-
-struct SpeciesInsight {
-    let species: String
-    let count: Int
-    let averageHealth: Double
-    let careRecommendation: String
-    let seasonalNote: String
 }
 
 enum AchievementCategory {

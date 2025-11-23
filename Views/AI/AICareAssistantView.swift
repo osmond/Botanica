@@ -14,6 +14,9 @@ struct AICareAssistantView: View {
     @State private var diagnosisResponse = ""
     @State private var showingError = false
     @State private var errorMessage: String?
+    @State private var carePlanState: LoadState = .idle
+    @State private var questionState: LoadState = .idle
+    @State private var diagnosisState: LoadState = .idle
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -69,13 +72,18 @@ struct AICareAssistantView: View {
                 // Plant info header
                 plantInfoHeader
                 
-                if aiCoach.isLoading {
-                    loadingView
-                } else if let plan = carePlan {
-                    carePlanContent(plan)
-                } else {
-                    generateCarePlanButton
-                }
+                LoadStateView(
+                    state: carePlanState,
+                    retry: { generateCarePlan() },
+                    loading: { loadingView("Generating care plan...") },
+                    content: {
+                        if let plan = carePlan {
+                            carePlanContent(plan)
+                        } else {
+                            generateCarePlanButton
+                        }
+                    }
+                )
             }
             .padding()
         }
@@ -114,21 +122,11 @@ struct AICareAssistantView: View {
                 .multilineTextAlignment(.center)
             
             Button("Generate Care Plan") {
-                Task {
-                    errorMessage = nil
-                    do {
-                        carePlan = try await aiCoach.generateCarePlan(for: plant)
-                        HapticManager.shared.success()
-                    } catch {
-                        errorMessage = ErrorMessageFormatter.userFriendlyMessage(for: error)
-                        showingError = true
-                        HapticManager.shared.error()
-                    }
-                }
+                generateCarePlan()
             }
             .buttonStyle(.borderedProminent)
             .tint(BotanicaTheme.Colors.primary)
-            .disabled(aiCoach.isLoading)
+            .disabled(carePlanState == .loading)
         }
         .frame(maxWidth: .infinity)
         .padding()
@@ -250,31 +248,26 @@ struct AICareAssistantView: View {
                         .lineLimit(3...6)
                     
                     Button("Ask AI Coach") {
-                        Task {
-                            errorMessage = nil
-                            do {
-                                questionResponse = try await aiCoach.askCareQuestion(careQuestion, about: plant)
-                                HapticManager.shared.success()
-                            } catch {
-                                errorMessage = ErrorMessageFormatter.userFriendlyMessage(for: error)
-                                showingError = true
-                                HapticManager.shared.error()
-                            }
-                        }
+                        askAIQuestion()
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(BotanicaTheme.Colors.primary)
-                    .disabled(careQuestion.isEmpty || aiCoach.isLoading)
+                    .disabled(careQuestion.isEmpty || questionState == .loading)
                 }
                 .padding()
                 .background(BotanicaTheme.Colors.surface)
                 .cornerRadius(BotanicaTheme.CornerRadius.medium)
                 
-                if aiCoach.isLoading {
-                    loadingView
-                } else if !questionResponse.isEmpty {
-                    responseView(questionResponse)
-                }
+                LoadStateView(
+                    state: questionState,
+                    retry: { askAIQuestion() },
+                    loading: { loadingView("AI Coach is thinking...") },
+                    content: {
+                        if !questionResponse.isEmpty {
+                            responseView(questionResponse)
+                        }
+                    }
+                )
             }
             .padding()
         }
@@ -301,31 +294,26 @@ struct AICareAssistantView: View {
                         .lineLimit(4...8)
                     
                     Button("Get Diagnosis") {
-                        Task {
-                            errorMessage = nil
-                            do {
-                                diagnosisResponse = try await aiCoach.diagnosePlantIssues(symptoms: symptomDescription, for: plant)
-                                HapticManager.shared.success()
-                            } catch {
-                                errorMessage = ErrorMessageFormatter.userFriendlyMessage(for: error)
-                                showingError = true
-                                HapticManager.shared.error()
-                            }
-                        }
+                        runDiagnosis()
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(BotanicaTheme.Colors.primary)
-                    .disabled(symptomDescription.isEmpty || aiCoach.isLoading)
+                    .disabled(symptomDescription.isEmpty || diagnosisState == .loading)
                 }
                 .padding()
                 .background(BotanicaTheme.Colors.surface)
                 .cornerRadius(BotanicaTheme.CornerRadius.medium)
                 
-                if aiCoach.isLoading {
-                    loadingView
-                } else if !diagnosisResponse.isEmpty {
-                    responseView(diagnosisResponse)
-                }
+                LoadStateView(
+                    state: diagnosisState,
+                    retry: { runDiagnosis() },
+                    loading: { loadingView("Generating diagnosis...") },
+                    content: {
+                        if !diagnosisResponse.isEmpty {
+                            responseView(diagnosisResponse)
+                        }
+                    }
+                )
             }
             .padding()
         }
@@ -333,16 +321,70 @@ struct AICareAssistantView: View {
     
     // MARK: - Helper Views
     
-    private var loadingView: some View {
+    private func loadingView(_ text: String) -> some View {
         VStack(spacing: BotanicaTheme.Spacing.md) {
             ProgressView()
                 .scaleEffect(1.2)
-            Text("AI Coach is thinking...")
+            Text(text)
                 .font(BotanicaTheme.Typography.body)
                 .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding()
+    }
+    
+    private func generateCarePlan() {
+        Task {
+            carePlanState = .loading
+            errorMessage = nil
+            do {
+                carePlan = try await aiCoach.generateCarePlan(for: plant)
+                carePlanState = .loaded
+                HapticManager.shared.success()
+            } catch {
+                let message = ErrorMessageFormatter.userFriendlyMessage(for: error)
+                errorMessage = message
+                carePlanState = .failed(message)
+                showingError = true
+                HapticManager.shared.error()
+            }
+        }
+    }
+    
+    private func askAIQuestion() {
+        Task {
+            questionState = .loading
+            errorMessage = nil
+            do {
+                questionResponse = try await aiCoach.askCareQuestion(careQuestion, about: plant)
+                questionState = .loaded
+                HapticManager.shared.success()
+            } catch {
+                let message = ErrorMessageFormatter.userFriendlyMessage(for: error)
+                errorMessage = message
+                questionState = .failed(message)
+                showingError = true
+                HapticManager.shared.error()
+            }
+        }
+    }
+    
+    private func runDiagnosis() {
+        Task {
+            diagnosisState = .loading
+            errorMessage = nil
+            do {
+                diagnosisResponse = try await aiCoach.diagnosePlantIssues(symptoms: symptomDescription, for: plant)
+                diagnosisState = .loaded
+                HapticManager.shared.success()
+            } catch {
+                let message = ErrorMessageFormatter.userFriendlyMessage(for: error)
+                errorMessage = message
+                diagnosisState = .failed(message)
+                showingError = true
+                HapticManager.shared.error()
+            }
+        }
     }
     
     private func responseView(_ response: String) -> some View {

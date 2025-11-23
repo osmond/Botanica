@@ -4,8 +4,7 @@ import Foundation
 
 /// Manages local notifications for plant care reminders
 /// Handles scheduling, permissions, and notification content generation
-@MainActor
-class NotificationManager: ObservableObject {
+final class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
     
     @Published var authorizationStatus: UNAuthorizationStatus = .notDetermined

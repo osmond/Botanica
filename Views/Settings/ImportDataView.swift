@@ -14,30 +14,32 @@ struct ImportDataView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
-    @State private var isImporting = false
-    @State private var importCompleted = false
+    @State private var loadState: LoadState = .idle
     @State private var importError: String?
     @State private var result: DataImportResult?
     @State private var showFileImporter = false
 
     var body: some View {
         NavigationView {
-            VStack {
-                if isImporting {
-                    progressView
-                } else if importCompleted {
-                    completedView
-                } else {
-                    introView
+            LoadStateView(
+                state: loadState,
+                retry: { showPicker() },
+                loading: { progressView },
+                content: {
+                    if result != nil || importError != nil {
+                        completedView
+                    } else {
+                        introView
+                    }
                 }
-            }
+            )
             .navigationTitle("Import Data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { dismiss() }
                 }
-                if !isImporting && !importCompleted {
+                if loadState != .loading {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("Choose File") { showPicker() }
                             .fontWeight(.semibold)
@@ -56,7 +58,7 @@ struct ImportDataView: View {
                 startImport(url: url)
             case .failure(let error):
                 importError = error.localizedDescription
-                importCompleted = true
+                loadState = .failed(error.localizedDescription)
             }
         }
     }
@@ -168,8 +170,7 @@ struct ImportDataView: View {
     }
 
     private func startImport(url: URL) {
-        isImporting = true
-        importCompleted = false
+        loadState = .loading
         importError = nil
         result = nil
         HapticManager.shared.light()
@@ -179,15 +180,13 @@ struct ImportDataView: View {
                 let res = try DataImportService.shared.importAutoDetectingData(data, into: modelContext)
                 await MainActor.run {
                     self.result = res
-                    self.isImporting = false
-                    self.importCompleted = true
+                    self.loadState = .loaded
                     HapticManager.shared.success()
                 }
             } catch {
                 await MainActor.run {
                     self.importError = error.localizedDescription
-                    self.isImporting = false
-                    self.importCompleted = true
+                    self.loadState = .failed(error.localizedDescription)
                     HapticManager.shared.error()
                 }
             }

@@ -176,7 +176,7 @@ private extension PlantHealthVisionAnalyzer {
     }
     
     func createClassificationRequest() -> VNClassifyImageRequest {
-        let request = VNClassifyImageRequest { [weak self] request, error in
+        let request = VNClassifyImageRequest { request, error in
             if let error = error {
                 print("Classification error: \(error)")
                 return
@@ -195,7 +195,7 @@ private extension PlantHealthVisionAnalyzer {
     }
     
     func createObjectDetectionRequest() -> VNDetectRectanglesRequest {
-        let request = VNDetectRectanglesRequest { [weak self] request, error in
+        let request = VNDetectRectanglesRequest { request, error in
             if let error = error {
                 print("Object detection error: \(error)")
                 return
@@ -511,18 +511,6 @@ private extension PlantHealthVisionAnalyzer {
         growthAnalysis: GrowthPatternAnalysis,
         plant: Plant
     ) async throws -> AIHealthAssessment {
-        
-        // Create detailed description for AI analysis
-        let visualDescription = """
-        Plant Analysis Report:
-        - Leaf Color: \(visualFeatures.leafColor)
-        - Leaf Count: \(visualFeatures.leafCount)
-        - Plant Size: \(visualFeatures.plantSize.estimatedActualSize)
-        - Soil Condition: \(visualFeatures.soilVisibility.moistureLevel)
-        - Lighting: \(visualFeatures.lightingConditions.brightness)
-        - Detected Issues: \(healthIssues.map { $0.type.rawValue }.joined(separator: ", "))
-        - Growth Pattern: \(growthAnalysis.growthRate)
-        """
         
         // For now, synthesize a lightweight assessment based on visual features
         let insights = [

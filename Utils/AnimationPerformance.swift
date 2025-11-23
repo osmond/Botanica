@@ -142,7 +142,7 @@ struct OptimizedAnimation: ViewModifier {
                 performanceManager.optimizedAnimation(animation),
                 value: value
             )
-            .onChange(of: value) { _ in
+            .onChange(of: value) { _, _ in
                 handleAnimationChange()
             }
     }

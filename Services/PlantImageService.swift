@@ -16,43 +16,18 @@ struct PlantImageDescriptor: Sendable {
 final class PlantImageService {
     static let shared = PlantImageService()
     
-    private struct ImageRequest: Codable {
-        let model: String
-        let prompt: String
-        let size: String
-        let n: Int
-        let responseFormat: String
-        
-        enum CodingKeys: String, CodingKey {
-            case model
-            case prompt
-            case size
-            case n
-            case responseFormat = "response_format"
-        }
-    }
-    
-    private struct ImageResponse: Codable {
-        struct ImageData: Codable {
-            let b64_json: String?
-        }
-        
-        let data: [ImageData]
-    }
-    
     private let config = OpenAIConfig.shared
-    private let jsonEncoder = JSONEncoder()
-    private let jsonDecoder = JSONDecoder()
-    private let session: URLSession = {
-        let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 30
-        configuration.timeoutIntervalForResource = 60
-        return URLSession(configuration: configuration)
-    }()
-    
+    private let client = OpenAIClient()
     private let inMemoryCache = NSCache<NSString, UIImage>()
     
     private init() {}
+    
+    /// Clears both memory and disk caches for generated reference images.
+    func clearCache() {
+        inMemoryCache.removeAllObjects()
+        guard let dir = cacheDirectory() else { return }
+        try? FileManager.default.removeItem(at: dir)
+    }
     
     // MARK: - Public API
     
@@ -85,50 +60,8 @@ final class PlantImageService {
     // MARK: - Image Generation
     
     private func generateImage(for descriptor: PlantImageDescriptor) async throws -> UIImage {
-        guard let apiKey = config.apiKey, !apiKey.isEmpty else {
-            throw NSError(domain: "PlantImageService", code: 1, userInfo: [NSLocalizedDescriptionKey: "OpenAI API key not configured"])
-        }
-        
-        // Use the image generations endpoint with gpt-image-1
-        guard let url = URL(string: config.baseURL + "/images/generations") else {
-            throw NSError(domain: "PlantImageService", code: 2, userInfo: [NSLocalizedDescriptionKey: "Invalid images endpoint URL"])
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
         let prompt = buildPrompt(for: descriptor)
-        let body = ImageRequest(
-            model: "gpt-image-1",
-            prompt: prompt,
-            size: "1024x1024",
-            n: 1,
-            responseFormat: "b64_json"
-        )
-        
-        request.httpBody = try jsonEncoder.encode(body)
-        
-        let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            // Try to parse OpenAI-style error message if present, otherwise fail silently.
-            return try decodeImageOrThrow(data: data)
-        }
-        
-        return try decodeImageOrThrow(data: data)
-    }
-    
-    private func decodeImageOrThrow(data: Data) throws -> UIImage {
-        let response = try jsonDecoder.decode(ImageResponse.self, from: data)
-        guard let first = response.data.first,
-              let b64 = first.b64_json,
-              let imageData = Data(base64Encoded: b64),
-              let image = UIImage(data: imageData) else {
-            throw NSError(domain: "PlantImageService", code: 3, userInfo: [NSLocalizedDescriptionKey: "Failed to decode image response"])
-        }
-        return image
+        return try await client.generateImage(prompt: prompt, size: "1024x1024")
     }
     
     private func buildPrompt(for descriptor: PlantImageDescriptor) -> String {

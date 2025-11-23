@@ -21,8 +21,8 @@ struct ExportDataView: View {
     @State private var includeReminders = true
     @State private var includeCareHistory = true
     @State private var exportFormat: ExportFormat = .json
-    @State private var isExporting = false
-    @State private var exportCompleted = false
+    @State private var loadState: LoadState = .idle
+    @State private var exportFinished = false
     @State private var exportError: String?
     
     enum ExportFormat: String, CaseIterable {
@@ -39,15 +39,18 @@ struct ExportDataView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                if isExporting {
-                    exportingView
-                } else if exportCompleted {
-                    exportCompletedView
-                } else {
-                    exportOptionsView
+            LoadStateView(
+                state: loadState,
+                retry: { startExport() },
+                loading: { exportingView },
+                content: {
+                    if exportFinished {
+                        exportCompletedView
+                    } else {
+                        exportOptionsView
+                    }
                 }
-            }
+            )
             .navigationTitle("Export Data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -57,7 +60,7 @@ struct ExportDataView: View {
                     }
                 }
                 
-                if !isExporting && !exportCompleted {
+                if loadState != .loading && !exportFinished {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("Export") {
                             startExport()
@@ -286,7 +289,8 @@ struct ExportDataView: View {
                         dismiss()
                     } else {
                         exportError = nil
-                        exportCompleted = false
+                        exportFinished = false
+                        loadState = .idle
                     }
                 }
                 .font(BotanicaTheme.Typography.subheadline)
@@ -310,7 +314,9 @@ struct ExportDataView: View {
     }
     
     private func startExport() {
-        isExporting = true
+        loadState = .loading
+        exportFinished = false
+        exportError = nil
         HapticManager.shared.light()
         
         // Simulate export process with Task.sleep
@@ -324,15 +330,14 @@ struct ExportDataView: View {
     }
     
     private func completeExport() {
-        isExporting = false
-        
         // Simulate random success/failure for demo
         if Bool.random() {
-            exportCompleted = true
+            exportFinished = true
+            loadState = .loaded
             HapticManager.shared.success()
         } else {
             exportError = "Failed to create export file. Please try again."
-            exportCompleted = true
+            loadState = .failed(exportError ?? "Export failed")
             HapticManager.shared.error()
         }
     }

@@ -171,6 +171,11 @@ struct AISettingsView: View {
                         .foregroundColor(BotanicaTheme.Colors.textPrimary)
                         .tint(BotanicaTheme.Colors.primary)
                         .padding(.top, BotanicaTheme.Spacing.sm)
+                        .onChange(of: useAIReferenceImages) { _, enabled in
+                            if !enabled {
+                                PlantImageService.shared.clearCache()
+                            }
+                        }
                 }
                 if coachEnabled {
                     Section(header: Text("Coach Rules"), footer: Text("Coach runs locally by default. Disable specific rules to reduce suggestions.").font(BotanicaTheme.Typography.caption).foregroundColor(.secondary)) {

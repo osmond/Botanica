@@ -18,11 +18,11 @@ struct PlantIdentificationView: View {
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var showingCamera = false
     @State private var showingPhotoPicker = false
-    @State private var isIdentifying = false
     @State private var identificationResult: PlantIdentificationResult?
     @State private var errorMessage: String?
     @State private var showingError = false
     @State private var showingAISettings = false
+    @State private var loadState: LoadState = .idle
     
     // MARK: - Services
     @StateObject private var aiService = AIService.shared
@@ -41,13 +41,13 @@ struct PlantIdentificationView: View {
                     // Header
                     headerSection
                     
-                    // Error banner
-                    if let errorMessage = errorMessage {
-                        ErrorBanner(
-                            title: "Identification Failed",
-                            message: errorMessage,
-                            actionLabel: "Try Again"
-                        ) {
+                // Error banner
+                if let errorMessage = errorMessage, case .failed = loadState {
+                    ErrorBanner(
+                        title: "Identification Failed",
+                        message: errorMessage,
+                        actionLabel: "Try Again"
+                    ) {
                             identifyPlant()
                         }
                     }
@@ -181,7 +181,7 @@ struct PlantIdentificationView: View {
                             .stroke(BotanicaTheme.Colors.primary.opacity(0.2), lineWidth: 2)
                     )
                 
-                if isIdentifying {
+                if loadState == .loading {
                     HStack(spacing: BotanicaTheme.Spacing.sm) {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: BotanicaTheme.Colors.primary))
@@ -244,6 +244,7 @@ struct PlantIdentificationView: View {
                         selectedImage = nil
                         identificationResult = nil
                         errorMessage = nil
+                        loadState = .idle
                         showingCamera = true
                     }
                     .secondaryButtonStyle()
@@ -252,12 +253,13 @@ struct PlantIdentificationView: View {
                         selectedImage = nil
                         identificationResult = nil
                         errorMessage = nil
+                        loadState = .idle
                         showingPhotoPicker = true
                     }
                     .secondaryButtonStyle()
                 }
                 
-                if identificationResult == nil && !isIdentifying {
+                if identificationResult == nil && loadState != .loading {
                     Button("Identify Again") {
                         identifyPlant()
                     }
@@ -265,7 +267,7 @@ struct PlantIdentificationView: View {
                 }
             }
         }
-        .disabled(isIdentifying)
+        .disabled(loadState == .loading)
     }
     
     private func resultsSection(result: PlantIdentificationResult) -> some View {
@@ -369,20 +371,20 @@ struct PlantIdentificationView: View {
         guard let image = selectedImage else { return }
         
         Task {
-            isIdentifying = true
+            loadState = .loading
             errorMessage = nil // Clear previous errors
             
             do {
                 let result = try await aiService.identifyPlant(image: image)
                 await MainActor.run {
                     identificationResult = result
-                    isIdentifying = false
+                    loadState = .loaded
                 }
             } catch {
                 await MainActor.run {
                     errorMessage = ErrorMessageFormatter.userFriendlyMessage(for: error)
                     showingError = true
-                    isIdentifying = false
+                    loadState = .failed(errorMessage ?? "Unknown error")
                 }
             }
         }

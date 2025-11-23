@@ -15,6 +15,7 @@ import UIKit
 struct EditPlantView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var formViewModel = PlantFormViewModel()
     
     let plant: Plant
     
@@ -696,28 +697,35 @@ struct EditPlantView: View {
     }
     
     private func savePlant() {
-        plant.nickname = displayName
-        plant.scientificName = scientificName
-        plant.commonNames = commonNames.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-        plant.notes = notes
-        plant.location = location
-        plant.source = sourceDescription
-        plant.wateringFrequency = wateringFrequency
-        plant.fertilizingFrequency = fertilizingFrequency
-        plant.lightLevel = lightLevel
-        plant.humidityPreference = Int(humidityPreference)
-        plant.temperatureRange = TemperatureRange(min: Int(temperatureMin), max: Int(temperatureMax))
-        plant.healthStatus = healthStatus
-        plant.recommendedWaterAmount = recommendedWaterAmount
-        plant.waterUnit = waterUnit
-        plant.potSize = potSizeInches
-        plant.potHeight = potHeightInches == 0 ? nil : potHeightInches
-        plant.potMaterial = potMaterial
-        plant.lastWatered = hasBeenWatered ? lastWatered : nil
-        plant.lastFertilized = hasBeenFertilized ? lastFertilized : nil
+        let parsedCommonNames = commonNames.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        let data = PlantFormData(
+            nickname: displayName,
+            scientificName: scientificName,
+            family: plant.family,
+            commonNames: parsedCommonNames,
+            potSize: potSizeInches,
+            potHeight: potHeightInches == 0 ? nil : potHeightInches,
+            potMaterial: potMaterial,
+            growthHabit: plant.growthHabit,
+            matureSize: plant.matureSize,
+            lightLevel: lightLevel,
+            wateringFrequency: wateringFrequency,
+            fertilizingFrequency: fertilizingFrequency,
+            humidityPreference: Int(humidityPreference),
+            temperatureRange: TemperatureRange(min: Int(temperatureMin), max: Int(temperatureMax)),
+            recommendedWaterAmount: recommendedWaterAmount,
+            waterUnit: waterUnit,
+            source: sourceDescription,
+            location: location,
+            healthStatus: healthStatus,
+            notes: notes,
+            lastWatered: hasBeenWatered ? lastWatered : nil,
+            lastFertilized: hasBeenFertilized ? lastFertilized : nil,
+            photosData: []
+        )
         
         do {
-            try modelContext.save()
+            try formViewModel.update(plant, with: data, in: modelContext)
             HapticManager.shared.success()
             dismiss()
         } catch {

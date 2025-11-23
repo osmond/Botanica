@@ -14,34 +14,48 @@ struct PlantHealthVisionView: View {
     @State private var quickScreenResult: QuickHealthScreen?
     @State private var showingDetailedAnalysis = false
     @State private var analysisHistory: [PlantHealthAnalysis] = []
+    @State private var loadState: LoadState = .idle
+    @State private var errorMessage: String?
+    
+    private var isFailed: Bool {
+        if case .failed = loadState { return true }
+        return false
+    }
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                LazyVStack(spacing: BotanicaTheme.Spacing.lg) {
-                    // Image Selection Section
-                    imageSelectionSection
-                    
-                    // Quick Health Screen
-                    if let quickResult = quickScreenResult {
-                        quickHealthSection(quickResult)
+            LoadStateView(
+                state: loadState,
+                retry: { retryAnalysis() },
+                loading: { analyzingView },
+                content: {
+                    ScrollView {
+                        LazyVStack(spacing: BotanicaTheme.Spacing.lg) {
+                            // Image Selection Section
+                            imageSelectionSection
+                            
+                            // Quick Health Screen
+                            if let quickResult = quickScreenResult {
+                                quickHealthSection(quickResult)
+                            }
+                            
+                            // Detailed Analysis
+                            if let analysis = currentAnalysis {
+                                detailedAnalysisSection(analysis)
+                            }
+                            
+                            // Analysis History
+                            if !analysisHistory.isEmpty {
+                                historySection
+                            }
+                            
+                            // Instructions and Tips
+                            tipsSection
+                        }
+                        .padding(BotanicaTheme.Spacing.md)
                     }
-                    
-                    // Detailed Analysis
-                    if let analysis = currentAnalysis {
-                        detailedAnalysisSection(analysis)
-                    }
-                    
-                    // Analysis History
-                    if !analysisHistory.isEmpty {
-                        historySection
-                    }
-                    
-                    // Instructions and Tips
-                    tipsSection
                 }
-                .padding(BotanicaTheme.Spacing.md)
-            }
+            )
             .navigationTitle("Health Analysis")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
@@ -69,6 +83,15 @@ struct PlantHealthVisionView: View {
                     DetailedAnalysisView(analysis: analysis)
                 }
             }
+            .alert("Analysis Failed", isPresented: Binding(
+                get: { isFailed },
+                set: { _ in loadState = .idle }
+            )) {
+                Button("Retry") { retryAnalysis() }
+                Button("Cancel", role: .cancel) { loadState = .idle }
+            } message: {
+                Text(errorMessage ?? "Something went wrong.")
+            }
             .onChange(of: selectedImage) { _, newImage in
                 if let image = newImage {
                     Task {
@@ -79,6 +102,7 @@ struct PlantHealthVisionView: View {
         }
         .onAppear {
             analysisHistory = visionAnalyzer.analysisHistory
+            loadState = .loaded
         }
     }
     
@@ -384,21 +408,46 @@ struct PlantHealthVisionView: View {
     
     private func performQuickAnalysis(_ image: UIImage) async {
         do {
+            loadState = .loading
             let result = try await visionAnalyzer.quickHealthScreen(image: image)
             quickScreenResult = result
+            loadState = .loaded
         } catch {
-            print("Quick analysis error: \(error)")
+            errorMessage = error.localizedDescription
+            loadState = .failed(error.localizedDescription)
         }
     }
     
     private func performFullAnalysis(_ image: UIImage) async {
         do {
+            loadState = .loading
             let analysis = try await visionAnalyzer.analyzeHealthFromPhoto(image: image, plant: plant)
             currentAnalysis = analysis
             analysisHistory = visionAnalyzer.analysisHistory
+            loadState = .loaded
         } catch {
-            print("Full analysis error: \(error)")
+            errorMessage = error.localizedDescription
+            loadState = .failed(error.localizedDescription)
         }
+    }
+    
+    private func retryAnalysis() {
+        if let image = selectedImage {
+            Task { await performQuickAnalysis(image) }
+        } else {
+            showingImagePicker = true
+        }
+    }
+    
+    private var analyzingView: some View {
+        VStack(spacing: BotanicaTheme.Spacing.md) {
+            ProgressView("Analyzing plant…")
+                .progressViewStyle(.circular)
+            Text("Running health checks on your photo")
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func healthScoreColor(_ score: Double) -> Color {

@@ -1,0 +1,219 @@
+import SwiftUI
+
+/// Compact subviews extracted from MyPlantsView to simplify the main file.
+struct CollectionInsightsHeaderView: View {
+    let plantsCount: Int
+    let collectionHealthPercentage: Int
+    let todaysCareCount: Int
+    let insight: String
+    let actionText: String?
+    let action: (() -> Void)?
+    
+    var body: some View {
+        VStack(spacing: BotanicaTheme.Spacing.lg) {
+            HStack(spacing: BotanicaTheme.Spacing.lg) {
+                ModernStatCard(
+                    title: "Plants",
+                    value: "\(plantsCount)",
+                    icon: "leaf.fill",
+                    color: BotanicaTheme.Colors.leafGreen
+                )
+                
+                ModernStatCard(
+                    title: "Healthy",
+                    value: "\(collectionHealthPercentage)%",
+                    icon: "heart.fill",
+                    color: BotanicaTheme.Colors.success
+                )
+                
+                ModernStatCard(
+                    title: "Care Today",
+                    value: "\(todaysCareCount)",
+                    icon: "drop.fill",
+                    color: todaysCareCount > 0 ? BotanicaTheme.Colors.waterBlue : BotanicaTheme.Colors.textTertiary
+                )
+            }
+            
+            if let actionText = actionText, let action = action {
+                ModernInsightCard(
+                    insight: insight,
+                    actionText: actionText,
+                    action: action
+                )
+            } else {
+                ModernInsightCard(
+                    insight: insight,
+                    actionText: nil,
+                    action: nil
+                )
+            }
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.lg)
+    }
+}
+
+struct CareRemindersSectionView: View {
+    let urgentPlants: [Plant]
+    let onViewAll: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+            HStack {
+                Label("Care Reminders", systemImage: "bell.fill")
+                    .font(BotanicaTheme.Typography.headline)
+                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                
+                Spacer()
+                
+                Button("View All") {
+                    onViewAll()
+                }
+                .font(BotanicaTheme.Typography.callout)
+                .foregroundStyle(BotanicaTheme.Colors.primary)
+            }
+            
+            let urgentTop3 = Array(urgentPlants.prefix(3))
+            LazyVStack(spacing: BotanicaTheme.Spacing.sm) {
+                ForEach(urgentTop3, id: \.id) { plant in
+                    PlantCareReminderRow(plant: plant)
+                }
+            }
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.lg)
+    }
+}
+
+struct QuickFiltersView: View {
+    @Binding var filterBy: HealthStatus?
+    @Binding var careNeededFilter: CareNeededFilter?
+    @Binding var sortBy: SortOption
+    let plantsCount: Int
+    let needsWaterCount: Int
+    let healthyPlantCount: Int
+    let weeklyAddedCount: Int
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                QuickFilterPill(
+                    title: "All Plants",
+                    count: plantsCount,
+                    isSelected: filterBy == nil && careNeededFilter == nil,
+                    action: { filterBy = nil; careNeededFilter = nil }
+                )
+                
+                QuickFilterPill(
+                    title: "Need Water",
+                    count: needsWaterCount,
+                    isSelected: careNeededFilter == .needsWatering,
+                    action: { careNeededFilter = careNeededFilter == .needsWatering ? nil : .needsWatering }
+                )
+                
+                QuickFilterPill(
+                    title: "Healthy",
+                    count: healthyPlantCount,
+                    isSelected: filterBy == .healthy,
+                    action: { filterBy = filterBy == .healthy ? nil : .healthy }
+                )
+                
+                QuickFilterPill(
+                    title: "New",
+                    count: weeklyAddedCount,
+                    isSelected: sortBy == .dateAdded,
+                    action: { sortBy = .dateAdded }
+                )
+            }
+            .padding(.horizontal, BotanicaTheme.Spacing.lg)
+        }
+    }
+}
+
+struct ModernEmptyStateView: View {
+    let onAdd: () -> Void
+    
+    var body: some View {
+        VStack(spacing: BotanicaTheme.Spacing.xxl) {
+            Spacer()
+            
+            VStack(spacing: BotanicaTheme.Spacing.xl) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    BotanicaTheme.Colors.leafGreen.opacity(0.15),
+                                    BotanicaTheme.Colors.primary.opacity(0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 160, height: 160)
+                    
+                    VStack(spacing: BotanicaTheme.Spacing.sm) {
+                        Image(systemName: "leaf.fill")
+                            .font(.system(size: 40, weight: .light))
+                            .foregroundStyle(BotanicaTheme.Colors.primary)
+                            .breatheRepeating()
+                        
+                        Text("🌱")
+                            .font(.system(size: 24))
+                    }
+                }
+                
+                VStack(spacing: BotanicaTheme.Spacing.lg) {
+                    Text("Start Your Plant Journey")
+                        .font(BotanicaTheme.Typography.title1)
+                        .fontWeight(.bold)
+                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                    
+                    Text("Transform your space into a thriving garden. Track care schedules, monitor plant health, and watch your green family grow.")
+                        .font(BotanicaTheme.Typography.body)
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, BotanicaTheme.Spacing.xl)
+                }
+                
+                Button {
+                    onAdd()
+                } label: {
+                    HStack(spacing: BotanicaTheme.Spacing.md) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                        Text("Add Your First Plant")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, BotanicaTheme.Spacing.xl)
+                    .padding(.vertical, BotanicaTheme.Spacing.lg)
+                    .background(
+                        RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.xlarge)
+                            .fill(BotanicaTheme.Colors.primary)
+                    )
+                }
+                .scaleEffect(1.0)
+            }
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .padding(BotanicaTheme.Spacing.xl)
+    }
+}
+
+struct PlantsMainContentView: View {
+    let groups: [PlantGroup]
+    let viewMode: ViewMode
+    
+    var body: some View {
+        VStack(spacing: BotanicaTheme.Spacing.xl) {
+            ForEach(groups, id: \.id) { group in
+                ModernPlantSection(
+                    group: group,
+                    viewMode: viewMode
+                )
+            }
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.lg)
+    }
+}

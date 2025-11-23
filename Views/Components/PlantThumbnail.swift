@@ -15,6 +15,7 @@ struct AsyncPlantThumbnail: View {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
+                    .accessibilityLabel(plant?.displayName ?? "Plant photo")
             } else {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(BotanicaTheme.Colors.leafGreen.opacity(0.2))
@@ -22,6 +23,7 @@ struct AsyncPlantThumbnail: View {
                         Image(systemName: "leaf.fill")
                             .foregroundColor(BotanicaTheme.Colors.leafGreen)
                     }
+                    .accessibilityHidden(true)
             }
         }
         .frame(width: size, height: size)
@@ -72,6 +74,7 @@ struct AsyncPlantImageFill: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                    .accessibilityLabel(plant?.displayName ?? "Plant photo")
             } else {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(BotanicaTheme.Colors.leafGreen.opacity(0.08))
@@ -80,6 +83,7 @@ struct AsyncPlantImageFill: View {
                             .foregroundColor(BotanicaTheme.Colors.leafGreen)
                             .opacity(0.6)
                     }
+                    .accessibilityHidden(true)
             }
         }
         .task(id: photo?.id ?? plant?.id) {

@@ -77,6 +77,7 @@ struct RangeSlider: View {
 struct AddPlantView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @StateObject private var formViewModel = PlantFormViewModel()
     
     // MARK: - AI Integration
     private let prefilledData: PlantIdentificationResult?
@@ -946,13 +947,14 @@ struct AddPlantView: View {
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty }
             
-            // Create the plant
-            let plant = Plant(
-                scientificName: scientificName.trimmingCharacters(in: .whitespacesAndNewlines),
+            let formData = PlantFormData(
                 nickname: nickname.trimmingCharacters(in: .whitespacesAndNewlines),
+                scientificName: scientificName.trimmingCharacters(in: .whitespacesAndNewlines),
                 family: family.trimmingCharacters(in: .whitespacesAndNewlines),
                 commonNames: parsedCommonNames,
                 potSize: Int(potSizeValue),
+                potHeight: nil,
+                potMaterial: nil,
                 growthHabit: selectedGrowthHabit,
                 matureSize: matureSize.trimmingCharacters(in: .whitespacesAndNewlines),
                 lightLevel: selectedLightLevel,
@@ -967,27 +969,11 @@ struct AddPlantView: View {
                 healthStatus: selectedHealthStatus,
                 notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
                 lastWatered: hasBeenWatered ? lastWatered : nil,
-                lastFertilized: hasBeenFertilized ? lastFertilized : nil
+                lastFertilized: hasBeenFertilized ? lastFertilized : nil,
+                photosData: photoData
             )
             
-            // Add plant to context
-            modelContext.insert(plant)
-            
-            // Create and save photos
-            for (index, data) in photoData.enumerated() {
-                let photo = Photo(
-                    imageData: data,
-                    caption: index == 0 ? "Main photo" : "",
-                    isPrimary: index == 0
-                )
-                photo.plant = plant
-                modelContext.insert(photo)
-            }
-            
-            // Save the context
-            try modelContext.save()
-            
-            // Success feedback
+            _ = try formViewModel.saveNewPlant(formData, in: modelContext)
             HapticManager.shared.success()
             dismiss()
             

@@ -5,22 +5,16 @@ import SwiftData
 
 /// Main tab view container for the Botanica app
 /// Provides navigation between My Plants, Analytics, and Settings sections
+@MainActor
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var plants: [Plant]
     
-    @State private var selectedTab: Tab = .plants
-    @State private var showingPlantIdentification = false
-    @State private var showingAddPlant = false
-    @State private var showingManualAdd = false
-    @State private var showingAddPlantWithAI = false
+    @StateObject private var coordinator = MainTabCoordinator(notificationService: AppServices.shared.notifications)
     @State private var fabPressed = false
-    @State private var aiIdentificationResult: PlantIdentificationResult?
-    @State private var aiCapturedImage: UIImage?
-    @State private var hasSetupNotifications = false
     
     var body: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $coordinator.selectedTab) {
             MyPlantsView()
                 .tabItem {
                     Label("My Plants", systemImage: "leaf.fill")
@@ -50,17 +44,17 @@ struct MainTabView: View {
             UITabBar.appearance().scrollEdgeAppearance = appearance
             
             // Setup notifications for all plants
-            setupNotificationsForAllPlants()
+            coordinator.scheduleNotificationsIfNeeded(plants: plants)
         }
         .onChange(of: plants.count) { _, _ in
             // Reschedule notifications when plants are added/removed
-            setupNotificationsForAllPlants()
+            coordinator.refreshNotifications(plants: plants)
         }
         .overlay(alignment: .bottomTrailing) {
             // Floating Action Button
             Button {
                 HapticManager.shared.medium()
-                showingAddPlant = true
+                coordinator.handleAddButtonTap()
             } label: {
                 Image(systemName: "plus")
                     .font(.title2)
@@ -85,46 +79,29 @@ struct MainTabView: View {
             .padding(.trailing, BotanicaTheme.Spacing.lg)
             .padding(.bottom, 100) // Account for tab bar
         }
-        .sheet(isPresented: $showingPlantIdentification) {
+        .sheet(isPresented: $coordinator.showingPlantIdentification) {
             InlinePlantIdentificationView { result, image in
-                // When AI identification completes, open AddPlantView with pre-filled data
                 print("🔄 MainTabView: AI identification completed for \(result.commonName), preparing AddPlantView with AI data")
-                
-                // Set the data immediately
-                aiIdentificationResult = result
-                aiCapturedImage = image
-                
-                // Close the identification sheet and show the add plant sheet
-                showingPlantIdentification = false
-                
-                // Show the AddPlant sheet after a brief delay to allow the first sheet to close
-                Task {
-                    try? await Task.sleep(for: .milliseconds(300))
-                    await MainActor.run {
-                        showingAddPlantWithAI = true
-                        print("🔄 MainTabView: Now showing AddPlantView sheet with prefilled data")
-                    }
-                }
+                coordinator.handleIdentificationCompletion(result: result, image: image)
             }
         }
-        .sheet(isPresented: $showingManualAdd) {
+        .sheet(isPresented: $coordinator.showingManualAdd) {
             AddPlantView()
         }
-        .sheet(isPresented: $showingAddPlantWithAI) {
+        .sheet(isPresented: $coordinator.showingAddPlantWithAI) {
             AddPlantView(
-                prefilledData: aiIdentificationResult,
-                prefilledImage: aiCapturedImage
+                prefilledData: coordinator.aiIdentificationResult,
+                prefilledImage: coordinator.aiCapturedImage
             )
         }
-        .onChange(of: showingAddPlantWithAI) { _, isShowing in
+        .onChange(of: coordinator.showingAddPlantWithAI) { _, isShowing in
             // Clear AI data when the sheet is dismissed to prevent stale data
             if !isShowing {
                 print("🔄 MainTabView: AddPlantView sheet dismissed, clearing AI data")
-                aiIdentificationResult = nil
-                aiCapturedImage = nil
+                coordinator.clearAIState()
             }
         }
-        .sheet(isPresented: $showingAddPlant) {
+        .sheet(isPresented: $coordinator.showingAddPlant) {
             NavigationView {
                 VStack(spacing: BotanicaTheme.Spacing.xl) {
                     Text("Add New Plant")
@@ -133,13 +110,7 @@ struct MainTabView: View {
                     
                     VStack(spacing: BotanicaTheme.Spacing.lg) {
                         Button(action: {
-                            showingAddPlant = false
-                            Task {
-                                try? await Task.sleep(for: .milliseconds(100))
-                                await MainActor.run {
-                                    showingPlantIdentification = true
-                                }
-                            }
+                            coordinator.handleAIAddSelection()
                             HapticManager.shared.light()
                         }) {
                             HStack(spacing: BotanicaTheme.Spacing.sm) {
@@ -152,13 +123,7 @@ struct MainTabView: View {
                         .primaryButtonStyle()
                         
                         Button(action: {
-                            showingAddPlant = false
-                            Task {
-                                try? await Task.sleep(for: .milliseconds(100))
-                                await MainActor.run {
-                                    showingManualAdd = true
-                                }
-                            }
+                            coordinator.handleManualAddSelection()
                             HapticManager.shared.light()
                         }) {
                             HStack(spacing: BotanicaTheme.Spacing.sm) {
@@ -179,7 +144,7 @@ struct MainTabView: View {
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("Cancel") {
-                            showingAddPlant = false
+                            coordinator.showingAddPlant = false
                         }
                         .foregroundColor(BotanicaTheme.Colors.primary)
                     }
@@ -243,27 +208,6 @@ struct InlineCameraView: UIViewControllerRepresentable {
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             parent.dismiss()
-        }
-    }
-}
-
-// MARK: - Notification Setup Extension
-
-extension MainTabView {
-    /// Setup notifications for all plants in the app
-    private func setupNotificationsForAllPlants() {
-        // Only setup once per app launch, unless explicitly requested
-        guard !hasSetupNotifications else { return }
-        hasSetupNotifications = true
-        
-        Task {
-            // Request permission if not already determined
-            if NotificationManager.shared.authorizationStatus == .notDetermined {
-                let _ = await NotificationManager.shared.requestNotificationPermission()
-            }
-            
-            // Schedule notifications for all plants
-            await NotificationManager.shared.scheduleNotificationsForAllPlants(plants)
         }
     }
 }
@@ -983,14 +927,16 @@ private struct InlinePlantIdentificationView: View {
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var showingCamera = false
     @State private var showingPhotoPicker = false
-    @State private var isIdentifying = false
     @State private var identificationResult: PlantIdentificationResult?
     @State private var errorMessage: String?
     @State private var showingError = false
     @State private var showingAISettings = false
+    @State private var loadState: LoadState = .loaded
     
     // MARK: - Services
     @StateObject private var aiService = AIService.shared
+    
+    private var isIdentifying: Bool { loadState == .loading }
     
     // MARK: - Completion Handler
     let onPlantIdentified: ((PlantIdentificationResult, UIImage) -> Void)?
@@ -1001,39 +947,46 @@ private struct InlinePlantIdentificationView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: BotanicaTheme.Spacing.lg) {
-                        // Header section
-                        headerSection
-                        
-                        // Image capture/display section  
-                        imageSection
-                        
-                        // Results section
-                        if let result = identificationResult {
-                            resultsSection(result: result)
+            LoadStateView(
+                state: loadState,
+                retry: { retryIdentification() },
+                loading: { identifyingView },
+                content: {
+                    VStack(spacing: 0) {
+                        ScrollView {
+                            VStack(spacing: BotanicaTheme.Spacing.lg) {
+                                // Header section
+                                headerSection
+                                
+                                // Image capture/display section
+                                imageSection
+                                
+                                // Results section
+                                if let result = identificationResult {
+                                    resultsSection(result: result)
+                                }
+                                
+                                // Add some bottom padding for better scrolling
+                                Color.clear.frame(height: 100)
+                            }
+                            .padding(.horizontal, BotanicaTheme.Spacing.lg)
+                            .padding(.top, BotanicaTheme.Spacing.md)
                         }
                         
-                        // Add some bottom padding for better scrolling
-                        Color.clear.frame(height: 100)
-                    }
-                    .padding(.horizontal, BotanicaTheme.Spacing.lg)
-                    .padding(.top, BotanicaTheme.Spacing.md)
-                }
-                
                 // Fixed bottom action buttons
                 if selectedImage == nil || identificationResult == nil {
                     VStack(spacing: 0) {
                         Divider()
                         
                         actionButtonsSection
-                            .padding(.horizontal, BotanicaTheme.Spacing.lg)
-                            .padding(.vertical, BotanicaTheme.Spacing.md)
-                            .background(Color(UIColor.systemBackground))
+                                    .padding(.horizontal, BotanicaTheme.Spacing.lg)
+                                    .padding(.vertical, BotanicaTheme.Spacing.md)
+                                    .background(Color(UIColor.systemBackground))
+                            }
+                        }
                     }
                 }
-            }
+            )
             .navigationTitle("Plant Identification")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
@@ -1075,23 +1028,6 @@ private struct InlinePlantIdentificationView: View {
                     identifyPlant()
                 }
             }
-        }
-        .alert("Plant Identification Failed", isPresented: $showingError) {
-            if let errorMessage = errorMessage, errorMessage.contains("API key") || errorMessage.contains("not configured") {
-                Button("Configure API Key") {
-                    showingAISettings = true
-                }
-                Button("Cancel", role: .cancel) { }
-            } else {
-                Button("Try Again") {
-                    if selectedImage != nil {
-                        identifyPlant()
-                    }
-                }
-                Button("Cancel", role: .cancel) { }
-            }
-        } message: {
-            Text(errorMessage ?? "An unknown error occurred")
         }
         .sheet(isPresented: $showingAISettings) {
             NavigationStack {
@@ -1390,22 +1326,43 @@ private struct InlinePlantIdentificationView: View {
         guard let image = selectedImage else { return }
         
         Task {
-            isIdentifying = true
+            loadState = .loading
             
             do {
                 let result = try await aiService.identifyPlant(image: image)
                 await MainActor.run {
                     identificationResult = result
-                    isIdentifying = false
+                    loadState = .loaded
                 }
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
-                    showingError = true
-                    isIdentifying = false
+                    loadState = .failed(error.localizedDescription)
+                    if error.localizedDescription.lowercased().contains("api key") {
+                        showingAISettings = true
+                    }
                 }
             }
         }
+    }
+    
+    private func retryIdentification() {
+        if selectedImage != nil {
+            identifyPlant()
+        } else {
+            showingPhotoPicker = true
+        }
+    }
+    
+    private var identifyingView: some View {
+        VStack(spacing: BotanicaTheme.Spacing.md) {
+            ProgressView("Identifying plant…")
+                .progressViewStyle(.circular)
+            Text("Analyzing your photo and matching species")
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

@@ -9,12 +9,13 @@ struct AICoachView: View {
     @StateObject private var coach = AIPlantCoach()
     @State private var currentQuestion = ""
     @State private var aiResponse = ""
-    @State private var isLoadingResponse = false
+    @State private var chatLoadState: LoadState = .idle
     @State private var conversationHistory: [ConversationMessage] = []
     @State private var selectedQuickQuestion: String? = nil
     @State private var showingHealthDiagnosis = false
     @State private var healthDiagnosisResult: String = ""
     @State private var isAnalyzingHealth = false
+    @State private var lastQuestion: String?
     
     // Pre-defined quick questions for common plant care concerns
     private let quickQuestions = [
@@ -64,25 +65,12 @@ struct AICoachView: View {
     private var headerSection: some View {
         VStack(spacing: BotanicaTheme.Spacing.md) {
             HStack(spacing: BotanicaTheme.Spacing.md) {
-                // Plant image or placeholder
-                Group {
-                    if let primaryPhoto = plant.primaryPhoto,
-                       let uiImage = UIImage(data: primaryPhoto.imageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } else {
-                        RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                            .fill(BotanicaTheme.Gradients.primary)
-                            .overlay {
-                                Image(systemName: "leaf.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.white.opacity(0.8))
-                            }
-                    }
-                }
-                .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
+                AsyncPlantThumbnail(
+                    photo: plant.primaryPhoto,
+                    plant: plant,
+                    size: 60,
+                    cornerRadius: BotanicaTheme.CornerRadius.medium
+                )
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(plant.displayName)
@@ -213,27 +201,12 @@ struct AICoachView: View {
     // MARK: - Conversation Section
     
     private var conversationSection: some View {
-        ScrollView {
-            LazyVStack(spacing: BotanicaTheme.Spacing.md) {
-                ForEach(conversationHistory) { message in
-                    ConversationBubbleView(message: message)
-                }
-                
-                if isLoadingResponse {
-                    HStack {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: BotanicaTheme.Colors.primary))
-                            .scaleEffect(0.8)
-                        Text("Thinking...")
-                            .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                    }
-                    .padding(.horizontal, BotanicaTheme.Spacing.lg)
-                }
-            }
-            .padding(.vertical, BotanicaTheme.Spacing.md)
-        }
+        LoadStateView(
+            state: chatLoadState,
+            retry: { retryLastQuestion() },
+            loading: { conversationView(showThinking: true) },
+            content: { conversationView(showThinking: false) }
+        )
     }
     
     // MARK: - Input Section
@@ -259,10 +232,10 @@ struct AICoachView: View {
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
                         .font(.title2)
-                        .foregroundColor(currentQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 
-                                       .secondary : BotanicaTheme.Colors.primary)
+                    .foregroundColor(currentQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 
+                                   .secondary : BotanicaTheme.Colors.primary)
                 }
-                .disabled(currentQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoadingResponse)
+                .disabled(currentQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || chatLoadState == .loading)
             }
             .padding(BotanicaTheme.Spacing.lg)
             .background(.regularMaterial)
@@ -272,6 +245,7 @@ struct AICoachView: View {
     // MARK: - Helper Methods
     
     private func askQuestion(_ question: String) {
+        lastQuestion = question
         let userMessage = ConversationMessage(
             id: UUID(),
             content: question,
@@ -282,7 +256,7 @@ struct AICoachView: View {
         conversationHistory.append(userMessage)
         selectedQuickQuestion = question
         currentQuestion = ""
-        isLoadingResponse = true
+        chatLoadState = .loading
         
         Task {
             do {
@@ -300,7 +274,7 @@ struct AICoachView: View {
                 
                 await MainActor.run {
                     conversationHistory.append(aiMessage)
-                    isLoadingResponse = false
+                    chatLoadState = .loaded
                     selectedQuickQuestion = nil
                 }
             } catch {
@@ -312,8 +286,38 @@ struct AICoachView: View {
                         timestamp: Date()
                     )
                     conversationHistory.append(errorMessage)
-                    isLoadingResponse = false
+                    chatLoadState = .failed(error.localizedDescription)
                     selectedQuickQuestion = nil
+                }
+            }
+        }
+    }
+    
+    private func retryLastQuestion() {
+        guard let lastQuestion else { return }
+        chatLoadState = .loading
+        
+        Task {
+            do {
+                let response = try await coach.askCareQuestion(
+                    lastQuestion,
+                    about: plant
+                )
+                
+                let aiMessage = ConversationMessage(
+                    id: UUID(),
+                    content: response,
+                    isFromUser: false,
+                    timestamp: Date()
+                )
+                
+                await MainActor.run {
+                    conversationHistory.append(aiMessage)
+                    chatLoadState = .loaded
+                }
+            } catch {
+                await MainActor.run {
+                    chatLoadState = .failed(error.localizedDescription)
                 }
             }
         }
@@ -336,6 +340,33 @@ struct AICoachView: View {
                     isAnalyzingHealth = false
                 }
             }
+        }
+    }
+
+    // MARK: - Conversation Builder
+    
+    @ViewBuilder
+    private func conversationView(showThinking: Bool) -> some View {
+        ScrollView {
+            LazyVStack(spacing: BotanicaTheme.Spacing.md) {
+                ForEach(conversationHistory) { message in
+                    ConversationBubbleView(message: message)
+                }
+                
+                if showThinking {
+                    HStack {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: BotanicaTheme.Colors.primary))
+                            .scaleEffect(0.8)
+                        Text("Thinking...")
+                            .font(BotanicaTheme.Typography.callout)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal, BotanicaTheme.Spacing.lg)
+                }
+            }
+            .padding(.vertical, BotanicaTheme.Spacing.md)
         }
     }
 }

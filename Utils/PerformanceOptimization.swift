@@ -115,15 +115,9 @@ class ImageCache: ObservableObject {
                 height: image.size.height * scale
             )
             
-            // Resize image on background thread with weak self to prevent retain cycles
+            // Resize image on a background thread without capturing self
             return await withCheckedContinuation { continuation in
-                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                    // Check if self still exists
-                    guard self != nil else {
-                        continuation.resume(returning: image)
-                        return
-                    }
-                    
+                DispatchQueue.global(qos: .userInitiated).async {
                     UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
                     image.draw(in: CGRect(origin: .zero, size: newSize))
                     let resizedImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
