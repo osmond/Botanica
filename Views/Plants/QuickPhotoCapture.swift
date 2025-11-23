@@ -162,6 +162,8 @@ struct QuickPhotoCapture: View {
                     .cornerRadius(BotanicaTheme.CornerRadius.medium)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(selectedPlant?.displayName ?? "Choose Plant")
+                .accessibilityHint("Select which plant this photo belongs to")
             }
             
             // Photo capture
