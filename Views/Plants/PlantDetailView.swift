@@ -519,11 +519,7 @@ struct PlantDetailView: View {
                 .padding(.top, BotanicaTheme.Spacing.sm)
             }
         }
-        .padding(BotanicaTheme.Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
+        .cardStyle()
     }
     
     private var careHistoryCard: some View {
@@ -572,11 +568,10 @@ struct PlantDetailView: View {
                 }
             }
         }
-        .padding(BotanicaTheme.Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
+        .cardStyle()
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Care history")
+        .accessibilityHint("Recent care events and history actions")
     }
     
     // MARK: - Helper Functions
