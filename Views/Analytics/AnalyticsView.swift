@@ -105,6 +105,10 @@ struct AnalyticsView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: BotanicaTheme.Spacing.lg) {
+                                Text("Plant Analytics")
+                                    .font(BotanicaTheme.Typography.title1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
                                 // Hero Section with Collection Health Score
                                 collectionHealthHero
                                 
@@ -142,11 +146,12 @@ struct AnalyticsView: View {
                         .safeAreaInset(edge: .bottom) {
                             Color.clear.frame(height: 120)
                         }
+                        .scrollIndicators(.hidden)
                     }
                 }
             )
             .navigationTitle("Plant Analytics")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingSeasonalGuidance) {
                 SeasonalCareGuidanceView()
             }
@@ -172,24 +177,23 @@ struct AnalyticsView: View {
     
     private var collectionHealthHero: some View {
         VStack(spacing: BotanicaTheme.Spacing.lg) {
-            HStack {
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text("Collection Health Score")
                         .font(BotanicaTheme.Typography.title3)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     
                     Text("\(String(format: "%.0f", collectionHealthScore))")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundColor(healthScoreColor)
+                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .foregroundStyle(healthScoreColor)
                     
                     Text(collectionHealthGrade)
                         .font(BotanicaTheme.Typography.callout)
                         .fontWeight(.semibold)
-                        .foregroundColor(healthScoreColor)
+                        .foregroundStyle(healthScoreColor)
                 }
                 
-                Spacer()
+                Spacer(minLength: BotanicaTheme.Spacing.md)
                 
                 VStack(spacing: BotanicaTheme.Spacing.sm) {
                     Circle()
@@ -204,7 +208,7 @@ struct AnalyticsView: View {
                     
                     Text("\(plants.count) Plants")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
             
@@ -231,7 +235,8 @@ struct AnalyticsView: View {
                 )
             }
         }
-        .cardStyle()
+        .padding(BotanicaTheme.Spacing.lg)
+        .heroCardStyle()
     }
     
     private var modernTimeRangeSelector: some View {

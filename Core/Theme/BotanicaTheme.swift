@@ -372,7 +372,7 @@ extension View {
         self
             .background(
                 RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                    .fill(BotanicaTheme.Colors.cardBackground)
+                    .fill(BotanicaTheme.Gradients.card)
                     .shadow(
                         color: BotanicaTheme.Shadows.hero,
                         radius: BotanicaTheme.Shadows.heroRadius,
