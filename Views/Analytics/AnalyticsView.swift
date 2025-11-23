@@ -43,6 +43,14 @@ enum UIHealthTrend {
         case .declining: return BotanicaTheme.Colors.warning
         }
     }
+    
+    var accessibilityDescription: String {
+        switch self {
+        case .improving: return "improving"
+        case .stable: return "stable"
+        case .declining: return "declining"
+        }
+    }
 }
 
 /// Advanced Analytics view providing botanical insights, plant care optimization,
@@ -96,7 +104,7 @@ struct AnalyticsView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         ScrollView {
-                            LazyVStack(spacing: BotanicaTheme.Spacing.xl) {
+                            LazyVStack(spacing: BotanicaTheme.Spacing.lg) {
                                 // Hero Section with Collection Health Score
                                 collectionHealthHero
                                 
@@ -128,7 +136,11 @@ struct AnalyticsView: View {
                                 smartRecommendationsSection
                             }
                             .padding(.horizontal, BotanicaTheme.Spacing.lg)
+                            .padding(.top, BotanicaTheme.Spacing.md)
                             .padding(.bottom, BotanicaTheme.Spacing.jumbo)
+                        }
+                        .safeAreaInset(edge: .bottom) {
+                            Color.clear.frame(height: 120)
                         }
                     }
                 }
@@ -236,6 +248,8 @@ struct AnalyticsView: View {
             }
             .pickerStyle(.segmented)
         }
+        .cardStyle()
+        .accessibilityLabel("Analysis period selector")
     }
     
     private var seasonalGuidanceCard: some View {
@@ -373,6 +387,8 @@ struct AnalyticsView: View {
                 }
             }
         }
+        .cardStyle()
+        .accessibilityLabel("Plant performance overview")
     }
     
     private var careEffectivenessSection: some View {
@@ -448,6 +464,8 @@ struct AnalyticsView: View {
                 }
             }
         }
+        .cardStyle()
+        .accessibilityLabel("Care effectiveness")
     }
     
     private var healthTrendsSection: some View {
@@ -491,6 +509,8 @@ struct AnalyticsView: View {
                 }
             }
         }
+        .cardStyle()
+        .accessibilityLabel("Health and growth trends")
     }
     
     private var speciesInsightsSection: some View {
@@ -513,6 +533,8 @@ struct AnalyticsView: View {
                 }
             }
         }
+        .cardStyle()
+        .accessibilityLabel("Species insights")
     }
     
     private var botanicalAchievementsSection: some View {
@@ -540,6 +562,8 @@ struct AnalyticsView: View {
                 }
             }
         }
+        .cardStyle()
+        .accessibilityLabel("Botanical achievements")
     }
     
     private var smartRecommendationsSection: some View {
@@ -554,6 +578,8 @@ struct AnalyticsView: View {
                 }
             }
         }
+        .cardStyle()
+        .accessibilityLabel("Smart recommendations")
     }
     
     // MARK: - Botanical Analytics Data Processing
@@ -838,6 +864,8 @@ struct HealthMetricPill: View {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(color.opacity(0.1))
         .clipShape(Capsule())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title). \(count) plants")
     }
 }
 
@@ -923,6 +951,8 @@ struct PlantPerformanceCard: View {
             .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: 1)
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(plant.nickname). Grade \(metrics.performanceGrade). Health trend \(metrics.trend.accessibilityDescription)")
     }
     
     private func gradeColor(_ grade: String) -> Color {
@@ -1008,6 +1038,8 @@ struct CareTypeEffectivenessCard: View {
         .padding(BotanicaTheme.Spacing.sm)
         .background(careTypeColor.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.small))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(careType.rawValue) performed \(count) times")
     }
     
     private var careTypeColor: Color {
@@ -1049,6 +1081,8 @@ struct HealthTrendCard: View {
         .padding(BotanicaTheme.Spacing.md)
         .background(color.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title). \(count) plants")
     }
 }
 
@@ -1079,6 +1113,8 @@ struct BotanicalAchievementCard: View {
         .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .opacity(achievement.isUnlocked ? 1.0 : 0.6)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(achievement.title). \(achievement.isUnlocked ? "Unlocked" : "Locked") achievement")
     }
 }
 
@@ -1101,6 +1137,8 @@ struct SmartRecommendationCard: View {
         .padding()
         .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(recommendation.title). \(recommendation.description)")
     }
 }
 

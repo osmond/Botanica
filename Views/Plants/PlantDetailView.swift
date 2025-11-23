@@ -94,7 +94,11 @@ struct PlantDetailView: View {
                     careHistoryCard
                 }
                 .padding(.horizontal, BotanicaTheme.Spacing.lg)
-                .padding(.bottom, BotanicaTheme.Spacing.xxl)
+                .padding(.top, BotanicaTheme.Spacing.md)
+                .padding(.bottom, BotanicaTheme.Spacing.jumbo)
+            }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 120)
             }
             .navigationBarTitleDisplayMode(.inline)
             .accessibilityElement(children: .contain)
@@ -134,21 +138,12 @@ struct PlantDetailView: View {
         ZStack {
             // Subtle background card to give the hero image a pedestal
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            BotanicaTheme.Colors.background.opacity(0.9),
-                            BotanicaTheme.Colors.background.opacity(0.7)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(BotanicaTheme.Gradients.hero)
                 .shadow(
-                    color: Color.black.opacity(0.25),
-                    radius: 18,
+                    color: Color.black.opacity(0.18),
+                    radius: 14,
                     x: 0,
-                    y: 10
+                    y: 8
                 )
             
             if let primaryPhoto = plant.primaryPhoto {
@@ -156,7 +151,7 @@ struct PlantDetailView: View {
                     photo: primaryPhoto,
                     cornerRadius: BotanicaTheme.CornerRadius.large
                 )
-                .frame(height: 240)
+                .frame(height: 220)
                 .overlay(
                     RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
@@ -165,7 +160,7 @@ struct PlantDetailView: View {
                 Image(uiImage: referenceImage)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(height: 240)
+                    .frame(height: 220)
                     .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large))
                     .overlay(
                         RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
@@ -173,17 +168,8 @@ struct PlantDetailView: View {
                     )
             } else {
                 RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                BotanicaTheme.Colors.leafGreen,
-                                BotanicaTheme.Colors.primary
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(height: 240)
+                    .fill(BotanicaTheme.Gradients.primary)
+                    .frame(height: 220)
                     .overlay {
                         VStack(spacing: BotanicaTheme.Spacing.md) {
                             Image(systemName: "camera.fill")
@@ -197,7 +183,7 @@ struct PlantDetailView: View {
                     }
             }
         }
-        .frame(height: 260)
+        .frame(height: 240)
         .overlay(alignment: .topTrailing) {
             if plant.primaryPhoto == nil, referenceImage != nil {
                 HStack(spacing: 4) {
@@ -290,10 +276,7 @@ struct PlantDetailView: View {
                 .foregroundStyle(BotanicaTheme.Colors.textSecondary)
         }
         .padding(BotanicaTheme.Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
+        .cardStyle()
     }
     
     private var careRemindersCard: some View {
@@ -358,14 +341,7 @@ struct PlantDetailView: View {
             }
         }
         .padding(BotanicaTheme.Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(.orange.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                        .stroke(.orange.opacity(0.2), lineWidth: 1)
-                )
-        )
+        .cardStyle()
     }
     
     private var quickActionsCard: some View {
@@ -374,7 +350,7 @@ struct PlantDetailView: View {
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(BotanicaTheme.Colors.textPrimary)
             
-            HStack(spacing: BotanicaTheme.Spacing.lg) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: BotanicaTheme.Spacing.md), count: 3), spacing: BotanicaTheme.Spacing.md) {
                 QuickActionButton(
                     icon: "drop.fill",
                     title: "Water",
@@ -405,10 +381,7 @@ struct PlantDetailView: View {
             .disabled(vm.isPerformingAction)
         }
         .padding(BotanicaTheme.Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
+        .cardStyle()
     }
     
     private var detailsCard: some View {
@@ -519,6 +492,7 @@ struct PlantDetailView: View {
                 .padding(.top, BotanicaTheme.Spacing.sm)
             }
         }
+        .padding(BotanicaTheme.Spacing.lg)
         .cardStyle()
     }
     
@@ -568,6 +542,7 @@ struct PlantDetailView: View {
                 }
             }
         }
+        .padding(BotanicaTheme.Spacing.lg)
         .cardStyle()
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Care history")
