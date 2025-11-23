@@ -19,6 +19,8 @@ struct PhotoManager: View {
     @State private var showingAddPhotoSheet = false
     @State private var capturedImage: UIImage?
     @State private var selectedPhotoItems: [PhotosPickerItem] = []
+    @State private var loadState: LoadState = .idle
+    @State private var errorMessage: String?
     
     @StateObject private var cameraPermission = CameraPermissionManager()
     
@@ -67,7 +69,7 @@ struct PhotoManager: View {
         .photosPicker(isPresented: $showingPhotosPicker, selection: $selectedPhotoItems, maxSelectionCount: 5, matching: .images)
         .onChange(of: capturedImage) { oldValue, newValue in
             if let image = newValue {
-                savePhoto(image: image, category: .general)
+                Task { await savePhoto(image: image, category: .general) }
                 capturedImage = nil
             }
         }
@@ -75,6 +77,25 @@ struct PhotoManager: View {
             Task {
                 await loadSelectedPhotos()
             }
+        }
+        .overlay(alignment: .bottom) {
+            if loadState == .loading {
+                HStack(spacing: BotanicaTheme.Spacing.sm) {
+                    ProgressView()
+                    Text("Saving photos…")
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, BotanicaTheme.Spacing.md)
+            }
+        }
+        .alert("Photo Error", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { _ in errorMessage = nil }
+        )) {
+            Button("OK", role: .cancel) { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "Something went wrong.")
         }
     }
     
@@ -201,11 +222,10 @@ struct PhotoManager: View {
     
     // MARK: - Helper Methods
     
-    private func savePhoto(image: UIImage, category: PhotoCategory) {
+    private func savePhoto(image: UIImage, category: PhotoCategory) async {
         guard let imageData = ImageProcessor.normalizedJPEGData(from: image) else { return }
+        loadState = .loading
         
-        // First photo becomes primary; any future logic for primary photos
-        // should stay centralized on the Plant model.
         _ = plant.addPhoto(
             from: imageData,
             caption: "",
@@ -217,20 +237,23 @@ struct PhotoManager: View {
             try modelContext.save()
             HapticManager.shared.success()
         } catch {
+            errorMessage = error.localizedDescription
             HapticManager.shared.error()
-            print("Failed to save photo: \(error)")
         }
+        loadState = .loaded
     }
     
     @MainActor
     private func loadSelectedPhotos() async {
+        loadState = .loading
         for item in selectedPhotoItems {
             if let data = try? await item.loadTransferable(type: Data.self),
                let image = UIImage(data: data) {
-                savePhoto(image: image, category: .general)
+                await savePhoto(image: image, category: .general)
             }
         }
         selectedPhotoItems.removeAll()
+        loadState = .loaded
     }
 }
 
