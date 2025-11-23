@@ -5,6 +5,8 @@ struct NotificationSettingsView: View {
     @StateObject private var notificationManager = NotificationManager.shared
     @State private var showingPermissionAlert = false
     @State private var preferredNotificationTime = Date()
+    @State private var loadState: LoadState = .idle
+    @State private var errorMessage: String?
     
     // User preferences stored in UserDefaults
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
@@ -38,6 +40,17 @@ struct NotificationSettingsView: View {
             .onAppear {
                 updatePreferredTime()
             }
+            .overlay(alignment: .bottom) {
+                if loadState == .loading {
+                    HStack(spacing: BotanicaTheme.Spacing.sm) {
+                        ProgressView()
+                        Text("Updating notifications…")
+                            .font(BotanicaTheme.Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, BotanicaTheme.Spacing.md)
+                }
+            }
             .alert("Notifications Disabled", isPresented: $showingPermissionAlert) {
                 Button("Settings") {
                     openAppSettings()
@@ -45,6 +58,14 @@ struct NotificationSettingsView: View {
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("Please enable notifications for Botanica in your device settings to receive plant care reminders.")
+            }
+            .alert("Notification Error", isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { _ in errorMessage = nil }
+            )) {
+                Button("OK", role: .cancel) { errorMessage = nil }
+            } message: {
+                Text(errorMessage ?? "Something went wrong.")
             }
         }
     }
@@ -78,7 +99,7 @@ struct NotificationSettingsView: View {
                     .tint(BotanicaTheme.Colors.primary)
                 } else if notificationManager.authorizationStatus == .notDetermined {
                     Button("Enable") {
-                        requestPermission()
+                        Task { await requestPermission() }
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
@@ -160,12 +181,12 @@ struct NotificationSettingsView: View {
     private var managementSection: some View {
         Section {
             Button("Refresh All Notifications", role: .none) {
-                refreshAllNotifications()
+                Task { await refreshAllNotifications() }
             }
             .disabled(!effectiveNotificationsEnabled)
             
             Button("Clear All Notifications", role: .destructive) {
-                clearAllNotifications()
+                Task { await clearAllNotifications() }
             }
             .disabled(!effectiveNotificationsEnabled)
         } header: {
@@ -230,10 +251,14 @@ struct NotificationSettingsView: View {
     
     // MARK: - Actions
     
-    private func requestPermission() {
-        Task {
-            await notificationManager.requestNotificationPermission()
+    private func requestPermission() async {
+        loadState = .loading
+        let granted = await notificationManager.requestNotificationPermission()
+        await notificationManager.updateAuthorizationStatus()
+        if !granted {
+            showingPermissionAlert = true
         }
+        loadState = .loaded
     }
     
     private func openAppSettings() {
@@ -242,19 +267,22 @@ struct NotificationSettingsView: View {
         }
     }
     
-    private func refreshAllNotifications() {
-        Task {
-            // This would need to be called with actual plants data
-            // For now, we'll just clear and let the app reschedule
-            await notificationManager.removeAllNotifications()
-            print("Notifications cleared - app should reschedule automatically")
+    private func refreshAllNotifications() async {
+        loadState = .loading
+        await notificationManager.updateAuthorizationStatus()
+        guard notificationManager.authorizationStatus == .authorized else {
+            showingPermissionAlert = true
+            loadState = .idle
+            return
         }
+        // TODO: inject plants and reschedule via NotificationService
+        loadState = .loaded
     }
     
-    private func clearAllNotifications() {
-        Task {
-            await notificationManager.removeAllNotifications()
-        }
+    private func clearAllNotifications() async {
+        loadState = .loading
+        await notificationManager.removeAllNotifications()
+        loadState = .loaded
     }
     
     // MARK: - Time Management
