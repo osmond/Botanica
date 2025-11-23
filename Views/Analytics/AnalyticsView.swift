@@ -270,9 +270,8 @@ struct AnalyticsView: View {
                 .foregroundColor(BotanicaTheme.Colors.primary)
             }
         }
-        .padding(BotanicaTheme.Spacing.xl)
-        .background(BotanicalSeason.current.primaryColor.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large))
+        .cardStyle()
+        .accessibilityLabel("Seasonal care guide")
     }
     
     private var advancedAnalyticsSection: some View {
