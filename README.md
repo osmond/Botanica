@@ -53,7 +53,7 @@ Adjust the destination to your available simulator/device.
 ![AI](https://img.shields.io/badge/AI-OpenAI-brightgreen)
 
 ## Screenshots
-(Add your own) — suggested captures:
+(suggested captures)
 - My Plants grid/list with filters and insights
 - Plant Detail with quick actions and care history
 - AI Coach chat and Health Vision analysis
