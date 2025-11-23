@@ -44,3 +44,17 @@ Adjust the destination to your available simulator/device.
 
 ## Release
 - Latest tag: `v1.2.0` (see `CHANGELOG.md`).
+
+## Badges
+![Platform](https://img.shields.io/badge/platform-iOS-lightgrey)
+![Swift](https://img.shields.io/badge/Swift-5.10-orange)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-✓-blue)
+![SwiftData](https://img.shields.io/badge/SwiftData-✓-green)
+![AI](https://img.shields.io/badge/AI-OpenAI-brightgreen)
+
+## Screenshots
+(Add your own) — suggested captures:
+- My Plants grid/list with filters and insights
+- Plant Detail with quick actions and care history
+- AI Coach chat and Health Vision analysis
+- Analytics dashboard hero
