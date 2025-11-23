@@ -97,6 +97,9 @@ struct PlantDetailView: View {
                 .padding(.bottom, BotanicaTheme.Spacing.xxl)
             }
             .navigationBarTitleDisplayMode(.inline)
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Plant detail for \(plant.displayName)")
+            .accessibilityHint("Scroll for care status, reminders, and details")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Edit") {
