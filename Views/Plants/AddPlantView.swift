@@ -83,6 +83,11 @@ struct AddPlantView: View {
     private let prefilledData: PlantIdentificationResult?
     private let prefilledImage: UIImage?
     
+    // MARK: - Draft Persistence
+    @AppStorage("addPlant.draft.nickname") private var draftNickname = ""
+    @AppStorage("addPlant.draft.scientificName") private var draftScientificName = ""
+    @AppStorage("addPlant.draft.location") private var draftLocation = ""
+    
     // MARK: - Plant Basic Info
     @State private var nickname = ""
     @State private var scientificName = ""
@@ -316,6 +321,7 @@ struct AddPlantView: View {
             }
             .onAppear {
                 print("🌱 AddPlantView: onAppear called, prefilledData: \(prefilledData?.commonName ?? "nil")")
+                loadDraft()
                 populateFromAI()
                 if let confidence = prefilledData?.confidence, confidence < 0.6 {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -330,6 +336,9 @@ struct AddPlantView: View {
             .onChange(of: commonNamesText) { _, _ in updateFrequencyRecommendations() }
             .onChange(of: selectedGrowthHabit) { _, _ in updateFrequencyRecommendations() }
             .onChange(of: selectedLightLevel) { _, _ in updateFrequencyRecommendations() }
+            .onChange(of: nickname) { _, _ in persistDraft() }
+            .onChange(of: scientificName) { _, _ in persistDraft() }
+            .onChange(of: location) { _, _ in persistDraft() }
             .photosPicker(isPresented: $showingPhotosPicker, selection: $selectedPhotos, maxSelectionCount: 10, matching: .images)
             .onChange(of: selectedPhotos) { _, _ in
                 Task { await loadPhotos() }
@@ -975,6 +984,7 @@ struct AddPlantView: View {
             
             _ = try formViewModel.saveNewPlant(formData, in: modelContext)
             HapticManager.shared.success()
+            clearDraft()
             dismiss()
             
         } catch {
@@ -986,6 +996,23 @@ struct AddPlantView: View {
         isSaving = false
     }
     
+    private func loadDraft() {
+        if nickname.isEmpty { nickname = draftNickname }
+        if scientificName.isEmpty { scientificName = draftScientificName }
+        if location.isEmpty { location = draftLocation }
+    }
+    
+    private func persistDraft() {
+        draftNickname = nickname
+        draftScientificName = scientificName
+        draftLocation = location
+    }
+    
+    private func clearDraft() {
+        draftNickname = ""
+        draftScientificName = ""
+        draftLocation = ""
+    }
 }
 
 // MARK: - Custom UI Components
