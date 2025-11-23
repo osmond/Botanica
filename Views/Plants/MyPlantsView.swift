@@ -7,6 +7,11 @@ import Combine
 struct MyPlantsView: View {
     @Query(sort: \Plant.dateAdded, order: .reverse) private var plants: [Plant]
     @StateObject private var vm = MyPlantsViewModel()
+    @AppStorage("myPlants.viewMode") private var storedViewModeRaw: String = ViewMode.grid.rawValue
+    @AppStorage("myPlants.sortBy") private var storedSortRaw: String = SortOption.dateAdded.rawValue
+    @AppStorage("myPlants.groupBy") private var storedGroupRaw: String = GroupOption.none.rawValue
+    @AppStorage("myPlants.careFilter") private var storedCareFilterRaw: String = ""
+    @AppStorage("myPlants.healthFilter") private var storedHealthFilterRaw: String = ""
     @State private var showingAddPlant = false
     @State private var viewMode: ViewMode = .grid
     @State private var searchText = ""
@@ -141,7 +146,11 @@ struct MyPlantsView: View {
     }
 
     // Update VM whenever inputs change
-    var bodyUpdateHook: some View { EmptyView().onAppear { updateVM() }
+    var bodyUpdateHook: some View { EmptyView()
+        .onAppear {
+            syncPersistedState()
+            updateVM()
+        }
         .onChange(of: plants) { _, _ in updateVM() }
         .onChange(of: searchText) { _, _ in updateVM() }
         .onChange(of: filterBy) { _, _ in updateVM() }
@@ -149,6 +158,11 @@ struct MyPlantsView: View {
         .onChange(of: careNeededFilter) { _, _ in updateVM() }
         .onChange(of: sortBy) { _, _ in updateVM() }
         .onChange(of: groupBy) { _, _ in updateVM() }
+        .onChange(of: viewMode) { _, _ in persistState() }
+        .onChange(of: sortBy) { _, _ in persistState() }
+        .onChange(of: groupBy) { _, _ in persistState() }
+        .onChange(of: careNeededFilter) { _, _ in persistState() }
+        .onChange(of: filterBy) { _, _ in persistState() }
     }
 
     // Keep VM in sync with inputs
@@ -162,6 +176,23 @@ struct MyPlantsView: View {
             sortBy: sortBy,
             groupBy: groupBy
         )
+        persistState()
+    }
+
+    private func syncPersistedState() {
+        viewMode = ViewMode(rawValue: storedViewModeRaw) ?? .grid
+        sortBy = SortOption(rawValue: storedSortRaw) ?? .dateAdded
+        groupBy = GroupOption(rawValue: storedGroupRaw) ?? .none
+        careNeededFilter = CareNeededFilter(rawValue: storedCareFilterRaw)
+        filterBy = HealthStatus(rawValue: storedHealthFilterRaw)
+    }
+    
+    private func persistState() {
+        storedViewModeRaw = viewMode.rawValue
+        storedSortRaw = sortBy.rawValue
+        storedGroupRaw = groupBy.rawValue
+        storedCareFilterRaw = careNeededFilter?.rawValue ?? ""
+        storedHealthFilterRaw = filterBy?.rawValue ?? ""
     }
     
     // Collection insight computed properties

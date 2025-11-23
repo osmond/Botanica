@@ -14,7 +14,9 @@ struct AICoachView: View {
     @State private var selectedQuickQuestion: String? = nil
     @State private var showingHealthDiagnosis = false
     @State private var healthDiagnosisResult: String = ""
-    @State private var isAnalyzingHealth = false
+    @State private var healthLoadState: LoadState = .idle
+    @State private var healthErrorMessage: String?
+    @State private var showingHealthError = false
     @State private var lastQuestion: String?
     
     // Pre-defined quick questions for common plant care concerns
@@ -103,11 +105,11 @@ struct AICoachView: View {
     
     private var healthAnalysisSection: some View {
         VStack(spacing: BotanicaTheme.Spacing.md) {
-            Button {
-                performHealthAnalysis()
-            } label: {
-                HStack(spacing: BotanicaTheme.Spacing.sm) {
-                    if isAnalyzingHealth {
+                    Button {
+                        performHealthAnalysis()
+                    } label: {
+                        HStack(spacing: BotanicaTheme.Spacing.sm) {
+                    if healthLoadState == .loading {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .scaleEffect(0.8)
@@ -116,7 +118,7 @@ struct AICoachView: View {
                             .font(.title3)
                     }
                     
-                    Text(isAnalyzingHealth ? "Analyzing..." : "AI Health Diagnosis")
+                    Text(healthLoadState == .loading ? "Analyzing..." : "AI Health Diagnosis")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
@@ -127,7 +129,7 @@ struct AICoachView: View {
                 )
                 .foregroundColor(.white)
             }
-            .disabled(isAnalyzingHealth)
+            .disabled(healthLoadState == .loading)
             .padding(.horizontal, BotanicaTheme.Spacing.lg)
             
             if !healthDiagnosisResult.isEmpty {
@@ -152,6 +154,15 @@ struct AICoachView: View {
                 )
                 .padding(.horizontal, BotanicaTheme.Spacing.lg)
             }
+        }
+        .alert("Health Analysis Failed", isPresented: Binding(
+            get: { showingHealthError },
+            set: { _ in showingHealthError = false }
+        )) {
+            Button("Retry") { performHealthAnalysis() }
+            Button("Cancel", role: .cancel) { healthLoadState = .idle }
+        } message: {
+            Text(healthErrorMessage ?? "Unable to run health analysis.")
         }
     }
     
@@ -324,7 +335,7 @@ struct AICoachView: View {
     }
     
     private func performHealthAnalysis() {
-        isAnalyzingHealth = true
+        healthLoadState = .loading
         
         Task {
             do {
@@ -332,12 +343,16 @@ struct AICoachView: View {
                 
                 await MainActor.run {
                     healthDiagnosisResult = diagnosis
-                    isAnalyzingHealth = false
+                    healthErrorMessage = nil
+                    healthLoadState = .loaded
+                    showingHealthError = false
                 }
             } catch {
                 await MainActor.run {
                     healthDiagnosisResult = "Unable to perform health analysis at this time. Please try again later."
-                    isAnalyzingHealth = false
+                    healthErrorMessage = ErrorMessageFormatter.userFriendlyMessage(for: error)
+                    healthLoadState = .failed(healthErrorMessage ?? "Unknown error")
+                    showingHealthError = true
                 }
             }
         }
