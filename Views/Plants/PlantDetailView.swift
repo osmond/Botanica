@@ -652,6 +652,9 @@ struct QuickActionButton: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityHint("Quick action: \(title)")
     }
 }
 
