@@ -104,10 +104,11 @@ struct AnalyticsView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         ScrollView {
-                            LazyVStack(spacing: BotanicaTheme.Spacing.lg) {
+                            LazyVStack(spacing: BotanicaTheme.Spacing.xl) {
                                 Text("Plant Analytics")
                                     .font(BotanicaTheme.Typography.title1)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.bottom, BotanicaTheme.Spacing.sm)
                                 
                                 // Hero Section with Collection Health Score
                                 collectionHealthHero
@@ -140,7 +141,7 @@ struct AnalyticsView: View {
                                 smartRecommendationsSection
                             }
                             .padding(.horizontal, BotanicaTheme.Spacing.lg)
-                            .padding(.top, BotanicaTheme.Spacing.md)
+                            .padding(.top, BotanicaTheme.Spacing.lg)
                             .padding(.bottom, BotanicaTheme.Spacing.jumbo)
                         }
                         .safeAreaInset(edge: .bottom) {
@@ -255,6 +256,7 @@ struct AnalyticsView: View {
         }
         .cardStyle()
         .accessibilityLabel("Analysis period selector")
+        .padding(.bottom, BotanicaTheme.Spacing.md)
     }
     
     private var seasonalGuidanceCard: some View {
@@ -291,6 +293,7 @@ struct AnalyticsView: View {
         }
         .cardStyle()
         .accessibilityLabel("Seasonal care guide")
+        .padding(.bottom, BotanicaTheme.Spacing.md)
     }
     
     private var advancedAnalyticsSection: some View {
