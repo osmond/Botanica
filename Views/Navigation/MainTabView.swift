@@ -15,6 +15,12 @@ struct MainTabView: View {
     
     var body: some View {
         TabView(selection: $coordinator.selectedTab) {
+            ActivityView()
+                .tabItem {
+                    Label("Activity", systemImage: "bell.badge")
+                }
+                .tag(Tab.activity)
+            
             MyPlantsView()
                 .tabItem {
                     Label("My Plants", systemImage: "leaf.fill")
@@ -26,12 +32,6 @@ struct MainTabView: View {
                     Label("Analytics", systemImage: "chart.line.uptrend.xyaxis")
                 }
                 .tag(Tab.analytics)
-
-            ActivityView()
-                .tabItem {
-                    Label("Activity", systemImage: "bell.badge")
-                }
-                .tag(Tab.activity)
             
             SettingsView()
                 .tabItem {
