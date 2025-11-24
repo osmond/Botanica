@@ -184,23 +184,28 @@ struct ActivityView: View {
     @Query(sort: \CareEvent.date, order: .reverse) private var careEvents: [CareEvent]
     @Query private var plants: [Plant]
     @State private var filter: ActivityFilter = .all
-    @State private var showingUpcoming = true
+    @State private var mode: ActivityMode = .upcoming
     @State private var searchText: String = ""
+    @Environment(\.modelContext) private var modelContext
     
     private var recentEvents: [CareEvent] {
-        careEvents.filter { event in
-            switch filter {
-            case .all: return true
-            case .watering: return event.type == .watering
-            case .fertilizing: return event.type == .fertilizing
-            case .other: return event.type != .watering && event.type != .fertilizing
+        careEvents
+            .filter { matchesFilter(type: $0.type) }
+            .filter { event in
+                guard !searchText.isEmpty else { return true }
+                return event.plant?.nickname.lowercased().contains(searchText.lowercased()) ?? false
+                    || event.notes.lowercased().contains(searchText.lowercased())
             }
+    }
+    
+    private var groupedRecent: [(Date, [CareEvent])] {
+        let calendar = Calendar.current
+        let groups = Dictionary(grouping: recentEvents) { event in
+            calendar.startOfDay(for: event.date)
         }
-        .filter { event in
-            guard !searchText.isEmpty else { return true }
-            return event.plant?.nickname.lowercased().contains(searchText.lowercased()) ?? false
-                || event.notes.lowercased().contains(searchText.lowercased())
-        }
+        return groups
+            .map { ($0.key, $0.value.sorted { $0.date > $1.date }) }
+            .sorted { $0.0 > $1.0 }
     }
     
     private var upcomingItems: [SyntheticUpcoming] {
@@ -215,13 +220,15 @@ struct ActivityView: View {
             }
             return items
         }
+        .filter { matchesFilter(type: $0.type) && matchesSearch(plantName: $0.plant.nickname) }
         .sorted { $0.date < $1.date }
     }
     
     private var items: [ActivityItem] {
-        if showingUpcoming {
+        switch mode {
+        case .upcoming:
             return upcomingItems.map { .upcoming($0) }
-        } else {
+        case .recent:
             return recentEvents.map { .event($0) }
         }
     }
@@ -229,21 +236,33 @@ struct ActivityView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section(header: header) {
-                    if items.isEmpty {
-                        VStack(spacing: BotanicaTheme.Spacing.md) {
-                            Image(systemName: "calendar.badge.clock")
-                                .font(.largeTitle)
-                                .foregroundColor(.secondary)
-                            Text(showingUpcoming ? "No upcoming care" : "No recent activity")
-                                .font(BotanicaTheme.Typography.body)
-                                .foregroundColor(.secondary)
+                Section {
+                    Picker("Mode", selection: $mode) {
+                        Text("Upcoming").tag(ActivityMode.upcoming)
+                        Text("Recent").tag(ActivityMode.recent)
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .listRowBackground(Color.clear)
+                
+                if mode == .upcoming {
+                    Section(header: header) {
+                        if items.isEmpty {
+                            emptyState
+                        } else {
+                            ForEach(items) { item in
+                                ActivityRow(item: item) { upcoming in
+                                    logUpcoming(upcoming)
+                                }
+                            }
                         }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .listRowSeparator(.hidden)
-                    } else {
-                        ForEach(items) { item in
-                            ActivityRow(item: item)
+                    }
+                } else {
+                    ForEach(groupedRecent, id: \.0) { group in
+                        Section(header: dateHeader(group.0)) {
+                            ForEach(group.1) { event in
+                                ActivityRow(item: .event(event), onLog: nil)
+                            }
                         }
                     }
                 }
@@ -252,11 +271,6 @@ struct ActivityView: View {
             .background(BotanicaTheme.Colors.background)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic))
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(showingUpcoming ? "Recent" : "Upcoming") {
-                        withAnimation { showingUpcoming.toggle() }
-                    }
-                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         Picker("Filter", selection: $filter) {
@@ -269,22 +283,93 @@ struct ActivityView: View {
                     }
                 }
             }
-            .navigationTitle(showingUpcoming ? "Upcoming" : "Activity")
+            .navigationTitle(mode == .upcoming ? "Upcoming" : "Activity")
         }
     }
     
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(showingUpcoming ? "Upcoming care" : "Recent activity")
+                Text(mode == .upcoming ? "Upcoming care" : "Recent activity")
                     .font(BotanicaTheme.Typography.headline)
-                Text(showingUpcoming ? "Next water/fertilize across all plants" : "Last recorded care events")
+                Text(mode == .upcoming ? "Next water/fertilize across all plants" : "Last recorded care events")
                     .font(BotanicaTheme.Typography.caption)
                     .foregroundColor(.secondary)
             }
             Spacer()
         }
         .padding(.vertical, BotanicaTheme.Spacing.sm)
+    }
+    
+    private var emptyState: some View {
+        VStack(spacing: BotanicaTheme.Spacing.md) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.largeTitle)
+                .foregroundColor(.secondary)
+            Text(mode == .upcoming ? "No upcoming care" : "No recent activity")
+                .font(BotanicaTheme.Typography.body)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .listRowSeparator(.hidden)
+    }
+    
+    private func matchesFilter(type: CareType) -> Bool {
+        switch filter {
+        case .all: return true
+        case .watering: return type == .watering
+        case .fertilizing: return type == .fertilizing
+        case .other: return type != .watering && type != .fertilizing
+        }
+    }
+    
+    private func matchesSearch(plantName: String) -> Bool {
+        guard !searchText.isEmpty else { return true }
+        return plantName.lowercased().contains(searchText.lowercased())
+    }
+    
+    private func dateHeader(_ date: Date) -> some View {
+        let cal = Calendar.current
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        let title: String
+        if cal.isDateInToday(date) {
+            title = "Today"
+        } else if cal.isDateInYesterday(date) {
+            title = "Yesterday"
+        } else {
+            title = formatter.string(from: date)
+        }
+        return Text(title)
+            .font(BotanicaTheme.Typography.subheadline)
+            .foregroundColor(.secondary)
+    }
+    
+    private func logUpcoming(_ upcoming: SyntheticUpcoming) {
+        let recAmount: Double
+        let recUnit: String
+        switch upcoming.type {
+        case .watering:
+            let rec = upcoming.plant.recommendedWateringAmount
+            recAmount = Double(rec.amount)
+            recUnit = rec.unit
+        case .fertilizing:
+            let rec = upcoming.plant.recommendedFertilizerAmount
+            recAmount = rec.amount
+            recUnit = rec.unit
+        default:
+            recAmount = 0
+            recUnit = ""
+        }
+        let event = CareEvent(
+            type: upcoming.type,
+            date: Date(),
+            amount: recAmount,
+            unit: recUnit,
+            notes: "Logged from Activity"
+        )
+        event.plant = upcoming.plant
+        modelContext.insert(event)
     }
 }
 
@@ -308,6 +393,7 @@ private struct SyntheticUpcoming {
 
 private struct ActivityRow: View {
     let item: ActivityItem
+    let onLog: ((SyntheticUpcoming) -> Void)?
     
     private var formatter: DateFormatter {
         let f = DateFormatter()
@@ -351,9 +437,30 @@ private struct ActivityRow: View {
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                 }
+                
+                if case .upcoming(let upcoming) = item, let onLog {
+                    Button {
+                        onLog(upcoming)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                            Text("Log now")
+                        }
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                        .padding(.vertical, BotanicaTheme.Spacing.xs)
+                        .background(BotanicaTheme.Colors.primary)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .padding(.vertical, BotanicaTheme.Spacing.sm)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabelText)
+        .accessibilityHint(accessibilityHintText)
     }
     
     private var color: Color {
@@ -429,6 +536,26 @@ private struct ActivityRow: View {
         case .upcoming: return nil
         }
     }
+    
+    private var accessibilityLabelText: String {
+        switch item {
+        case .event(let e):
+            let amountString = amountText ?? ""
+            return "\(plantName). \(e.type.rawValue). \(dateText). \(amountString)"
+        case .upcoming:
+            let amountString = amountText ?? ""
+            return "\(plantName). Upcoming \(careType.rawValue). \(dateText). \(amountString)"
+        }
+    }
+    
+    private var accessibilityHintText: String {
+        switch item {
+        case .event:
+            return "Recent care event."
+        case .upcoming:
+            return "Double tap to log now."
+        }
+    }
 }
 
 private enum ActivityFilter: CaseIterable {
@@ -441,6 +568,11 @@ private enum ActivityFilter: CaseIterable {
         case .other: return "Other"
         }
     }
+}
+
+private enum ActivityMode {
+    case upcoming
+    case recent
 }
 
 
