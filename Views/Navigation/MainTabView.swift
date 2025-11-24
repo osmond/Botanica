@@ -26,6 +26,12 @@ struct MainTabView: View {
                     Label("Analytics", systemImage: "chart.line.uptrend.xyaxis")
                 }
                 .tag(Tab.analytics)
+
+            ActivityView()
+                .tabItem {
+                    Label("Activity", systemImage: "bell.badge")
+                }
+                .tag(Tab.activity)
             
             SettingsView()
                 .tabItem {
@@ -159,13 +165,280 @@ struct MainTabView: View {
 enum Tab: String, CaseIterable {
     case plants = "My Plants"
     case analytics = "Analytics"
+    case activity = "Activity"
     case settings = "Settings"
     
     var systemImage: String {
         switch self {
         case .plants: return "leaf.fill"
         case .analytics: return "chart.line.uptrend.xyaxis"
+        case .activity: return "bell.badge"
         case .settings: return "gearshape.fill"
+        }
+    }
+}
+
+// MARK: - Activity Feed
+
+struct ActivityView: View {
+    @Query(sort: \CareEvent.date, order: .reverse) private var careEvents: [CareEvent]
+    @Query private var plants: [Plant]
+    @State private var filter: ActivityFilter = .all
+    @State private var showingUpcoming = true
+    @State private var searchText: String = ""
+    
+    private var recentEvents: [CareEvent] {
+        careEvents.filter { event in
+            switch filter {
+            case .all: return true
+            case .watering: return event.type == .watering
+            case .fertilizing: return event.type == .fertilizing
+            case .other: return event.type != .watering && event.type != .fertilizing
+            }
+        }
+        .filter { event in
+            guard !searchText.isEmpty else { return true }
+            return event.plant?.nickname.lowercased().contains(searchText.lowercased()) ?? false
+                || event.notes.lowercased().contains(searchText.lowercased())
+        }
+    }
+    
+    private var upcomingItems: [SyntheticUpcoming] {
+        let now = Date()
+        return plants.flatMap { plant -> [SyntheticUpcoming] in
+            var items: [SyntheticUpcoming] = []
+            if let nextWater = plant.nextWateringDate, nextWater >= now {
+                items.append(SyntheticUpcoming(date: nextWater, plant: plant, type: .watering))
+            }
+            if let nextFert = plant.nextFertilizingDate, nextFert >= now {
+                items.append(SyntheticUpcoming(date: nextFert, plant: plant, type: .fertilizing))
+            }
+            return items
+        }
+        .sorted { $0.date < $1.date }
+    }
+    
+    private var items: [ActivityItem] {
+        if showingUpcoming {
+            return upcomingItems.map { .upcoming($0) }
+        } else {
+            return recentEvents.map { .event($0) }
+        }
+    }
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                Section(header: header) {
+                    if items.isEmpty {
+                        VStack(spacing: BotanicaTheme.Spacing.md) {
+                            Image(systemName: "calendar.badge.clock")
+                                .font(.largeTitle)
+                                .foregroundColor(.secondary)
+                            Text(showingUpcoming ? "No upcoming care" : "No recent activity")
+                                .font(BotanicaTheme.Typography.body)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .listRowSeparator(.hidden)
+                    } else {
+                        ForEach(items) { item in
+                            ActivityRow(item: item)
+                        }
+                    }
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(BotanicaTheme.Colors.background)
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic))
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(showingUpcoming ? "Recent" : "Upcoming") {
+                        withAnimation { showingUpcoming.toggle() }
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Picker("Filter", selection: $filter) {
+                            ForEach(ActivityFilter.allCases, id: \.self) { f in
+                                Text(f.title).tag(f)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                    }
+                }
+            }
+            .navigationTitle(showingUpcoming ? "Upcoming" : "Activity")
+        }
+    }
+    
+    private var header: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(showingUpcoming ? "Upcoming care" : "Recent activity")
+                    .font(BotanicaTheme.Typography.headline)
+                Text(showingUpcoming ? "Next water/fertilize across all plants" : "Last recorded care events")
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+        }
+        .padding(.vertical, BotanicaTheme.Spacing.sm)
+    }
+}
+
+private enum ActivityItem: Identifiable {
+    case event(CareEvent)
+    case upcoming(SyntheticUpcoming)
+    
+    var id: String {
+        switch self {
+        case .event(let e): return "event-\(e.id.uuidString)"
+        case .upcoming(let u): return "upcoming-\(u.type)-\(u.date.timeIntervalSince1970)-\(u.plant.id.uuidString)"
+        }
+    }
+}
+
+private struct SyntheticUpcoming {
+    let date: Date
+    let plant: Plant
+    let type: CareType
+}
+
+private struct ActivityRow: View {
+    let item: ActivityItem
+    
+    private var formatter: DateFormatter {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return f
+    }
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: BotanicaTheme.Spacing.md) {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(color)
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 6, height: 6)
+            }
+            
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                HStack {
+                    Text(title)
+                        .font(BotanicaTheme.Typography.callout)
+                        .fontWeight(.semibold)
+                    Spacer()
+                    Text(dateText)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                Text(typeText)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(color)
+                if let amount = amountText {
+                    Text(amount)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                if let notes = notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+            }
+        }
+        .padding(.vertical, BotanicaTheme.Spacing.sm)
+    }
+    
+    private var color: Color {
+        switch careType {
+        case .watering: return BotanicaTheme.Colors.waterBlue
+        case .fertilizing: return BotanicaTheme.Colors.leafGreen
+        default: return BotanicaTheme.Colors.textSecondary
+        }
+    }
+    
+    private var icon: String { careType.icon }
+    
+    private var careType: CareType {
+        switch item {
+        case .event(let e): return e.type
+        case .upcoming(let u): return u.type
+        }
+    }
+    
+    private var plantName: String {
+        switch item {
+        case .event(let e): return e.plant?.nickname ?? "Plant"
+        case .upcoming(let u): return u.plant.nickname
+        }
+    }
+    
+    private var dateText: String {
+        switch item {
+        case .event(let e): return formatter.string(from: e.date)
+        case .upcoming(let u): return formatter.string(from: u.date)
+        }
+    }
+    
+    private var title: String { plantName }
+    
+    private var typeText: String {
+        switch item {
+        case .event(let e): return e.type.rawValue
+        case .upcoming: return "Upcoming"
+        }
+    }
+    
+    private var amountText: String? {
+        switch item {
+        case .event(let e):
+            if let amount = e.amount, !e.unit.isEmpty {
+                return "Amount: \(amount) \(e.unit)"
+            }
+            return nil
+        case .upcoming(let u):
+            if u.type == .watering {
+                let rec = u.plant.recommendedWateringAmount
+                let amountString = formatAmount(Double(rec.amount))
+                return "Recommended: \(amountString) \(rec.unit)"
+            } else {
+                let rec = u.plant.recommendedFertilizerAmount
+                let amountString = formatAmount(rec.amount)
+                return "Recommended: \(amountString) \(rec.unit)"
+            }
+        }
+    }
+    
+    private func formatAmount(_ value: Double) -> String {
+        if abs(value.rounded() - value) < 0.01 {
+            return String(format: "%.0f", value.rounded())
+        }
+        return String(format: "%.1f", value)
+    }
+    
+    private var notes: String? {
+        switch item {
+        case .event(let e): return e.notes
+        case .upcoming: return nil
+        }
+    }
+}
+
+private enum ActivityFilter: CaseIterable {
+    case all, watering, fertilizing, other
+    var title: String {
+        switch self {
+        case .all: return "All"
+        case .watering: return "Watering"
+        case .fertilizing: return "Fertilizing"
+        case .other: return "Other"
         }
     }
 }
