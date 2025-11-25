@@ -116,6 +116,9 @@ struct AnalyticsView: View {
                                 // Time range selector
                                 modernTimeRangeSelector
                                 
+                                // Quick log care
+                                logCareCTA
+                                
                                 // Seasonal Botanical Guidance
                                 seasonalGuidanceCard
                                 
@@ -259,6 +262,26 @@ struct AnalyticsView: View {
         .padding(.bottom, BotanicaTheme.Spacing.md)
     }
     
+    private var logCareCTA: some View {
+        NavigationLink(destination: ActivityView()) {
+            HStack {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                    Text("Log care now")
+                        .font(BotanicaTheme.Typography.headline)
+                    Text("Quickly record watering or fertilizing")
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(BotanicaTheme.Colors.primary)
+            }
+            .padding(BotanicaTheme.Spacing.lg)
+            .cardStyle()
+        }
+        .buttonStyle(.plain)
+    }
+    
     private var seasonalGuidanceCard: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
             HStack {
@@ -297,17 +320,23 @@ struct AnalyticsView: View {
     }
     
     private var advancedAnalyticsSection: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-            Text("Advanced Analytics")
-                .font(BotanicaTheme.Typography.title2)
-                .fontWeight(.bold)
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+            HStack {
+                Text("Advanced Analytics")
+                    .font(BotanicaTheme.Typography.title2)
+                    .fontWeight(.bold)
+                Spacer()
+                NavigationLink("See all") {
+                    AdvancedAnalyticsView()
+                }
+                .font(BotanicaTheme.Typography.callout)
+                .foregroundColor(BotanicaTheme.Colors.primary)
+            }
             
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: BotanicaTheme.Spacing.md) {
-                
-                // ML Analytics - Predictive care insights
                 NavigationLink(destination: MLAnalyticsView()) {
                     AdvancedFeatureCard(
                         icon: "chart.line.uptrend.xyaxis",
@@ -318,35 +347,12 @@ struct AnalyticsView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 
-                // Collection Health Trends
                 NavigationLink(destination: HealthTrendsView()) {
                     AdvancedFeatureCard(
                         icon: "heart.text.square",
                         title: "Health Trends",
                         description: "Collection health analysis",
                         color: Color.pink
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                // Environmental Analytics
-                NavigationLink(destination: EnvironmentAnalyticsView()) {
-                    AdvancedFeatureCard(
-                        icon: "thermometer.sun.fill",
-                        title: "Environment",
-                        description: "Seasonal impact analysis",
-                        color: BotanicaTheme.Colors.sunYellow
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                // Growth Pattern Analysis
-                NavigationLink(destination: GrowthPatternsView()) {
-                    AdvancedFeatureCard(
-                        icon: "chart.bar.fill",
-                        title: "Growth Patterns",
-                        description: "Long-term growth analysis",
-                        color: BotanicaTheme.Colors.leafGreen
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -1154,17 +1160,114 @@ struct SmartRecommendationCard: View {
 struct SeasonalCareGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     
+    private let seasons: [SeasonalCareSection] = SeasonalCareSection.sampleData
+    
     var body: some View {
         NavigationView {
-            Text("Seasonal care guidance coming soon!")
-                .navigationTitle("Seasonal Care")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Done") { dismiss() }
+            List {
+                ForEach(seasons) { section in
+                    Section(header: Text(section.title).font(BotanicaTheme.Typography.headline)) {
+                        Text(section.summary)
+                            .font(BotanicaTheme.Typography.callout)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, BotanicaTheme.Spacing.sm)
+                        
+                        ForEach(section.tasks, id: \.title) { task in
+                            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                                HStack {
+                                    Image(systemName: task.icon)
+                                        .foregroundColor(task.iconColor)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(task.title)
+                                            .font(BotanicaTheme.Typography.callout)
+                                        Text(task.detail)
+                                            .font(BotanicaTheme.Typography.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                }
+                                Button {
+                                    // Placeholder action: in a full version, schedule a reminder
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "bell.badge")
+                                        Text("Add reminder")
+                                    }
+                                    .font(BotanicaTheme.Typography.caption)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                                    .background(BotanicaTheme.Colors.primary)
+                                    .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.vertical, BotanicaTheme.Spacing.sm)
+                        }
                     }
                 }
+            }
+            .navigationTitle("Seasonal Care")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
         }
     }
+}
+
+private struct SeasonalCareSection: Identifiable {
+    let id = UUID()
+    let title: String
+    let summary: String
+    let tasks: [SeasonalTask]
+    
+    static let sampleData: [SeasonalCareSection] = [
+        SeasonalCareSection(
+            title: "Fall",
+            summary: "Reduce watering gradually, stop fertilizing, prepare for dormancy.",
+            tasks: [
+                SeasonalTask(title: "Reduce watering", detail: "Cut watering by 25-50% for most tropicals.", icon: "drop.fill", iconColor: BotanicaTheme.Colors.waterBlue),
+                SeasonalTask(title: "Pause fertilizer", detail: "Stop feeding until spring growth resumes.", icon: "leaf.arrow.circlepath", iconColor: BotanicaTheme.Colors.leafGreen),
+                SeasonalTask(title: "Light & temp", detail: "Move closer to windows, avoid drafts.", icon: "sun.max.fill", iconColor: BotanicaTheme.Colors.sunYellow)
+            ]
+        ),
+        SeasonalCareSection(
+            title: "Winter",
+            summary: "Protect from drafts, monitor watering, increase humidity.",
+            tasks: [
+                SeasonalTask(title: "Draft protection", detail: "Keep leaves away from vents/windows.", icon: "wind", iconColor: .cyan),
+                SeasonalTask(title: "Humidity boost", detail: "Use trays or a humidifier near dry plants.", icon: "aqi.medium", iconColor: BotanicaTheme.Colors.waterBlue),
+                SeasonalTask(title: "Water carefully", detail: "Only when soil is dry, avoid cold water.", icon: "drop.triangle.fill", iconColor: .blue)
+            ]
+        ),
+        SeasonalCareSection(
+            title: "Spring",
+            summary: "Resume feeding, check roots, refresh soil for active growth.",
+            tasks: [
+                SeasonalTask(title: "Resume fertilizing", detail: "Light feed every 4–6 weeks.", icon: "leaf.fill", iconColor: BotanicaTheme.Colors.leafGreen),
+                SeasonalTask(title: "Repot check", detail: "Assess pot-bound plants and refresh soil.", icon: "flowerpot.fill", iconColor: BotanicaTheme.Colors.soilBrown),
+                SeasonalTask(title: "Prune & clean", detail: "Trim leggy growth and wipe leaves.", icon: "scissors", iconColor: BotanicaTheme.Colors.nutrientOrange)
+            ]
+        ),
+        SeasonalCareSection(
+            title: "Summer",
+            summary: "Manage heat and light; water consistently during active growth.",
+            tasks: [
+                SeasonalTask(title: "Consistent watering", detail: "Top up when top inch is dry.", icon: "drop.circle.fill", iconColor: BotanicaTheme.Colors.waterBlue),
+                SeasonalTask(title: "Sun management", detail: "Shift away from harsh midday sun.", icon: "sun.max.fill", iconColor: BotanicaTheme.Colors.sunYellow),
+                SeasonalTask(title: "Pest checks", detail: "Inspect weekly for mites and scale.", icon: "ant.fill", iconColor: .red)
+            ]
+        )
+    ]
+}
+
+private struct SeasonalTask {
+    let title: String
+    let detail: String
+    let icon: String
+    let iconColor: Color
 }
 
 struct PlantDetailAnalyticsView: View {
