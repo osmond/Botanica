@@ -183,6 +183,7 @@ enum Tab: String, CaseIterable {
 struct ActivityView: View {
     @Query(sort: \CareEvent.date, order: .reverse) private var careEvents: [CareEvent]
     @Query private var plants: [Plant]
+    @Query(sort: \Reminder.nextNotification, order: .forward) private var reminders: [Reminder]
     @State private var filter: ActivityFilter = .all
     @State private var mode: ActivityMode = .upcoming
     @State private var searchText: String = ""
@@ -244,6 +245,10 @@ struct ActivityView: View {
                     .pickerStyle(.segmented)
                 }
                 .listRowBackground(Color.clear)
+                
+                if mode == .upcoming {
+                    reminderSection
+                }
                 
                 if mode == .upcoming {
                     Section(header: header) {
@@ -323,6 +328,22 @@ struct ActivityView: View {
         }
     }
     
+    @ViewBuilder
+    private var reminderSection: some View {
+        let upcomingReminders = reminders.filter { $0.isActive && $0.nextNotification >= Date() }
+        if !upcomingReminders.isEmpty {
+            Section(header: Text("Care Reminders").font(BotanicaTheme.Typography.headline)) {
+                ForEach(upcomingReminders) { reminder in
+                    ReminderListRow(reminder: reminder) {
+                        if let plant = reminder.plant {
+                            logReminder(reminder, for: plant)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private func matchesSearch(plantName: String) -> Bool {
         guard !searchText.isEmpty else { return true }
         return plantName.lowercased().contains(searchText.lowercased())
@@ -369,6 +390,33 @@ struct ActivityView: View {
             notes: "Logged from Activity"
         )
         event.plant = upcoming.plant
+        modelContext.insert(event)
+    }
+    
+    private func logReminder(_ reminder: Reminder, for plant: Plant) {
+        let recAmount: Double
+        let recUnit: String
+        switch reminder.taskType {
+        case .watering:
+            let rec = plant.recommendedWateringAmount
+            recAmount = Double(rec.amount)
+            recUnit = rec.unit
+        case .fertilizing:
+            let rec = plant.recommendedFertilizerAmount
+            recAmount = rec.amount
+            recUnit = rec.unit
+        default:
+            recAmount = 0
+            recUnit = ""
+        }
+        let event = CareEvent(
+            type: reminder.taskType,
+            date: Date(),
+            amount: recAmount,
+            unit: recUnit,
+            notes: "Logged from reminder"
+        )
+        event.plant = plant
         modelContext.insert(event)
     }
 }
@@ -573,6 +621,59 @@ private enum ActivityFilter: CaseIterable {
 private enum ActivityMode {
     case upcoming
     case recent
+}
+
+private struct ReminderListRow: View {
+    let reminder: Reminder
+    let onTap: () -> Void
+    
+    private var plantName: String {
+        reminder.plant?.nickname ?? "Plant"
+    }
+    
+    private var formattedDate: String {
+        reminder.formattedNextNotification
+    }
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                Image(systemName: reminder.taskType.icon)
+                    .foregroundColor(color)
+                    .frame(width: 24)
+                
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                    Text(plantName)
+                        .font(BotanicaTheme.Typography.callout)
+                        .fontWeight(.semibold)
+                    Text(reminder.taskType.rawValue)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: BotanicaTheme.Spacing.xs) {
+                    Text(formattedDate)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.vertical, BotanicaTheme.Spacing.sm)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var color: Color {
+        switch reminder.taskType {
+        case .watering: return BotanicaTheme.Colors.waterBlue
+        case .fertilizing: return BotanicaTheme.Colors.leafGreen
+        default: return BotanicaTheme.Colors.textSecondary
+        }
+    }
 }
 
 

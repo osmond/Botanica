@@ -57,29 +57,7 @@ struct CareRemindersSectionView: View {
     let onViewAll: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            HStack {
-                Label("Care Reminders", systemImage: "bell.fill")
-                    .font(BotanicaTheme.Typography.headline)
-                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-                
-                Spacer()
-                
-                Button("View All") {
-                    onViewAll()
-                }
-                .font(BotanicaTheme.Typography.callout)
-                .foregroundStyle(BotanicaTheme.Colors.primary)
-            }
-            
-            let urgentTop3 = Array(urgentPlants.prefix(3))
-            LazyVStack(spacing: BotanicaTheme.Spacing.sm) {
-                ForEach(urgentTop3, id: \.id) { plant in
-                    PlantCareReminderRow(plant: plant)
-                }
-            }
-        }
-        .padding(.horizontal, BotanicaTheme.Spacing.lg)
+        EmptyView()
     }
 }
 
