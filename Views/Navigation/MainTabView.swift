@@ -188,6 +188,8 @@ struct ActivityView: View {
     @State private var mode: ActivityMode = .upcoming
     @State private var searchText: String = ""
     @Environment(\.modelContext) private var modelContext
+    @State private var reminderToSnooze: Reminder?
+    @State private var showingSnoozeOptions = false
     
     private var recentEvents: [CareEvent] {
         careEvents
@@ -289,6 +291,12 @@ struct ActivityView: View {
                 }
             }
             .navigationTitle(mode == .upcoming ? "Upcoming" : "Activity")
+            .confirmationDialog("Snooze reminder", isPresented: $showingSnoozeOptions, titleVisibility: .visible) {
+                Button("Snooze 1 day") { applySnooze(days: 1) }
+                Button("Snooze 3 days") { applySnooze(days: 3) }
+                Button("Snooze 7 days") { applySnooze(days: 7) }
+                Button("Cancel", role: .cancel) {}
+            }
         }
     }
     
@@ -342,7 +350,8 @@ struct ActivityView: View {
                             }
                         },
                         onSnooze: {
-                            snoozeReminder(reminder)
+                            reminderToSnooze = reminder
+                            showingSnoozeOptions = true
                         }
                     )
                 }
@@ -426,10 +435,12 @@ struct ActivityView: View {
         modelContext.insert(event)
     }
     
-    private func snoozeReminder(_ reminder: Reminder) {
-        let next = Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date()
+    private func applySnooze(days: Int) {
+        guard let reminder = reminderToSnooze else { return }
+        let next = Calendar.current.date(byAdding: .day, value: days, to: Date()) ?? Date()
         reminder.snoozedUntil = next
         reminder.nextNotification = next
+        reminderToSnooze = nil
     }
 }
 
