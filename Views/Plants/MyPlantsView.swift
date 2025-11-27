@@ -884,6 +884,18 @@ struct ModernPlantCard: View {
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                     .lineLimit(1)
                 
+                if !plant.location.isEmpty {
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(BotanicaTheme.Colors.primary)
+                        Text(plant.location)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                            .lineLimit(1)
+                    }
+                }
+                
                 if !plant.scientificName.isEmpty {
                     Text(plant.scientificName)
                         .font(.system(size: 12, weight: .medium))
@@ -927,6 +939,18 @@ struct ModernPlantListRow: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                     .lineLimit(1)
+                
+                if !plant.location.isEmpty {
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(BotanicaTheme.Colors.primary)
+                        Text(plant.location)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                            .lineLimit(1)
+                    }
+                }
                 
                 if !plant.scientificName.isEmpty {
                     Text(plant.scientificName)
