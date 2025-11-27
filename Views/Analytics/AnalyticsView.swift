@@ -1161,12 +1161,16 @@ struct SeasonalCareGuidanceView: View {
     let plants: [Plant]
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @State private var applyToAllPlants: Bool = true
+    @State private var selectedPlantID: UUID?
     
     private let seasons: [SeasonalCareSection] = SeasonalCareSection.sampleData
     
     var body: some View {
         NavigationView {
             List {
+                applyScopeControls
+                
                 ForEach(seasons) { section in
                     Section(header: Text(section.title).font(BotanicaTheme.Typography.headline)) {
                         Text(section.summary)
@@ -1215,6 +1219,30 @@ struct SeasonalCareGuidanceView: View {
                     Button("Done") { dismiss() }
                 }
             }
+        }
+    }
+    
+    private var applyScopeControls: some View {
+        Section {
+            Picker("Apply to", selection: $applyToAllPlants) {
+                Text("All plants").tag(true)
+                Text("Choose plant").tag(false)
+            }
+            .pickerStyle(.segmented)
+            
+            if !applyToAllPlants, !plants.isEmpty {
+                Picker("Plant", selection: Binding(
+                    get: { selectedPlantID ?? plants.first?.id },
+                    set: { selectedPlantID = $0 }
+                )) {
+                    ForEach(plants, id: \.id) { plant in
+                        Text(plant.nickname).tag(Optional(plant.id))
+                    }
+                }
+            }
+        } header: {
+            Text("Apply reminders to")
+                .font(BotanicaTheme.Typography.subheadline)
         }
     }
 }
@@ -1275,7 +1303,16 @@ private struct SeasonalTask {
 
 private extension SeasonalCareGuidanceView {
     func addReminder(for task: SeasonalTask) {
-        for plant in plants {
+        let targetPlants: [Plant]
+        if applyToAllPlants || plants.isEmpty {
+            targetPlants = plants
+        } else if let id = selectedPlantID, let plant = plants.first(where: { $0.id == id }) {
+            targetPlants = [plant]
+        } else {
+            targetPlants = []
+        }
+        
+        for plant in targetPlants {
             let reminder = Reminder(
                 taskType: task.careType,
                 recurrence: .monthly,

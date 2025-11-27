@@ -509,6 +509,16 @@ private struct ActivityRow: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabelText)
         .accessibilityHint(accessibilityHintText)
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            if case .upcoming(let upcoming) = item, let onLog {
+                Button {
+                    onLog(upcoming)
+                } label: {
+                    Label("Log", systemImage: "checkmark.circle.fill")
+                }
+                .tint(BotanicaTheme.Colors.primary)
+            }
+        }
     }
     
     private var color: Color {
