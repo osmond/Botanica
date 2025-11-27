@@ -17,8 +17,8 @@ final class Plant {
     var nickname: String
     /// Plant family (e.g., "Araceae")
     var family: String
-    /// Common names stored as raw string; use computed property for array
-    var commonNamesRaw: String
+    /// Common names (e.g., "Swiss Cheese Plant, Split-leaf Philodendron")
+    var commonNames: [String]
     
     // MARK: Physical Characteristics
     /// Pot size in inches (e.g., 6, 8, 10)
@@ -85,19 +85,6 @@ final class Plant {
     @Relationship(deleteRule: .cascade, inverse: \CarePlan.plant)
     var carePlan: CarePlan?
     
-    /// Computed helper to work with common names as array
-    var commonNames: [String] {
-        get {
-            commonNamesRaw
-                .split(separator: "|")
-                .map { String($0) }
-                .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-        }
-        set {
-            commonNamesRaw = newValue.joined(separator: "|")
-        }
-    }
-    
     init(
         scientificName: String,
         nickname: String,
@@ -126,7 +113,7 @@ final class Plant {
         self.scientificName = scientificName
         self.nickname = nickname
         self.family = family
-        self.commonNamesRaw = commonNames.joined(separator: "|")
+        self.commonNames = commonNames
         self.potSize = potSize
         self.potHeight = potHeight
         self.potMaterial = potMaterial
