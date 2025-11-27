@@ -157,7 +157,7 @@ struct AnalyticsView: View {
             .navigationTitle("Plant Analytics")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingSeasonalGuidance) {
-                SeasonalCareGuidanceView()
+                SeasonalCareGuidanceView(plants: plants)
             }
             .sheet(item: $selectedPlantForDetails) { plant in
                 PlantDetailAnalyticsView(plant: plant)
@@ -1158,7 +1158,9 @@ struct SmartRecommendationCard: View {
 
 // Placeholder sheet views
 struct SeasonalCareGuidanceView: View {
+    let plants: [Plant]
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     private let seasons: [SeasonalCareSection] = SeasonalCareSection.sampleData
     
@@ -1187,7 +1189,7 @@ struct SeasonalCareGuidanceView: View {
                                     Spacer()
                                 }
                                 Button {
-                                    // Placeholder action: in a full version, schedule a reminder
+                                    addReminder(for: task)
                                 } label: {
                                     HStack(spacing: 6) {
                                         Image(systemName: "bell.badge")
@@ -1228,36 +1230,36 @@ private struct SeasonalCareSection: Identifiable {
             title: "Fall",
             summary: "Reduce watering gradually, stop fertilizing, prepare for dormancy.",
             tasks: [
-                SeasonalTask(title: "Reduce watering", detail: "Cut watering by 25-50% for most tropicals.", icon: "drop.fill", iconColor: BotanicaTheme.Colors.waterBlue),
-                SeasonalTask(title: "Pause fertilizer", detail: "Stop feeding until spring growth resumes.", icon: "leaf.arrow.circlepath", iconColor: BotanicaTheme.Colors.leafGreen),
-                SeasonalTask(title: "Light & temp", detail: "Move closer to windows, avoid drafts.", icon: "sun.max.fill", iconColor: BotanicaTheme.Colors.sunYellow)
+                SeasonalTask(title: "Reduce watering", detail: "Cut watering by 25-50% for most tropicals.", icon: "drop.fill", iconColor: BotanicaTheme.Colors.waterBlue, careType: .watering),
+                SeasonalTask(title: "Pause fertilizer", detail: "Stop feeding until spring growth resumes.", icon: "leaf.arrow.circlepath", iconColor: BotanicaTheme.Colors.leafGreen, careType: .fertilizing),
+                SeasonalTask(title: "Light & temp", detail: "Move closer to windows, avoid drafts.", icon: "sun.max.fill", iconColor: BotanicaTheme.Colors.sunYellow, careType: .inspection)
             ]
         ),
         SeasonalCareSection(
             title: "Winter",
             summary: "Protect from drafts, monitor watering, increase humidity.",
             tasks: [
-                SeasonalTask(title: "Draft protection", detail: "Keep leaves away from vents/windows.", icon: "wind", iconColor: .cyan),
-                SeasonalTask(title: "Humidity boost", detail: "Use trays or a humidifier near dry plants.", icon: "aqi.medium", iconColor: BotanicaTheme.Colors.waterBlue),
-                SeasonalTask(title: "Water carefully", detail: "Only when soil is dry, avoid cold water.", icon: "drop.triangle.fill", iconColor: .blue)
+                SeasonalTask(title: "Draft protection", detail: "Keep leaves away from vents/windows.", icon: "wind", iconColor: .cyan, careType: .inspection),
+                SeasonalTask(title: "Humidity boost", detail: "Use trays or a humidifier near dry plants.", icon: "aqi.medium", iconColor: BotanicaTheme.Colors.waterBlue, careType: .misting),
+                SeasonalTask(title: "Water carefully", detail: "Only when soil is dry, avoid cold water.", icon: "drop.triangle.fill", iconColor: .blue, careType: .watering)
             ]
         ),
         SeasonalCareSection(
             title: "Spring",
             summary: "Resume feeding, check roots, refresh soil for active growth.",
             tasks: [
-                SeasonalTask(title: "Resume fertilizing", detail: "Light feed every 4–6 weeks.", icon: "leaf.fill", iconColor: BotanicaTheme.Colors.leafGreen),
-                SeasonalTask(title: "Repot check", detail: "Assess pot-bound plants and refresh soil.", icon: "flowerpot.fill", iconColor: BotanicaTheme.Colors.soilBrown),
-                SeasonalTask(title: "Prune & clean", detail: "Trim leggy growth and wipe leaves.", icon: "scissors", iconColor: BotanicaTheme.Colors.nutrientOrange)
+                SeasonalTask(title: "Resume fertilizing", detail: "Light feed every 4–6 weeks.", icon: "leaf.fill", iconColor: BotanicaTheme.Colors.leafGreen, careType: .fertilizing),
+                SeasonalTask(title: "Repot check", detail: "Assess pot-bound plants and refresh soil.", icon: "flowerpot.fill", iconColor: BotanicaTheme.Colors.soilBrown, careType: .repotting),
+                SeasonalTask(title: "Prune & clean", detail: "Trim leggy growth and wipe leaves.", icon: "scissors", iconColor: BotanicaTheme.Colors.nutrientOrange, careType: .pruning)
             ]
         ),
         SeasonalCareSection(
             title: "Summer",
             summary: "Manage heat and light; water consistently during active growth.",
             tasks: [
-                SeasonalTask(title: "Consistent watering", detail: "Top up when top inch is dry.", icon: "drop.circle.fill", iconColor: BotanicaTheme.Colors.waterBlue),
-                SeasonalTask(title: "Sun management", detail: "Shift away from harsh midday sun.", icon: "sun.max.fill", iconColor: BotanicaTheme.Colors.sunYellow),
-                SeasonalTask(title: "Pest checks", detail: "Inspect weekly for mites and scale.", icon: "ant.fill", iconColor: .red)
+                SeasonalTask(title: "Consistent watering", detail: "Top up when top inch is dry.", icon: "drop.circle.fill", iconColor: BotanicaTheme.Colors.waterBlue, careType: .watering),
+                SeasonalTask(title: "Sun management", detail: "Shift away from harsh midday sun.", icon: "sun.max.fill", iconColor: BotanicaTheme.Colors.sunYellow, careType: .inspection),
+                SeasonalTask(title: "Pest checks", detail: "Inspect weekly for mites and scale.", icon: "ant.fill", iconColor: .red, careType: .inspection)
             ]
         )
     ]
@@ -1268,6 +1270,22 @@ private struct SeasonalTask {
     let detail: String
     let icon: String
     let iconColor: Color
+    let careType: CareType
+}
+
+private extension SeasonalCareGuidanceView {
+    func addReminder(for task: SeasonalTask) {
+        for plant in plants {
+            let reminder = Reminder(
+                taskType: task.careType,
+                recurrence: .monthly,
+                notificationTime: Date(),
+                customMessage: "\(task.title) – \(task.detail)"
+            )
+            reminder.plant = plant
+            modelContext.insert(reminder)
+        }
+    }
 }
 
 struct PlantDetailAnalyticsView: View {

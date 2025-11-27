@@ -258,17 +258,6 @@ struct MyPlantsView: View {
                             action: collectionAction
                         )
                         
-                        // Care reminders section (only if needed)
-                        if !urgentCarePlants.isEmpty {
-                            CareRemindersSectionView(
-                                urgentPlants: urgentCarePlants,
-                                onViewAll: {
-                                    careNeededFilter = .needsAnyCare
-                                    HapticManager.shared.light()
-                                }
-                            )
-                        }
-                        
                         // Quick filter pills
                         QuickFiltersView(
                             filterBy: $filterBy,
