@@ -249,26 +249,40 @@ struct ActivityView: View {
                 .listRowBackground(Color.clear)
                 
                 if mode == .upcoming {
-                    reminderSection
-                }
-                
-                if mode == .upcoming {
                     Section(header: header) {
                         if items.isEmpty {
                             emptyState
                         } else {
                             ForEach(items) { item in
-                                ActivityRow(item: item) { upcoming in
-                                    logUpcoming(upcoming)
+                                if let destinationPlant = plantFor(item) {
+                                    NavigationLink(destination: PlantDetailView(plant: destinationPlant)) {
+                                        ActivityRow(item: item) { upcoming in
+                                            logUpcoming(upcoming)
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
+                                } else {
+                                    ActivityRow(item: item) { upcoming in
+                                        logUpcoming(upcoming)
+                                    }
                                 }
                             }
                         }
                     }
+                    
+                    reminderSection
                 } else {
                     ForEach(groupedRecent, id: \.0) { group in
                         Section(header: dateHeader(group.0)) {
                             ForEach(group.1) { event in
-                                ActivityRow(item: .event(event), onLog: nil)
+                                if let plant = event.plant {
+                                    NavigationLink(destination: PlantDetailView(plant: plant)) {
+                                        ActivityRow(item: .event(event), onLog: nil)
+                                    }
+                                    .buttonStyle(.plain)
+                                } else {
+                                    ActivityRow(item: .event(event), onLog: nil)
+                                }
                             }
                         }
                     }
@@ -362,6 +376,15 @@ struct ActivityView: View {
     private func matchesSearch(plantName: String) -> Bool {
         guard !searchText.isEmpty else { return true }
         return plantName.lowercased().contains(searchText.lowercased())
+    }
+    
+    private func plantFor(_ item: ActivityItem) -> Plant? {
+        switch item {
+        case .event(let e):
+            return e.plant
+        case .upcoming(let u):
+            return u.plant
+        }
     }
     
     private func dateHeader(_ date: Date) -> some View {
