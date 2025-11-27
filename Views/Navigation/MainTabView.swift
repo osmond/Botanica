@@ -334,11 +334,17 @@ struct ActivityView: View {
         if !upcomingReminders.isEmpty {
             Section(header: Text("Care Reminders").font(BotanicaTheme.Typography.headline)) {
                 ForEach(upcomingReminders) { reminder in
-                    ReminderListRow(reminder: reminder) {
-                        if let plant = reminder.plant {
-                            logReminder(reminder, for: plant)
+                    ReminderListRow(
+                        reminder: reminder,
+                        onTap: {
+                            if let plant = reminder.plant {
+                                logReminder(reminder, for: plant)
+                            }
+                        },
+                        onSnooze: {
+                            snoozeReminder(reminder)
                         }
-                    }
+                    )
                 }
             }
         }
@@ -418,6 +424,12 @@ struct ActivityView: View {
         )
         event.plant = plant
         modelContext.insert(event)
+    }
+    
+    private func snoozeReminder(_ reminder: Reminder) {
+        let next = Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date()
+        reminder.snoozedUntil = next
+        reminder.nextNotification = next
     }
 }
 
@@ -636,6 +648,7 @@ private enum ActivityMode {
 private struct ReminderListRow: View {
     let reminder: Reminder
     let onTap: () -> Void
+    let onSnooze: () -> Void
     
     private var plantName: String {
         reminder.plant?.nickname ?? "Plant"
@@ -675,6 +688,21 @@ private struct ReminderListRow: View {
             .padding(.vertical, BotanicaTheme.Spacing.sm)
         }
         .buttonStyle(.plain)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button {
+                onSnooze()
+            } label: {
+                Label("Snooze", systemImage: "zzz")
+            }
+            .tint(.orange)
+            
+            Button {
+                onTap()
+            } label: {
+                Label("Log", systemImage: "checkmark.circle.fill")
+            }
+            .tint(BotanicaTheme.Colors.primary)
+        }
     }
     
     private var color: Color {
