@@ -265,6 +265,7 @@ struct MyPlantsView: View {
                             sortBy: $sortBy,
                             plantsCount: plants.count,
                             needsWaterCount: plants.filter { $0.isWateringOverdue }.count,
+                            needsFertilizerCount: plants.filter { $0.isFertilizingOverdue }.count,
                             healthyPlantCount: healthyPlantCount,
                             weeklyAddedCount: weeklyAddedCount
                         )
@@ -275,7 +276,7 @@ struct MyPlantsView: View {
                             viewMode: viewMode
                         )
                     }
-                    .padding(.top, BotanicaTheme.Spacing.lg)
+                    .padding(.top, BotanicaTheme.Spacing.md)
                 }
                     }
                 }
