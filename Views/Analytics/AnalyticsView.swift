@@ -1243,7 +1243,7 @@ struct SeasonalCareGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @State private var applyToAllPlants: Bool = true
-    @State private var selectedPlantID: UUID?
+    @State private var selectedPlantIDs: Set<UUID> = []
     
     private let seasons: [SeasonalCareSection] = SeasonalCareSection.sampleData
     
@@ -1299,6 +1299,18 @@ struct SeasonalCareGuidanceView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
                 }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if !applyToAllPlants {
+                        Text("Selected: \(selectedPlantIDs.count)")
+                            .font(BotanicaTheme.Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .onAppear {
+                if selectedPlantIDs.isEmpty {
+                    selectedPlantIDs = Set(plants.map { $0.id })
+                }
             }
         }
     }
@@ -1312,13 +1324,18 @@ struct SeasonalCareGuidanceView: View {
             .pickerStyle(.segmented)
             
             if !applyToAllPlants, !plants.isEmpty {
-                Picker("Plant", selection: Binding(
-                    get: { selectedPlantID ?? plants.first?.id },
-                    set: { selectedPlantID = $0 }
-                )) {
-                    ForEach(plants, id: \.id) { plant in
-                        Text(plant.nickname).tag(Optional(plant.id))
+                ForEach(plants, id: \.id) { plant in
+                    Button {
+                        toggleSelection(for: plant.id)
+                    } label: {
+                        HStack {
+                            Text(plant.nickname)
+                            Spacer()
+                            Image(systemName: selectedPlantIDs.contains(plant.id) ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(selectedPlantIDs.contains(plant.id) ? BotanicaTheme.Colors.primary : .secondary)
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
             }
         } header: {
@@ -1384,14 +1401,13 @@ private struct SeasonalTask {
 
 private extension SeasonalCareGuidanceView {
     func addReminder(for task: SeasonalTask) {
-        let targetPlants: [Plant]
-        if applyToAllPlants || plants.isEmpty {
-            targetPlants = plants
-        } else if let id = selectedPlantID, let plant = plants.first(where: { $0.id == id }) {
-            targetPlants = [plant]
-        } else {
-            targetPlants = []
-        }
+        let targetPlants: [Plant] = {
+            if applyToAllPlants || plants.isEmpty {
+                return plants
+            } else {
+                return plants.filter { selectedPlantIDs.contains($0.id) }
+            }
+        }()
         
         for plant in targetPlants {
             let reminder = Reminder(
@@ -1402,6 +1418,14 @@ private extension SeasonalCareGuidanceView {
             )
             reminder.plant = plant
             modelContext.insert(reminder)
+        }
+    }
+    
+    func toggleSelection(for id: UUID) {
+        if selectedPlantIDs.contains(id) {
+            selectedPlantIDs.remove(id)
+        } else {
+            selectedPlantIDs.insert(id)
         }
     }
 }
