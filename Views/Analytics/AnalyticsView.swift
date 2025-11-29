@@ -104,7 +104,7 @@ struct AnalyticsView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         ScrollView {
-                            LazyVStack(spacing: BotanicaTheme.Spacing.xl) {
+                            LazyVStack(spacing: BotanicaTheme.Spacing.lg) {
                                 Text("Plant Analytics")
                                     .font(BotanicaTheme.Typography.title1)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -290,6 +290,15 @@ struct AnalyticsView: View {
                         .font(BotanicaTheme.Typography.title3)
                         .fontWeight(.semibold)
                     
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                        Capsule()
+                            .fill(BotanicaTheme.Colors.primary.opacity(0.15))
+                            .frame(width: 6, height: 6)
+                        Text("\(seasonalTaskCount(for: BotanicalSeason.current)) tasks ready")
+                            .font(BotanicaTheme.Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
                     Text(BotanicalSeason.current.careModifications)
                         .font(BotanicaTheme.Typography.callout)
                         .foregroundColor(.secondary)
@@ -319,6 +328,11 @@ struct AnalyticsView: View {
         .padding(.bottom, BotanicaTheme.Spacing.md)
     }
     
+    private func seasonalTaskCount(for season: BotanicalSeason) -> Int {
+        let title = season.rawValue
+        return SeasonalCareSection.sampleData.first(where: { $0.title == title })?.tasks.count ?? 0
+    }
+    
     private var advancedAnalyticsSection: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             HStack {
@@ -333,33 +347,39 @@ struct AnalyticsView: View {
                 .foregroundColor(BotanicaTheme.Colors.primary)
             }
             
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: BotanicaTheme.Spacing.md) {
-                NavigationLink(destination: MLAnalyticsView()) {
-                    AdvancedFeatureCard(
-                        icon: "chart.line.uptrend.xyaxis",
-                        title: "ML Analytics",
-                        description: "Predictive care insights",
-                        color: BotanicaTheme.Colors.primary
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                NavigationLink(destination: HealthTrendsView()) {
-                    AdvancedFeatureCard(
-                        icon: "heart.text.square",
-                        title: "Health Trends",
-                        description: "Collection health analysis",
-                        color: Color.pink
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                statPill(icon: "heart.text.square", title: "Attention", value: attentionNeededCount)
+                statPill(icon: "checkmark.circle", title: "Completion", valueText: "\(Int(averageCompletionRate * 100))%")
+                statPill(icon: "leaf.fill", title: "Healthy", value: healthyPlantsCount)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .cardStyle()
         .accessibilityLabel("Advanced analytics section")
+    }
+    
+    private func statPill(icon: String, title: String, value: Int) -> some View {
+        statPill(icon: icon, title: title, valueText: "\(value)")
+    }
+    
+    private func statPill(icon: String, title: String, valueText: String) -> some View {
+        HStack(spacing: BotanicaTheme.Spacing.xs) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(BotanicaTheme.Colors.primary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(valueText)
+                    .font(BotanicaTheme.Typography.callout)
+                    .fontWeight(.semibold)
+                Text(title)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.md)
+        .padding(.vertical, BotanicaTheme.Spacing.sm)
+        .background(BotanicaTheme.Colors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
     }
     
     private var plantPerformanceDashboard: some View {
