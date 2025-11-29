@@ -238,6 +238,30 @@ struct AnalyticsView: View {
                     icon: "flame.fill"
                 )
             }
+            
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                OverdueChip(
+                    waterCount: plants.filter { $0.isWateringOverdue }.count,
+                    feedCount: plants.filter { $0.isFertilizingOverdue }.count
+                )
+                
+                Spacer()
+                
+                NavigationLink(destination: ActivityView().navigationBarHidden(true)) {
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.white)
+                        Text("Log care")
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, BotanicaTheme.Spacing.md)
+                    .padding(.vertical, BotanicaTheme.Spacing.sm)
+                    .background(BotanicaTheme.Colors.primary)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(BotanicaTheme.Spacing.lg)
         .heroCardStyle()
@@ -900,6 +924,43 @@ struct HealthMetricPill: View {
         .clipShape(Capsule())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title). \(count) plants")
+    }
+}
+
+struct OverdueChip: View {
+    let waterCount: Int
+    let feedCount: Int
+    
+    var body: some View {
+        HStack(spacing: BotanicaTheme.Spacing.sm) {
+            if waterCount > 0 {
+                Label("\(waterCount) water", systemImage: "drop.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    .background(BotanicaTheme.Colors.waterBlue)
+                    .clipShape(Capsule())
+            }
+            if feedCount > 0 {
+                Label("\(feedCount) feed", systemImage: "leaf.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    .background(BotanicaTheme.Colors.leafGreen)
+                    .clipShape(Capsule())
+            }
+            if waterCount == 0 && feedCount == 0 {
+                Label("No overdue", systemImage: "checkmark.circle")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    .background(BotanicaTheme.Colors.success)
+                    .clipShape(Capsule())
+            }
+        }
     }
 }
 

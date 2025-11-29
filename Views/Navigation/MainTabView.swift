@@ -249,6 +249,8 @@ struct ActivityView: View {
                 .listRowBackground(Color.clear)
                 
                 if mode == .upcoming {
+                    overdueBanner
+                    
                     Section(header: header) {
                         if items.isEmpty {
                             emptyState
@@ -324,6 +326,15 @@ struct ActivityView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
+            if mode == .upcoming {
+                Picker("Filter", selection: $filter) {
+                    ForEach(ActivityFilter.allCases, id: \.self) { f in
+                        Text(f.title).tag(f)
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+            }
         }
         .padding(.vertical, BotanicaTheme.Spacing.sm)
     }
@@ -339,6 +350,58 @@ struct ActivityView: View {
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .listRowSeparator(.hidden)
+    }
+    
+    private var overdueBanner: some View {
+        let overdueWater = plants.filter { $0.isWateringOverdue }.count
+        let overdueFeed = plants.filter { $0.isFertilizingOverdue }.count
+        let dueSoon = reminders.filter { $0.isDueSoon }.count
+        return HStack(spacing: BotanicaTheme.Spacing.md) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Overdue & due soon")
+                    .font(BotanicaTheme.Typography.subheadline)
+                HStack(spacing: BotanicaTheme.Spacing.sm) {
+                    if overdueWater > 0 {
+                        Label("\(overdueWater) water", systemImage: "drop.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                            .padding(.vertical, BotanicaTheme.Spacing.xs)
+                            .background(BotanicaTheme.Colors.waterBlue)
+                            .clipShape(Capsule())
+                    }
+                    if overdueFeed > 0 {
+                        Label("\(overdueFeed) feed", systemImage: "leaf.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                            .padding(.vertical, BotanicaTheme.Spacing.xs)
+                            .background(BotanicaTheme.Colors.leafGreen)
+                            .clipShape(Capsule())
+                    }
+                    if dueSoon > 0 {
+                        Label("\(dueSoon) due soon", systemImage: "clock")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                            .padding(.vertical, BotanicaTheme.Spacing.xs)
+                            .background(BotanicaTheme.Colors.sunYellow)
+                            .clipShape(Capsule())
+                    }
+                    if overdueWater == 0 && overdueFeed == 0 && dueSoon == 0 {
+                        Label("All clear", systemImage: "checkmark.circle")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                            .padding(.vertical, BotanicaTheme.Spacing.xs)
+                            .background(BotanicaTheme.Colors.success)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+            Spacer()
+        }
+        .padding(.vertical, BotanicaTheme.Spacing.sm)
     }
     
     private func matchesFilter(type: CareType) -> Bool {
