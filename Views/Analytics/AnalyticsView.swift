@@ -318,7 +318,7 @@ struct AnalyticsView: View {
                         Capsule()
                             .fill(BotanicaTheme.Colors.primary.opacity(0.15))
                             .frame(width: 6, height: 6)
-                        Text("\(seasonalTaskCount(for: BotanicalSeason.current)) tasks ready")
+                        Text("\(seasonalTaskCount(for: BotanicalSeason.current)) tasks ready • Applies to \(seasonalAppliesCount)")
                             .font(BotanicaTheme.Typography.caption)
                             .foregroundColor(.secondary)
                     }
@@ -355,6 +355,10 @@ struct AnalyticsView: View {
     private func seasonalTaskCount(for season: BotanicalSeason) -> Int {
         let title = season.rawValue
         return SeasonalCareSection.sampleData.first(where: { $0.title == title })?.tasks.count ?? 0
+    }
+    
+    private var seasonalAppliesCount: Int {
+        plants.count
     }
     
     private var advancedAnalyticsSection: some View {
@@ -1244,6 +1248,7 @@ struct SeasonalCareGuidanceView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var applyToAllPlants: Bool = true
     @State private var selectedPlantIDs: Set<UUID> = []
+    @State private var recurrence: RecurrencePattern = .monthly
     
     private let seasons: [SeasonalCareSection] = SeasonalCareSection.sampleData
     
@@ -1320,6 +1325,12 @@ struct SeasonalCareGuidanceView: View {
             Picker("Apply to", selection: $applyToAllPlants) {
                 Text("All plants").tag(true)
                 Text("Choose plant").tag(false)
+            }
+            .pickerStyle(.segmented)
+            
+            Picker("Recurrence", selection: $recurrence) {
+                Text("Monthly").tag(RecurrencePattern.monthly)
+                Text("Once").tag(RecurrencePattern.custom)
             }
             .pickerStyle(.segmented)
             
@@ -1412,7 +1423,7 @@ private extension SeasonalCareGuidanceView {
         for plant in targetPlants {
             let reminder = Reminder(
                 taskType: task.careType,
-                recurrence: .monthly,
+                recurrence: recurrence,
                 notificationTime: Date(),
                 customMessage: "\(task.title) – \(task.detail)"
             )

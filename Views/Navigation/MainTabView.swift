@@ -190,6 +190,7 @@ struct ActivityView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var reminderToSnooze: Reminder?
     @State private var showingSnoozeOptions = false
+    @State private var showOverdueOnly = false
     
     private var recentEvents: [CareEvent] {
         careEvents
@@ -213,7 +214,7 @@ struct ActivityView: View {
     
     private var upcomingItems: [SyntheticUpcoming] {
         let now = Date()
-        return plants.flatMap { plant -> [SyntheticUpcoming] in
+        let base = plants.flatMap { plant -> [SyntheticUpcoming] in
             var items: [SyntheticUpcoming] = []
             if let nextWater = plant.nextWateringDate, nextWater >= now {
                 items.append(SyntheticUpcoming(date: nextWater, plant: plant, type: .watering))
@@ -224,7 +225,19 @@ struct ActivityView: View {
             return items
         }
         .filter { matchesFilter(type: $0.type) && matchesSearch(plantName: $0.plant.nickname) }
-        .sorted { $0.date < $1.date }
+        
+        let sorted = base.sorted { lhs, rhs in
+            let lhsOverdue = lhs.plant.isWateringOverdue || lhs.plant.isFertilizingOverdue
+            let rhsOverdue = rhs.plant.isWateringOverdue || rhs.plant.isFertilizingOverdue
+            if lhsOverdue == rhsOverdue {
+                return lhs.date < rhs.date
+            }
+            return lhsOverdue && !rhsOverdue
+        }
+        if showOverdueOnly {
+            return sorted.filter { $0.plant.isWateringOverdue || $0.plant.isFertilizingOverdue }
+        }
+        return sorted
     }
     
     private var items: [ActivityItem] {
@@ -295,15 +308,10 @@ struct ActivityView: View {
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Picker("Filter", selection: $filter) {
-                            ForEach(ActivityFilter.allCases, id: \.self) { f in
-                                Text(f.title).tag(f)
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
+                    Toggle(isOn: $showOverdueOnly) {
+                        Text("Overdue only")
                     }
+                    .toggleStyle(SwitchToggleStyle(tint: BotanicaTheme.Colors.primary))
                 }
             }
             .navigationTitle(mode == .upcoming ? "Upcoming" : "Activity")
