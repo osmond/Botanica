@@ -262,6 +262,7 @@ struct ActivityView: View {
                 .listRowBackground(Color.clear)
                 
                 if mode == .upcoming {
+                    overdueToggle
                     overdueBanner
                     
                     Section(header: header) {
@@ -306,14 +307,6 @@ struct ActivityView: View {
             .scrollContentBackground(.hidden)
             .background(BotanicaTheme.Colors.background)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic))
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Toggle(isOn: $showOverdueOnly) {
-                        Text("Overdue only")
-                    }
-                    .toggleStyle(SwitchToggleStyle(tint: BotanicaTheme.Colors.primary))
-                }
-            }
             .navigationTitle(mode == .upcoming ? "Upcoming" : "Activity")
             .confirmationDialog("Snooze reminder", isPresented: $showingSnoozeOptions, titleVisibility: .visible) {
                 Button("Snooze 1 day") { applySnooze(days: 1) }
@@ -360,56 +353,73 @@ struct ActivityView: View {
         .listRowSeparator(.hidden)
     }
     
+    private var overdueToggle: some View {
+        HStack {
+            Text("Overdue only")
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
+            Spacer()
+            Button {
+                withAnimation { showOverdueOnly.toggle() }
+            } label: {
+                Text(showOverdueOnly ? "On" : "Off")
+                    .font(BotanicaTheme.Typography.callout)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    .background(showOverdueOnly ? BotanicaTheme.Colors.primary : Color.gray.opacity(0.4))
+                    .clipShape(Capsule())
+            }
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.md)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+    }
+    
     private var overdueBanner: some View {
         let overdueWater = plants.filter { $0.isWateringOverdue }.count
         let overdueFeed = plants.filter { $0.isFertilizingOverdue }.count
         let dueSoon = reminders.filter { $0.isDueSoon }.count
-        return HStack(spacing: BotanicaTheme.Spacing.md) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Overdue & due soon")
-                    .font(BotanicaTheme.Typography.subheadline)
-                HStack(spacing: BotanicaTheme.Spacing.sm) {
-                    if overdueWater > 0 {
-                        Label("\(overdueWater) water", systemImage: "drop.fill")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                            .padding(.vertical, BotanicaTheme.Spacing.xs)
-                            .background(BotanicaTheme.Colors.waterBlue)
-                            .clipShape(Capsule())
-                    }
-                    if overdueFeed > 0 {
-                        Label("\(overdueFeed) feed", systemImage: "leaf.fill")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                            .padding(.vertical, BotanicaTheme.Spacing.xs)
-                            .background(BotanicaTheme.Colors.leafGreen)
-                            .clipShape(Capsule())
-                    }
-                    if dueSoon > 0 {
-                        Label("\(dueSoon) due soon", systemImage: "clock")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                            .padding(.vertical, BotanicaTheme.Spacing.xs)
-                            .background(BotanicaTheme.Colors.sunYellow)
-                            .clipShape(Capsule())
-                    }
-                    if overdueWater == 0 && overdueFeed == 0 && dueSoon == 0 {
-                        Label("All clear", systemImage: "checkmark.circle")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                            .padding(.vertical, BotanicaTheme.Spacing.xs)
-                            .background(BotanicaTheme.Colors.success)
-                            .clipShape(Capsule())
+        let showBanner = overdueWater + overdueFeed + dueSoon > 0
+        guard showBanner else { return AnyView(EmptyView()) }
+        return AnyView(
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Overdue & due soon")
+                        .font(BotanicaTheme.Typography.subheadline)
+                    HStack(spacing: BotanicaTheme.Spacing.sm) {
+                        if overdueWater > 0 {
+                            Label("\(overdueWater) water", systemImage: "drop.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                                .padding(.vertical, BotanicaTheme.Spacing.xs)
+                                .background(BotanicaTheme.Colors.waterBlue)
+                                .clipShape(Capsule())
+                        }
+                        if overdueFeed > 0 {
+                            Label("\(overdueFeed) feed", systemImage: "leaf.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                                .padding(.vertical, BotanicaTheme.Spacing.xs)
+                                .background(BotanicaTheme.Colors.leafGreen)
+                                .clipShape(Capsule())
+                        }
+                        if dueSoon > 0 {
+                            Label("\(dueSoon) due soon", systemImage: "clock")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                                .padding(.vertical, BotanicaTheme.Spacing.xs)
+                                .background(BotanicaTheme.Colors.sunYellow)
+                                .clipShape(Capsule())
+                        }
                     }
                 }
+                Spacer()
             }
-            Spacer()
-        }
-        .padding(.vertical, BotanicaTheme.Spacing.sm)
+            .padding(.vertical, BotanicaTheme.Spacing.sm)
+        )
     }
     
     private func matchesFilter(type: CareType) -> Bool {
