@@ -254,12 +254,12 @@ struct ActivityView: View {
             List {
                 Section {
                     Picker("Mode", selection: $mode) {
-                        Text("Upcoming").tag(ActivityMode.upcoming)
-                        Text("Recent").tag(ActivityMode.recent)
-                    }
-                    .pickerStyle(.segmented)
-                }
-                .listRowBackground(Color.clear)
+                Text("Upcoming").tag(ActivityMode.upcoming)
+                Text("Recent").tag(ActivityMode.recent)
+            }
+            .pickerStyle(.segmented)
+        }
+        .listRowBackground(Color.clear)
                 
                 if mode == .upcoming {
                     overdueToggle
@@ -320,9 +320,9 @@ struct ActivityView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(mode == .upcoming ? "Upcoming care" : "Recent activity")
+                Text(mode == .upcoming ? "Upcoming care" : mode == .recent ? "Recent activity" : "Calendar")
                     .font(BotanicaTheme.Typography.headline)
-                Text(mode == .upcoming ? "Next water/fertilize across all plants" : "Last recorded care events")
+                Text(mode == .upcoming ? "Next water/fertilize across all plants" : mode == .recent ? "Last recorded care events" : "Care events by day")
                     .font(BotanicaTheme.Typography.caption)
                     .foregroundColor(.secondary)
             }
@@ -421,6 +421,7 @@ struct ActivityView: View {
             .padding(.vertical, BotanicaTheme.Spacing.sm)
         )
     }
+    
     
     private func matchesFilter(type: CareType) -> Bool {
         switch filter {
