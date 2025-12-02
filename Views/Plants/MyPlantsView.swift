@@ -261,7 +261,13 @@ struct MyPlantsView: View {
                             summary: "\(plants.count) plants • \(todaysCareCount) due today • \(plants.filter { $0.isFertilizingOverdue }.count) need feed",
                             chips: smartChips,
                             onChipTap: handleChip,
-                            onOrganize: { showingAdvancedFilters = true }
+                            setHealthyFilter: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    filterBy = .healthy
+                                    careNeededFilter = nil
+                                    lightLevelFilter = nil
+                                }
+                            }
                         )
                         
                         // Quick filter pills

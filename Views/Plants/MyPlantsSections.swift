@@ -9,31 +9,46 @@ struct CollectionInsightsHeaderView: View {
     let summary: String
     let chips: [SmartChip]
     let onChipTap: (SmartChip) -> Void
-    let onOrganize: () -> Void
+    let setHealthyFilter: () -> Void
     
     var body: some View {
         VStack(spacing: BotanicaTheme.Spacing.lg) {
             HStack(spacing: BotanicaTheme.Spacing.lg) {
-                ModernStatCard(
-                    title: "Plants",
-                    value: "\(plantsCount)",
-                    icon: "leaf.fill",
-                    color: BotanicaTheme.Colors.leafGreen
-                )
+                Button {
+                    onChipTap(SmartChip(title: "All Plants", count: plantsCount, filter: nil, isSelected: false))
+                } label: {
+                    ModernStatCard(
+                        title: "Plants",
+                        value: "\(plantsCount)",
+                        icon: "leaf.fill",
+                        color: BotanicaTheme.Colors.leafGreen
+                    )
+                }
+                .buttonStyle(.plain)
                 
-                ModernStatCard(
-                    title: "Healthy",
-                    value: "\(collectionHealthPercentage)%",
-                    icon: "heart.fill",
-                    color: BotanicaTheme.Colors.success
-                )
+                Button {
+                    setHealthyFilter()
+                } label: {
+                    ModernStatCard(
+                        title: "Healthy",
+                        value: "\(collectionHealthPercentage)%",
+                        icon: "heart.fill",
+                        color: BotanicaTheme.Colors.success
+                    )
+                }
+                .buttonStyle(.plain)
                 
-                ModernStatCard(
-                    title: "Care Today",
-                    value: "\(todaysCareCount)",
-                    icon: "drop.fill",
-                    color: todaysCareCount > 0 ? BotanicaTheme.Colors.waterBlue : BotanicaTheme.Colors.textTertiary
-                )
+                Button {
+                    onChipTap(SmartChip(title: "Due Today", count: todaysCareCount, filter: .dueToday, isSelected: false))
+                } label: {
+                    ModernStatCard(
+                        title: "Care Today",
+                        value: "\(todaysCareCount)",
+                        icon: "drop.fill",
+                        color: todaysCareCount > 0 ? BotanicaTheme.Colors.waterBlue : BotanicaTheme.Colors.textTertiary
+                    )
+                }
+                .buttonStyle(.plain)
             }
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
