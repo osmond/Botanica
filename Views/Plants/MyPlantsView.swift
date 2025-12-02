@@ -265,18 +265,6 @@ struct MyPlantsView: View {
                         )
                         
                         // Quick filter pills
-                        QuickFiltersView(
-                            filterBy: $filterBy,
-                            careNeededFilter: $careNeededFilter,
-                            sortBy: $sortBy,
-                            plantsCount: plants.count,
-                            needsWaterCount: plants.filter { $0.isWateringOverdue }.count,
-                            needsFertilizerCount: plants.filter { $0.isFertilizingOverdue }.count,
-                            dueTodayCount: dueTodayPlants.count,
-                            healthyPlantCount: healthyPlantCount,
-                            weeklyAddedCount: weeklyAddedCount
-                        )
-                        
                         // Main plants content
                         PlantsMainContentView(
                             groups: organizedPlants,
