@@ -6,8 +6,10 @@ struct CollectionInsightsHeaderView: View {
     let collectionHealthPercentage: Int
     let todaysCareCount: Int
     let insight: String
-    let actionText: String?
-    let action: (() -> Void)?
+    let summary: String
+    let chips: [SmartChip]
+    let onChipTap: (SmartChip) -> Void
+    let onOrganize: () -> Void
     
     var body: some View {
         VStack(spacing: BotanicaTheme.Spacing.lg) {
@@ -34,22 +36,56 @@ struct CollectionInsightsHeaderView: View {
                 )
             }
             
-            if let actionText = actionText, let action = action {
-                ModernInsightCard(
-                    insight: insight,
-                    actionText: actionText,
-                    action: action
-                )
-            } else {
-                ModernInsightCard(
-                    insight: insight,
-                    actionText: nil,
-                    action: nil
-                )
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(insight)
+                            .font(BotanicaTheme.Typography.subheadline)
+                            .foregroundColor(.secondary)
+                        Text(summary)
+                            .font(BotanicaTheme.Typography.bodyEmphasized)
+                    }
+                    Spacer()
+                    Button("Organize") {
+                        onOrganize()
+                    }
+                    .font(BotanicaTheme.Typography.callout)
+                    .foregroundColor(BotanicaTheme.Colors.primary)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    .background(BotanicaTheme.Colors.primary.opacity(0.1))
+                    .clipShape(Capsule())
+                }
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: BotanicaTheme.Spacing.md) {
+                        ForEach(chips, id: \.title) { chip in
+                            QuickFilterPill(
+                                title: chip.title,
+                                count: chip.count,
+                                isSelected: chip.isSelected,
+                                action: { onChipTap(chip) }
+                            )
+                        }
+                    }
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                }
             }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
         }
         .padding(.horizontal, BotanicaTheme.Spacing.lg)
     }
+}
+
+struct SmartChip {
+    let title: String
+    let count: Int
+    let filter: CareNeededFilter?
+    let isSelected: Bool
 }
 
 struct CareRemindersSectionView: View {

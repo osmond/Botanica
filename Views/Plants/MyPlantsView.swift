@@ -57,12 +57,30 @@ struct MyPlantsView: View {
         plants.filter { $0.healthStatus == .excellent || $0.healthStatus == .healthy }.count
     }
     
+    private var smartChips: [SmartChip] {
+        [
+            SmartChip(title: "All Plants", count: plants.count, filter: nil, isSelected: careNeededFilter == nil),
+            SmartChip(title: "Need Water", count: needsWaterCount, filter: .needsWatering, isSelected: careNeededFilter == .needsWatering),
+            SmartChip(title: "Need Feed", count: plants.filter { $0.isFertilizingOverdue }.count, filter: .needsFertilizing, isSelected: careNeededFilter == .needsFertilizing),
+            SmartChip(title: "Due Today", count: dueTodayPlants.count, filter: .dueToday, isSelected: careNeededFilter == .dueToday),
+            SmartChip(title: "Up to Date", count: plants.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue }.count, filter: .upToDate, isSelected: careNeededFilter == .upToDate)
+        ]
+    }
+    
     private var collectionHealthPercentage: Int {
         plants.isEmpty ? 100 : Int((Double(healthyPlantCount) / Double(plants.count)) * 100)
     }
     
     private var needsWaterCount: Int {
         plants.filter { $0.isWateringOverdue }.count
+    }
+    
+    private func handleChip(_ chip: SmartChip) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            careNeededFilter = chip.filter
+            filterBy = nil
+            lightLevelFilter = nil
+        }
     }
     
     private func sortPlants(_ plants: [Plant], by option: SortOption) -> [Plant] {
@@ -212,24 +230,6 @@ struct MyPlantsView: View {
         }
     }
     
-    private var collectionActionText: String? {
-        if urgentCarePlants.count > plants.count / 2 {
-            return "Set Reminders"
-        } else if plants.count >= 10 {
-            return "Organize"
-        }
-        return nil
-    }
-    
-    private var collectionAction: (() -> Void)? {
-        if urgentCarePlants.count > plants.count / 2 {
-            return { careNeededFilter = .needsAnyCare }
-        } else if plants.count >= 10 {
-            return { showingAdvancedFilters = true }
-        }
-        return nil
-    }
-    
     private var weeklyAddedCount: Int {
         let oneWeekAgo = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: Date()) ?? Date()
         return plants.filter { $0.dateAdded >= oneWeekAgo }.count
@@ -258,8 +258,10 @@ struct MyPlantsView: View {
                             collectionHealthPercentage: collectionHealthPercentage,
                             todaysCareCount: todaysCareCount,
                             insight: collectionInsightMessage,
-                            actionText: collectionActionText,
-                            action: collectionAction
+                            summary: "\(plants.count) plants • \(todaysCareCount) due today • \(plants.filter { $0.isFertilizingOverdue }.count) need feed",
+                            chips: smartChips,
+                            onChipTap: handleChip,
+                            onOrganize: { showingAdvancedFilters = true }
                         )
                         
                         // Quick filter pills
