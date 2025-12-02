@@ -68,6 +68,7 @@ struct QuickFiltersView: View {
     let plantsCount: Int
     let needsWaterCount: Int
     let needsFertilizerCount: Int
+    let dueTodayCount: Int
     let healthyPlantCount: Int
     let weeklyAddedCount: Int
     
@@ -93,6 +94,13 @@ struct QuickFiltersView: View {
                     count: needsFertilizerCount,
                     isSelected: careNeededFilter == .needsFertilizing,
                     action: { careNeededFilter = careNeededFilter == .needsFertilizing ? nil : .needsFertilizing }
+                )
+                
+                QuickFilterPill(
+                    title: "Due Today",
+                    count: dueTodayCount,
+                    isSelected: careNeededFilter == .dueToday,
+                    action: { careNeededFilter = careNeededFilter == .dueToday ? nil : .dueToday }
                 )
                 
                 QuickFilterPill(

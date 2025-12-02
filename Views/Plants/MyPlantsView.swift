@@ -35,6 +35,15 @@ struct MyPlantsView: View {
         plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue }
     }
     
+    private var dueTodayPlants: [Plant] {
+        let cal = Calendar.current
+        return plants.filter { plant in
+            let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+            let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
+            return dueWaterToday || dueFeedToday
+        }
+    }
+    
     private var todaysCareCount: Int {
         let cal = Calendar.current
         return plants.filter { plant in
@@ -261,6 +270,7 @@ struct MyPlantsView: View {
                             plantsCount: plants.count,
                             needsWaterCount: plants.filter { $0.isWateringOverdue }.count,
                             needsFertilizerCount: plants.filter { $0.isFertilizingOverdue }.count,
+                            dueTodayCount: dueTodayPlants.count,
                             healthyPlantCount: healthyPlantCount,
                             weeklyAddedCount: weeklyAddedCount
                         )
@@ -473,6 +483,13 @@ final class MyPlantsViewModel: ObservableObject {
             case .needsFertilizing: filtered = filtered.filter { $0.isFertilizingOverdue }
             case .needsAnyCare: filtered = filtered.filter { $0.isWateringOverdue || $0.isFertilizingOverdue }
             case .upToDate: filtered = filtered.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue }
+            case .dueToday:
+                filtered = filtered.filter { plant in
+                    let cal = Calendar.current
+                    let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+                    let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
+                    return dueWaterToday || dueFeedToday
+                }
             }
         }
         filtered = sort(plants: filtered, by: sortBy)
@@ -853,6 +870,12 @@ struct ModernPlantSection: View {
 
 struct ModernPlantCard: View {
     let plant: Plant
+    private var isDueToday: Bool {
+        let cal = Calendar.current
+        let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+        let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
+        return dueWaterToday || dueFeedToday
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -879,6 +902,17 @@ struct ModernPlantCard: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                     .lineLimit(1)
+                
+                if isDueToday {
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                        Image(systemName: "calendar.badge.clock")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(BotanicaTheme.Colors.sunYellow)
+                        Text("Due today")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    }
+                }
                 
                 if !plant.location.isEmpty {
                     HStack(spacing: BotanicaTheme.Spacing.xs) {
@@ -925,6 +959,12 @@ struct ModernPlantCard: View {
 
 struct ModernPlantListRow: View {
     let plant: Plant
+    private var isDueToday: Bool {
+        let cal = Calendar.current
+        let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+        let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
+        return dueWaterToday || dueFeedToday
+    }
     
     var body: some View {
         HStack(spacing: BotanicaTheme.Spacing.md) {
@@ -935,6 +975,17 @@ struct ModernPlantListRow: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                     .lineLimit(1)
+                
+                if isDueToday {
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                        Image(systemName: "calendar.badge.clock")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(BotanicaTheme.Colors.sunYellow)
+                        Text("Due today")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    }
+                }
                 
                 if !plant.location.isEmpty {
                     HStack(spacing: BotanicaTheme.Spacing.xs) {

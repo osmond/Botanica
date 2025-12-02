@@ -76,6 +76,7 @@ enum CareNeededFilter: String, CaseIterable {
     case needsFertilizing = "Needs Fertilizing"
     case needsAnyCare = "Needs Any Care"
     case upToDate = "Up to Date"
+    case dueToday = "Due Today"
     
     var icon: String {
         switch self {
@@ -83,6 +84,7 @@ enum CareNeededFilter: String, CaseIterable {
         case .needsFertilizing: return "leaf.arrow.circlepath"
         case .needsAnyCare: return "exclamationmark.triangle"
         case .upToDate: return "checkmark.circle"
+        case .dueToday: return "calendar"
         }
     }
     
@@ -92,7 +94,7 @@ enum CareNeededFilter: String, CaseIterable {
         case .needsFertilizing: return BotanicaTheme.Colors.leafGreen
         case .needsAnyCare: return BotanicaTheme.Colors.error
         case .upToDate: return BotanicaTheme.Colors.success
+        case .dueToday: return BotanicaTheme.Colors.sunYellow
         }
     }
 }
-
