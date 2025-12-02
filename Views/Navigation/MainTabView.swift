@@ -249,6 +249,13 @@ struct ActivityView: View {
         }
     }
     
+    private var todayItems: [ActivityItem] {
+        let cal = Calendar.current
+        return upcomingItems
+            .filter { cal.isDateInToday($0.date) }
+            .map { .upcoming($0) }
+    }
+    
     var body: some View {
         NavigationStack {
             List {
@@ -263,6 +270,25 @@ struct ActivityView: View {
                 
                 if mode == .upcoming {
                     Section(header: header) {
+                        if !todayItems.isEmpty {
+                            Section(header: Text("Due today").font(BotanicaTheme.Typography.subheadline)) {
+                                ForEach(todayItems) { item in
+                                    if let destinationPlant = plantFor(item) {
+                                        NavigationLink(destination: PlantDetailView(plant: destinationPlant)) {
+                                            ActivityRow(item: item) { upcoming in
+                                                logUpcoming(upcoming)
+                                            }
+                                        }
+                                        .buttonStyle(.plain)
+                                    } else {
+                                        ActivityRow(item: item) { upcoming in
+                                            logUpcoming(upcoming)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
                         if items.isEmpty {
                             emptyState
                         } else {
