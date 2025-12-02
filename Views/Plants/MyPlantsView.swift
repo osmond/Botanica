@@ -36,16 +36,11 @@ struct MyPlantsView: View {
     }
     
     private var todaysCareCount: Int {
-        let today = Calendar.current.startOfDay(for: Date())
+        let cal = Calendar.current
         return plants.filter { plant in
-            guard let carePlan = plant.carePlan else { return false }
-            // Get the most recent watering event
-            let lastWateringDate = plant.careEvents
-                .filter { $0.type == .watering }
-                .max(by: { $0.date < $1.date })?.date ?? plant.dateAdded
-            
-            let daysSinceLastWatering = Calendar.current.dateComponents([.day], from: lastWateringDate, to: today).day ?? 0
-            return daysSinceLastWatering >= carePlan.wateringInterval
+            let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+            let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
+            return plant.isWateringOverdue || plant.isFertilizingOverdue || dueWaterToday || dueFeedToday
         }.count
     }
     
