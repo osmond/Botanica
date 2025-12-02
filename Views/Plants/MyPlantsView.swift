@@ -59,12 +59,18 @@ struct MyPlantsView: View {
     
     private var smartChips: [SmartChip] {
         [
-            SmartChip(title: "All Plants", count: plants.count, filter: nil, isSelected: careNeededFilter == nil),
+            SmartChip(title: "All Plants", count: plants.count, filter: nil, isSelected: careNeededFilter == nil && filterBy == nil),
             SmartChip(title: "Need Water", count: needsWaterCount, filter: .needsWatering, isSelected: careNeededFilter == .needsWatering),
             SmartChip(title: "Need Feed", count: plants.filter { $0.isFertilizingOverdue }.count, filter: .needsFertilizing, isSelected: careNeededFilter == .needsFertilizing),
             SmartChip(title: "Due Today", count: dueTodayPlants.count, filter: .dueToday, isSelected: careNeededFilter == .dueToday),
             SmartChip(title: "Up to Date", count: plants.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue }.count, filter: .upToDate, isSelected: careNeededFilter == .upToDate)
         ]
+    }
+    
+    private var activeFilterTitle: String? {
+        if let care = careNeededFilter { return care.rawValue }
+        if let health = filterBy { return health.displayText }
+        return nil
     }
     
     private var collectionHealthPercentage: Int {
@@ -267,7 +273,15 @@ struct MyPlantsView: View {
                                     careNeededFilter = nil
                                     lightLevelFilter = nil
                                 }
-                            }
+                            },
+                            onClearFilter: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    careNeededFilter = nil
+                                    filterBy = nil
+                                    lightLevelFilter = nil
+                                }
+                            },
+                            activeFilterTitle: activeFilterTitle
                         )
                         
                         // Quick filter pills

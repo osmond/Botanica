@@ -10,6 +10,8 @@ struct CollectionInsightsHeaderView: View {
     let chips: [SmartChip]
     let onChipTap: (SmartChip) -> Void
     let setHealthyFilter: () -> Void
+    let onClearFilter: () -> Void
+    let activeFilterTitle: String?
     
     var body: some View {
         VStack(spacing: BotanicaTheme.Spacing.lg) {
@@ -52,12 +54,23 @@ struct CollectionInsightsHeaderView: View {
             }
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(insight)
-                        .font(BotanicaTheme.Typography.subheadline)
-                        .foregroundColor(.secondary)
-                    Text(summary)
-                        .font(BotanicaTheme.Typography.bodyEmphasized)
+                if activeFilterTitle == nil {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(insight)
+                            .font(BotanicaTheme.Typography.subheadline)
+                            .foregroundColor(.secondary)
+                        Text(summary)
+                            .font(BotanicaTheme.Typography.bodyEmphasized)
+                    }
+                } else {
+                    HStack {
+                        Text("Filter: \(activeFilterTitle ?? "")")
+                            .font(BotanicaTheme.Typography.subheadline)
+                        Spacer()
+                        Button("Clear") { onClearFilter() }
+                            .font(BotanicaTheme.Typography.caption)
+                            .foregroundColor(BotanicaTheme.Colors.primary)
+                    }
                 }
                 
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -89,6 +102,8 @@ struct SmartChip {
     let count: Int
     let filter: CareNeededFilter?
     let isSelected: Bool
+    
+    var chipTitle: String { title }
 }
 
 struct CareRemindersSectionView: View {
