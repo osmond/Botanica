@@ -37,24 +37,12 @@ struct CollectionInsightsHeaderView: View {
             }
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(insight)
-                            .font(BotanicaTheme.Typography.subheadline)
-                            .foregroundColor(.secondary)
-                        Text(summary)
-                            .font(BotanicaTheme.Typography.bodyEmphasized)
-                    }
-                    Spacer()
-                    Button("Organize") {
-                        onOrganize()
-                    }
-                    .font(BotanicaTheme.Typography.callout)
-                    .foregroundColor(BotanicaTheme.Colors.primary)
-                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                    .padding(.vertical, BotanicaTheme.Spacing.xs)
-                    .background(BotanicaTheme.Colors.primary.opacity(0.1))
-                    .clipShape(Capsule())
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(insight)
+                        .font(BotanicaTheme.Typography.subheadline)
+                        .foregroundColor(.secondary)
+                    Text(summary)
+                        .font(BotanicaTheme.Typography.bodyEmphasized)
                 }
                 
                 ScrollView(.horizontal, showsIndicators: false) {
