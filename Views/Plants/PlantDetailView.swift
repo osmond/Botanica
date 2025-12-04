@@ -21,6 +21,8 @@ struct PlantDetailView: View {
     @State private var selectedTab = 0
     @State private var showingPhotoManager = false
     @State private var referenceImage: UIImage?
+    @State private var showingAddNote = false
+    @State private var noteText: String = ""
     
     private var waterAmountText: String {
         let amount = plant.recommendedWateringAmount.amount
@@ -135,6 +137,37 @@ struct PlantDetailView: View {
         }
         .sheet(isPresented: $showingPhotoManager) {
             PhotoManager(plant: plant)
+        }
+        .sheet(isPresented: $showingAddNote) {
+            NavigationStack {
+                VStack(spacing: BotanicaTheme.Spacing.md) {
+                    Text("Add a note for \(plant.nickname)")
+                        .font(BotanicaTheme.Typography.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    TextEditor(text: $noteText)
+                        .frame(minHeight: 200)
+                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                                .stroke(Color.secondary.opacity(0.2))
+                        )
+                    
+                    Spacer()
+                }
+                .padding()
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { showingAddNote = false; noteText = "" }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            saveNote()
+                        }
+                        .disabled(noteText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+            }
         }
         .alert("Action Failed", isPresented: Binding(
             get: { vm.actionError != nil },
@@ -391,7 +424,7 @@ struct PlantDetailView: View {
                     color: BotanicaTheme.Colors.primary,
                     isUrgent: false
                 ) {
-                    showingAddCareEvent = true // Reuse for now; swap to note composer when available
+                    showingAddNote = true
                 }
             }
             .disabled(vm.isPerformingAction)
@@ -566,6 +599,15 @@ struct PlantDetailView: View {
     }
     
     // MARK: - Helper Functions
+    private func saveNote() {
+        let trimmed = noteText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let separator = plant.notes.isEmpty ? "" : "\n"
+        plant.notes.append("\(separator)\(trimmed)")
+        try? modelContext.save()
+        noteText = ""
+        showingAddNote = false
+    }
     
 }
 
