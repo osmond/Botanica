@@ -387,11 +387,11 @@ struct PlantDetailView: View {
                 
                 QuickActionButton(
                     icon: "plus.circle.fill",
-                    title: "Add Care",
+                    title: "Add Note",
                     color: BotanicaTheme.Colors.primary,
                     isUrgent: false
                 ) {
-                    showingAddCareEvent = true
+                    showingAddCareEvent = true // Reuse for now; swap to note composer when available
                 }
             }
             .disabled(vm.isPerformingAction)
