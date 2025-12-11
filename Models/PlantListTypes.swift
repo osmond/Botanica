@@ -75,6 +75,7 @@ enum CareNeededFilter: String, CaseIterable {
     case needsWatering = "Needs Watering"
     case needsFertilizing = "Needs Fertilizing"
     case needsAnyCare = "Needs Any Care"
+    case overdue = "Overdue"
     case upToDate = "Up to Date"
     case dueToday = "Due Today"
     
@@ -83,6 +84,7 @@ enum CareNeededFilter: String, CaseIterable {
         case .needsWatering: return "drop.fill"
         case .needsFertilizing: return "leaf.arrow.circlepath"
         case .needsAnyCare: return "exclamationmark.triangle"
+        case .overdue: return "clock.badge.exclamationmark"
         case .upToDate: return "checkmark.circle"
         case .dueToday: return "calendar"
         }
@@ -93,6 +95,7 @@ enum CareNeededFilter: String, CaseIterable {
         case .needsWatering: return BotanicaTheme.Colors.waterBlue
         case .needsFertilizing: return BotanicaTheme.Colors.leafGreen
         case .needsAnyCare: return BotanicaTheme.Colors.error
+        case .overdue: return BotanicaTheme.Colors.warning
         case .upToDate: return BotanicaTheme.Colors.success
         case .dueToday: return BotanicaTheme.Colors.sunYellow
         }

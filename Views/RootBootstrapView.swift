@@ -42,6 +42,7 @@ struct RootBootstrapView: View {
         
         await DevBlossomSeeder.seedIfNeeded(context: modelContext)
         await DataMigrationService.migratePotSizeFromNotesIfNeeded(context: modelContext)
+        await DataMigrationService.migrateRepotDefaultsIfNeeded(context: modelContext)
         await MainActor.run {
             isSeeded = true
             loadState = .loaded

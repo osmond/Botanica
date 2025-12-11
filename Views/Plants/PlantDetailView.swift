@@ -68,6 +68,18 @@ struct PlantDetailView: View {
         return plant.nextFertilizingDate ?? cal.date(byAdding: .day, value: plant.fertilizingFrequency, to: plant.dateAdded)
     }
     
+    private var nextRepotDate: Date? {
+        let months = plant.repotFrequencyMonths ?? 12
+        let cal = Calendar.current
+        return plant.nextRepottingDate ?? cal.date(byAdding: .month, value: months, to: plant.dateAdded)
+    }
+    
+    private var repotDueSoon: Bool {
+        guard let nextRepotDate else { return false }
+        let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: nextRepotDate).day ?? 0
+        return daysUntil <= 14
+    }
+    
     private var plantAge: String {
         let calendar = Calendar.current
         let now = Date()
@@ -96,7 +108,7 @@ struct PlantDetailView: View {
                     plantInfoCard
                     
                     // Care reminders if needed
-                    if plant.isWateringOverdue || plant.isFertilizingOverdue {
+                    if plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue || repotDueSoon {
                         careRemindersCard
                     }
                     
@@ -385,6 +397,41 @@ struct PlantDetailView: View {
                         .cornerRadius(BotanicaTheme.CornerRadius.small)
                     }
                 }
+                
+                if plant.isRepottingOverdue {
+                    HStack {
+                        Image(systemName: "flowerpot.fill")
+                            .foregroundStyle(BotanicaTheme.Colors.soilBrown)
+                        Text("Repotting overdue")
+                            .font(.system(size: 14, weight: .medium))
+                        Spacer()
+                        Button("Plan repot") {
+                            showingEditPlant = true
+                        }
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                        .padding(.vertical, BotanicaTheme.Spacing.xs)
+                        .background(BotanicaTheme.Colors.soilBrown)
+                        .cornerRadius(BotanicaTheme.CornerRadius.small)
+                    }
+                    
+                    Text("Update last repot date once you finish to reset reminders.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                        .padding(.leading, 20)
+                } else if let nextRepotDate {
+                    let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: nextRepotDate).day ?? 0
+                    if daysUntil <= 14 {
+                        HStack(spacing: BotanicaTheme.Spacing.xs) {
+                            Image(systemName: "calendar.badge.clock")
+                                .foregroundColor(BotanicaTheme.Colors.soilBrown)
+                            Text(daysUntil <= 0 ? "Repotting due now" : "Repot soon (\(daysUntil) days)")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                        }
+                    }
+                }
             }
         }
         .padding(BotanicaTheme.Spacing.lg)
@@ -476,6 +523,13 @@ struct PlantDetailView: View {
                 )
                 
                 DetailItem(
+                    icon: "flowerpot.fill",
+                    title: "Next Repot",
+                    value: nextDateText(for: nextRepotDate),
+                    color: BotanicaTheme.Colors.soilBrown
+                )
+                
+                DetailItem(
                     icon: "drop.fill",
                     title: "Water Every",
                     value: "\(plant.wateringFrequency) days",
@@ -501,6 +555,13 @@ struct PlantDetailView: View {
                     title: "Fertilize Every",
                     value: "\(plant.fertilizingFrequency) days",
                     color: BotanicaTheme.Colors.leafGreen
+                )
+                
+                DetailItem(
+                    icon: "calendar.badge.plus",
+                    title: "Repot Every",
+                    value: "\(plant.repotFrequencyMonths ?? 12) months",
+                    color: BotanicaTheme.Colors.soilBrown
                 )
                 
                 DetailItem(

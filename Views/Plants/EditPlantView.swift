@@ -38,6 +38,8 @@ struct EditPlantView: View {
     @State private var potSizeInches: Int
     @State private var potHeightInches: Int
     @State private var potMaterial: PotMaterial
+    @State private var repotFrequencyMonths: Int
+    @State private var lastRepotted: Date?
     @State private var useCentimeters: Bool = false
     @State private var potSizeInput: String
     @State private var potHeightInput: String
@@ -48,6 +50,7 @@ struct EditPlantView: View {
     // Care history
     @State private var lastWatered: Date?
     @State private var lastFertilized: Date?
+    @State private var hasBeenRepotted: Bool
     @State private var hasBeenWatered: Bool
     @State private var hasBeenFertilized: Bool
     
@@ -80,13 +83,16 @@ struct EditPlantView: View {
         _waterUnit = State(initialValue: plant.waterUnit)
         _lastWatered = State(initialValue: plant.lastWatered)
         _lastFertilized = State(initialValue: plant.lastFertilized)
+        _lastRepotted = State(initialValue: plant.lastRepotted)
         _hasBeenWatered = State(initialValue: plant.lastWatered != nil)
         _hasBeenFertilized = State(initialValue: plant.lastFertilized != nil)
+        _hasBeenRepotted = State(initialValue: plant.lastRepotted != nil)
         _potSizeInches = State(initialValue: plant.potSize)
         _potHeightInches = State(initialValue: plant.potHeight ?? 0)
         _potMaterial = State(initialValue: plant.potMaterial ?? .unknown)
         _potSizeInput = State(initialValue: String(plant.potSize))
         _potHeightInput = State(initialValue: String(plant.potHeight ?? 0))
+        _repotFrequencyMonths = State(initialValue: plant.repotFrequencyMonths ?? 12)
     }
     
     var body: some View {
@@ -523,6 +529,41 @@ struct EditPlantView: View {
                     ), in: 7...180, step: 7)
                     .tint(BotanicaTheme.Colors.leafGreen)
                 }
+                
+                // Repotting
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Repot Every")
+                            .font(BotanicaTheme.Typography.headline)
+                        Spacer()
+                        Text("\(repotFrequencyMonths) mo")
+                            .font(BotanicaTheme.Typography.callout)
+                            .foregroundColor(.secondary)
+                    }
+                    Slider(value: Binding(
+                        get: { Double(repotFrequencyMonths) },
+                        set: { repotFrequencyMonths = Int($0) }
+                    ), in: 6...36, step: 3)
+                    .tint(BotanicaTheme.Colors.nutrientOrange)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle(isOn: $hasBeenRepotted) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "flowerpot.fill")
+                                    .foregroundColor(BotanicaTheme.Colors.nutrientOrange)
+                                Text("Last Repotted")
+                            }
+                        }
+                        if hasBeenRepotted {
+                            DatePicker("Date", selection: Binding(
+                                get: { lastRepotted ?? Date() },
+                                set: { lastRepotted = $0 }
+                            ), displayedComponents: [.date])
+                            .datePickerStyle(.compact)
+                            .padding(.leading, 32)
+                        }
+                    }
+                }
 
                 // Humidity Preference
                 VStack(alignment: .leading, spacing: 8) {
@@ -721,6 +762,8 @@ struct EditPlantView: View {
             notes: notes,
             lastWatered: hasBeenWatered ? lastWatered : nil,
             lastFertilized: hasBeenFertilized ? lastFertilized : nil,
+            repotFrequencyMonths: repotFrequencyMonths,
+            lastRepotted: hasBeenRepotted ? lastRepotted : nil,
             photosData: []
         )
         

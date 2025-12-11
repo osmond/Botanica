@@ -25,6 +25,8 @@ struct PlantFormData {
     var notes: String
     var lastWatered: Date?
     var lastFertilized: Date?
+    var repotFrequencyMonths: Int?
+    var lastRepotted: Date?
     var photosData: [Data]
 }
 
@@ -83,6 +85,8 @@ final class PlantFormViewModel: ViewModel {
             temperatureRange: data.temperatureRange,
             recommendedWaterAmount: data.recommendedWaterAmount,
             waterUnit: data.waterUnit,
+            repotFrequencyMonths: data.repotFrequencyMonths ?? 12,
+            lastRepotted: data.lastRepotted,
             source: data.source.trimmingCharacters(in: .whitespacesAndNewlines),
             location: data.location.trimmingCharacters(in: .whitespacesAndNewlines),
             healthStatus: data.healthStatus,
@@ -137,6 +141,8 @@ final class PlantFormViewModel: ViewModel {
         plant.notes = data.notes
         plant.lastWatered = data.lastWatered
         plant.lastFertilized = data.lastFertilized
+        plant.repotFrequencyMonths = data.repotFrequencyMonths ?? plant.repotFrequencyMonths ?? 12
+        plant.lastRepotted = data.lastRepotted
         
         if !data.photosData.isEmpty {
             for (index, data) in data.photosData.enumerated() {

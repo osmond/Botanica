@@ -331,10 +331,10 @@ struct SettingsLinkRow: View {
                 subtitle: "How plants are displayed",
                 icon: "square.grid.2x2",
                 color: BotanicaTheme.Colors.leafGreen,
-                selection: .constant("grid"),
+                selection: .constant(ViewMode.grid.rawValue),
                 options: [
-                    ("grid", "Grid View"),
-                    ("list", "List View")
+                    (ViewMode.grid.rawValue, "Grid View"),
+                    (ViewMode.list.rawValue, "List View")
                 ]
             )
         }

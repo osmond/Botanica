@@ -213,29 +213,31 @@ struct ActivityView: View {
     }
     
     private var upcomingItems: [SyntheticUpcoming] {
-        let now = Date()
         let base = plants.flatMap { plant -> [SyntheticUpcoming] in
             var items: [SyntheticUpcoming] = []
-            if let nextWater = plant.nextWateringDate, nextWater >= now {
+            if let nextWater = plant.nextWateringDate {
                 items.append(SyntheticUpcoming(date: nextWater, plant: plant, type: .watering))
             }
-            if let nextFert = plant.nextFertilizingDate, nextFert >= now {
+            if let nextFert = plant.nextFertilizingDate {
                 items.append(SyntheticUpcoming(date: nextFert, plant: plant, type: .fertilizing))
+            }
+            if let nextRepot = plant.nextRepottingDate {
+                items.append(SyntheticUpcoming(date: nextRepot, plant: plant, type: .repotting))
             }
             return items
         }
         .filter { matchesFilter(type: $0.type) && matchesSearch(plantName: $0.plant.nickname) }
         
         let sorted = base.sorted { lhs, rhs in
-            let lhsOverdue = lhs.plant.isWateringOverdue || lhs.plant.isFertilizingOverdue
-            let rhsOverdue = rhs.plant.isWateringOverdue || rhs.plant.isFertilizingOverdue
+            let lhsOverdue = lhs.plant.isWateringOverdue || lhs.plant.isFertilizingOverdue || lhs.plant.isRepottingOverdue
+            let rhsOverdue = rhs.plant.isWateringOverdue || rhs.plant.isFertilizingOverdue || rhs.plant.isRepottingOverdue
             if lhsOverdue == rhsOverdue {
                 return lhs.date < rhs.date
             }
             return lhsOverdue && !rhsOverdue
         }
         if showOverdueOnly {
-            return sorted.filter { $0.plant.isWateringOverdue || $0.plant.isFertilizingOverdue }
+            return sorted.filter { $0.plant.isWateringOverdue || $0.plant.isFertilizingOverdue || $0.plant.isRepottingOverdue }
         }
         return sorted
     }

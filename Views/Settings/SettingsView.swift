@@ -18,7 +18,7 @@ struct SettingsView: View {
     @AppStorage("care_reminders_enabled") private var careRemindersEnabled = true
     @AppStorage("daily_summary_enabled") private var dailySummaryEnabled = true
     @AppStorage("photo_backup_enabled") private var photoBackupEnabled = false
-    @AppStorage("default_view_mode") private var defaultViewMode = "grid"
+    @AppStorage("default_view_mode") private var defaultViewMode = ViewMode.grid.rawValue
     @AppStorage("theme_mode") private var themeMode = "system"
     
     @State private var showingAISettings = false
@@ -167,8 +167,8 @@ struct SettingsView: View {
                 color: BotanicaTheme.Colors.leafGreen,
                 selection: $defaultViewMode,
                 options: [
-                    ("grid", "Grid View"),
-                    ("list", "List View")
+                    (ViewMode.grid.rawValue, "Grid View"),
+                    (ViewMode.list.rawValue, "List View")
                 ]
             )
             

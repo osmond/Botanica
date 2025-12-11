@@ -36,6 +36,35 @@ enum DataMigrationService {
         print("🔁 Pot size migration complete. Updated: \(updated)")
     }
 
+    /// Sets a sensible default repot frequency and last repot date for legacy plants.
+    /// Runs once to avoid migration failures when the new attributes are nil.
+    static func migrateRepotDefaultsIfNeeded(context: ModelContext) async {
+        let flagKey = "migrated_repot_defaults_v1"
+        if UserDefaults.standard.bool(forKey: flagKey) { return }
+
+        let descriptor = FetchDescriptor<Plant>()
+        guard let plants = try? context.fetch(descriptor) else { return }
+
+        var updated = 0
+        for plant in plants {
+            var touched = false
+            if plant.repotFrequencyMonths == nil {
+                plant.repotFrequencyMonths = 12
+                touched = true
+            }
+            if plant.lastRepotted == nil {
+                // Anchor to dateAdded so nothing shows overdue immediately
+                plant.lastRepotted = plant.dateAdded
+                touched = true
+            }
+            if touched { updated += 1 }
+        }
+
+        do { try context.save() } catch { }
+        UserDefaults.standard.set(true, forKey: flagKey)
+        print("🔁 Repot defaults migration complete. Updated: \(updated)")
+    }
+
     /// Extracts pot diameter and height from notes; returns (diameterInches, heightInches, cleanedNotes)
     private static func extractPotDimensionsAndCleanNotes(from notes: String) -> (Int?, Int?, String) {
         // Example fragments to catch:

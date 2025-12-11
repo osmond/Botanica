@@ -93,6 +93,34 @@ extension Plant {
         return daysSince >= 0 && daysSince > fertilizingFrequency
     }
     
+    /// Returns days since last repotting
+    var daysSinceLastRepotting: Int {
+        if let lastRepot = lastCareEvent(of: .repotting) {
+            return Calendar.current.dateComponents([.day], from: lastRepot.date, to: Date()).day ?? -1
+        } else if let lastRepotted = lastRepotted {
+            return Calendar.current.dateComponents([.day], from: lastRepotted, to: Date()).day ?? -1
+        }
+        return -1
+    }
+    
+    /// Determines if repotting is overdue
+    var isRepottingOverdue: Bool {
+        let daysSince = daysSinceLastRepotting
+        let intervalDays = (repotFrequencyMonths ?? 12) * 30 // coarse monthly approximation
+        return daysSince >= 0 && daysSince > intervalDays
+    }
+    
+    /// Returns next repotting date based on frequency
+    var nextRepottingDate: Date? {
+        let intervalDays = (repotFrequencyMonths ?? 12) * 30
+        if let lastRepot = lastCareEvent(of: .repotting) {
+            return Calendar.current.date(byAdding: .day, value: intervalDays, to: lastRepot.date)
+        } else if let lastRepotted = lastRepotted {
+            return Calendar.current.date(byAdding: .day, value: intervalDays, to: lastRepotted)
+        }
+        return nil
+    }
+    
     /// Returns next watering date based on frequency
     var nextWateringDate: Date? {
         // Check care events first, then fall back to lastWatered date

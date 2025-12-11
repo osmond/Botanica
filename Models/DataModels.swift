@@ -47,6 +47,10 @@ final class Plant {
     var recommendedWaterAmount: Double
     /// Unit of measurement for water amount
     var waterUnit: WaterUnit
+    /// Repotting frequency in months (e.g., 12). Optional to keep older stores compatible.
+    var repotFrequencyMonths: Int?
+    /// Date when the plant was last repotted
+    var lastRepotted: Date?
     
     // MARK: Metadata
     /// Date when plant was added to collection
@@ -102,6 +106,8 @@ final class Plant {
         temperatureRange: TemperatureRange = TemperatureRange(min: 65, max: 80),
         recommendedWaterAmount: Double = 250,
         waterUnit: WaterUnit = .milliliters,
+        repotFrequencyMonths: Int = 12,
+        lastRepotted: Date? = nil,
         source: String = "",
         location: String = "",
         healthStatus: HealthStatus = .healthy,
@@ -126,6 +132,8 @@ final class Plant {
         self.temperatureRange = temperatureRange
         self.recommendedWaterAmount = recommendedWaterAmount
         self.waterUnit = waterUnit
+        self.repotFrequencyMonths = repotFrequencyMonths
+        self.lastRepotted = lastRepotted
         self.dateAdded = Date()
         self.dateAcquired = nil
         self.source = source

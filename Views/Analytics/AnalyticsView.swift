@@ -59,6 +59,7 @@ struct AnalyticsView: View {
     @Query private var plants: [Plant]
     @Query private var careEvents: [CareEvent]
     @StateObject private var viewModel = AnalyticsViewModel()
+    @AppStorage("analytics.timeRange") private var storedRange: String = AnalyticsTimeRange.month.rawValue
     @State private var selectedTimeRange: AnalyticsTimeRange = .month
     @State private var showingSeasonalGuidance = false
     @State private var selectedPlantForDetails: Plant?
@@ -105,11 +106,6 @@ struct AnalyticsView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: BotanicaTheme.Spacing.lg) {
-                                Text("Plant Analytics")
-                                    .font(BotanicaTheme.Typography.title1)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.bottom, BotanicaTheme.Spacing.sm)
-                                
                                 // Hero Section with Collection Health Score
                                 collectionHealthHero
                                 
@@ -167,12 +163,16 @@ struct AnalyticsView: View {
             }
             .task(id: selectedTimeRange) {
                 viewModel.refresh(plants: plants, careEvents: careEvents, range: selectedTimeRange)
+                storedRange = selectedTimeRange.rawValue
             }
             .onChange(of: plants.count) { _, _ in
                 viewModel.refresh(plants: plants, careEvents: careEvents, range: selectedTimeRange)
             }
             .onChange(of: careEvents.count) { _, _ in
                 viewModel.refresh(plants: plants, careEvents: careEvents, range: selectedTimeRange)
+            }
+            .onAppear {
+                selectedTimeRange = AnalyticsTimeRange(rawValue: storedRange) ?? .month
             }
         }
     }
@@ -191,10 +191,23 @@ struct AnalyticsView: View {
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundStyle(healthScoreColor)
                     
-                    Text(collectionHealthGrade)
-                        .font(BotanicaTheme.Typography.callout)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(healthScoreColor)
+                    HStack(spacing: 6) {
+                        Text(collectionHealthGrade)
+                            .font(BotanicaTheme.Typography.callout)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(healthScoreColor)
+                        let delta = viewModel.healthDelta(for: selectedTimeRange)
+                        if let delta {
+                            Text(delta > 0 ? "+\(Int(delta))" : "\(Int(delta))")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(delta >= 0 ? BotanicaTheme.Colors.success : BotanicaTheme.Colors.error)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background((delta >= 0 ? BotanicaTheme.Colors.success : BotanicaTheme.Colors.error).opacity(0.12))
+                                .clipShape(Capsule())
+                        }
+                    }
                 }
                 
                 Spacer(minLength: BotanicaTheme.Spacing.md)
@@ -239,19 +252,23 @@ struct AnalyticsView: View {
                 )
             }
             
-            HStack(spacing: BotanicaTheme.Spacing.md) {
-                OverdueChip(
-                    waterCount: plants.filter { $0.isWateringOverdue }.count,
-                    feedCount: plants.filter { $0.isFertilizingOverdue }.count
-                )
-                
-                Spacer()
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    InlineStatusChips(
+                        overdue: overdueCount,
+                        dueToday: dueTodayCount,
+                        attention: attentionNeededCount,
+                        onSelect: { filter in viewModel.applyInlineFilter(filter, plants: plants) }
+                    )
+                    .padding(.trailing, BotanicaTheme.Spacing.sm)
+                }
                 
                 NavigationLink(destination: ActivityView().navigationBarHidden(true)) {
+                    let totalActionable = overdueCount + dueTodayCount
                     HStack(spacing: BotanicaTheme.Spacing.xs) {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.white)
-                        Text("Log care")
+                        Text(totalActionable > 0 ? "Log care (\(totalActionable))" : "Log care")
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
                     }
@@ -269,9 +286,15 @@ struct AnalyticsView: View {
     
     private var modernTimeRangeSelector: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            Text("Analysis Period")
-                .font(BotanicaTheme.Typography.headline)
-                .fontWeight(.semibold)
+            HStack {
+                Text("Analysis Period")
+                    .font(BotanicaTheme.Typography.headline)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(selectedTimeRange.subtitle)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundStyle(.secondary)
+            }
             
             Picker("Time Range", selection: $selectedTimeRange) {
                 ForEach(AnalyticsTimeRange.allCases, id: \.self) { range in
@@ -292,7 +315,7 @@ struct AnalyticsView: View {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text("Log care now")
                         .font(BotanicaTheme.Typography.headline)
-                    Text("Quickly record watering or fertilizing")
+                    Text("Quickly record watering, feeding, or repotting")
                         .font(BotanicaTheme.Typography.caption)
                         .foregroundColor(.secondary)
                 }
@@ -314,11 +337,14 @@ struct AnalyticsView: View {
                         .font(BotanicaTheme.Typography.title3)
                         .fontWeight(.semibold)
                     
-                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                    HStack(spacing: BotanicaTheme.Spacing.sm) {
+                        Text("Applies to \(seasonalAppliesCount) plants")
+                            .font(BotanicaTheme.Typography.caption)
+                            .foregroundColor(.secondary)
                         Capsule()
                             .fill(BotanicaTheme.Colors.primary.opacity(0.15))
                             .frame(width: 6, height: 6)
-                        Text("\(seasonalTaskCount(for: BotanicalSeason.current)) tasks ready • Applies to \(seasonalAppliesCount)")
+                        Text("\(seasonalTaskCount(for: BotanicalSeason.current)) tasks ready")
                             .font(BotanicaTheme.Typography.caption)
                             .foregroundColor(.secondary)
                     }
@@ -346,6 +372,23 @@ struct AnalyticsView: View {
                 }
                 .foregroundColor(BotanicaTheme.Colors.primary)
             }
+            
+            Button {
+                showingSeasonalGuidance = true
+            } label: {
+                HStack {
+                    Text("Apply to \(plants.count) plants")
+                        .fontWeight(.semibold)
+                    Spacer()
+                    Image(systemName: "leaf.fill")
+                        .foregroundColor(BotanicaTheme.Colors.primary)
+                }
+                .padding(.horizontal, BotanicaTheme.Spacing.md)
+                .padding(.vertical, BotanicaTheme.Spacing.sm)
+                .frame(maxWidth: .infinity)
+                .background(BotanicaTheme.Colors.primary.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
+            }
         }
         .cardStyle()
         .accessibilityLabel("Seasonal care guide")
@@ -368,17 +411,23 @@ struct AnalyticsView: View {
                     .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.bold)
                 Spacer()
-                NavigationLink("See all") {
+                NavigationLink {
                     AdvancedAnalyticsView()
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("See all")
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
                 }
                 .font(BotanicaTheme.Typography.callout)
                 .foregroundColor(BotanicaTheme.Colors.primary)
             }
             
             HStack(spacing: BotanicaTheme.Spacing.md) {
-                statPill(icon: "heart.text.square", title: "Attention", value: attentionNeededCount)
-                statPill(icon: "checkmark.circle", title: "Completion", valueText: "\(Int(averageCompletionRate * 100))%")
-                statPill(icon: "leaf.fill", title: "Healthy", value: healthyPlantsCount)
+                statPill(icon: "heart.text.square", title: "Attention", subtitle: "Needs review", value: attentionNeededCount)
+                statPill(icon: "checkmark.circle", title: "Completion", subtitle: selectedTimeRange.subtitle, valueText: "\(Int(averageCompletionRate * 100))%")
+                statPill(icon: "leaf.fill", title: "Healthy", subtitle: "Thriving now", value: healthyPlantsCount)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -386,11 +435,11 @@ struct AnalyticsView: View {
         .accessibilityLabel("Advanced analytics section")
     }
     
-    private func statPill(icon: String, title: String, value: Int) -> some View {
-        statPill(icon: icon, title: title, valueText: "\(value)")
+    private func statPill(icon: String, title: String, subtitle: String = "", value: Int) -> some View {
+        statPill(icon: icon, title: title, subtitle: subtitle, valueText: "\(value)")
     }
     
-    private func statPill(icon: String, title: String, valueText: String) -> some View {
+    private func statPill(icon: String, title: String, subtitle: String = "", valueText: String) -> some View {
         HStack(spacing: BotanicaTheme.Spacing.xs) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))
@@ -402,6 +451,11 @@ struct AnalyticsView: View {
                 Text(title)
                     .font(BotanicaTheme.Typography.caption)
                     .foregroundColor(.secondary)
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(BotanicaTheme.Typography.caption2)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .padding(.horizontal, BotanicaTheme.Spacing.md)
@@ -482,25 +536,47 @@ struct AnalyticsView: View {
                                 .foregroundColor(BotanicaTheme.Colors.success)
                         }
                         
-                        Chart(completionData) { dataPoint in
-                            LineMark(
-                                x: .value("Date", dataPoint.date),
-                                y: .value("Rate", dataPoint.completionRate * 100)
-                            )
-                            .foregroundStyle(BotanicaTheme.Colors.primary)
-                            .symbol(.circle)
-                            
-                            AreaMark(
-                                x: .value("Date", dataPoint.date),
-                                y: .value("Rate", dataPoint.completionRate * 100)
-                            )
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [BotanicaTheme.Colors.primary.opacity(0.2), .clear],
-                                    startPoint: .top,
-                                    endPoint: .bottom
+                        HStack(spacing: BotanicaTheme.Spacing.sm) {
+                            ChartFilterPill(title: "All", isSelected: completionFilter == .all) { completionFilter = .all }
+                            ChartFilterPill(title: "Water", isSelected: completionFilter == .watering) { completionFilter = .watering }
+                            ChartFilterPill(title: "Feed", isSelected: completionFilter == .fertilizing) { completionFilter = .fertilizing }
+                            ChartFilterPill(title: "Repot", isSelected: completionFilter == .repotting) { completionFilter = .repotting }
+                            Spacer()
+                            Text(selectedTimeRange.subtitle)
+                                .font(BotanicaTheme.Typography.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Chart {
+                            ForEach(filteredCompletionData, id: \.date) { dataPoint in
+                                LineMark(
+                                    x: .value("Date", dataPoint.date),
+                                    y: .value("Rate", dataPoint.completionRate * 100)
                                 )
-                            )
+                                .foregroundStyle(BotanicaTheme.Colors.primary)
+                                .symbol(.circle)
+                                
+                                AreaMark(
+                                    x: .value("Date", dataPoint.date),
+                                    y: .value("Rate", dataPoint.completionRate * 100)
+                                )
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [BotanicaTheme.Colors.primary.opacity(0.2), .clear],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                            }
+                            
+                            RuleMark(y: .value("Target", 90))
+                                .lineStyle(.init(lineWidth: 1, dash: [4]))
+                                .foregroundStyle(BotanicaTheme.Colors.success.opacity(0.6))
+                                .annotation(position: .leading) {
+                                    Text("Target 90%")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
                         }
                         .chartYScale(domain: 0...100)
                         .chartYAxis {
@@ -552,21 +628,24 @@ struct AnalyticsView: View {
                         title: "Improving",
                         count: healthTrendCounts.improving,
                         color: BotanicaTheme.Colors.success,
-                        icon: "arrow.up.circle.fill"
+                        icon: "arrow.up.circle.fill",
+                        onTap: { viewModel.inlineFilter = nil /* placeholder: hook into filters */ }
                     )
                     
                     HealthTrendCard(
                         title: "Stable",
                         count: healthTrendCounts.stable,
                         color: BotanicaTheme.Colors.waterBlue,
-                        icon: "minus.circle.fill"
+                        icon: "minus.circle.fill",
+                        onTap: { viewModel.inlineFilter = nil }
                     )
                     
                     HealthTrendCard(
                         title: "Declining",
                         count: healthTrendCounts.declining,
                         color: BotanicaTheme.Colors.warning,
-                        icon: "arrow.down.circle.fill"
+                        icon: "arrow.down.circle.fill",
+                        onTap: { viewModel.inlineFilter = nil }
                     )
                 }
             }
@@ -695,12 +774,35 @@ struct AnalyticsView: View {
         viewModel.snapshot?.completionData ?? []
     }
     
+    @State private var completionFilter: CompletionFilter = .all
+    @State private var hoveredDate: Date?
+    
+    private var filteredCompletionData: [CompletionDataPoint] {
+        guard completionFilter != .all else { return completionData }
+        // Placeholder: if we had per-type breakdown, filter it here. For now return full data.
+        return completionData
+    }
+    
     private var averageCompletionRate: Double {
         viewModel.snapshot?.averageCompletionRate ?? 0
     }
     
     private var healthTrendCounts: HealthTrendBreakdown {
         viewModel.snapshot?.healthTrends ?? HealthTrendBreakdown(improving: 0, stable: 0, declining: 0)
+    }
+    
+    private var overdueCount: Int {
+        plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue || $0.isRepottingOverdue }.count
+    }
+    
+    private var dueTodayCount: Int {
+        let cal = Calendar.current
+        return plants.filter { plant in
+            let waterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+            let feedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
+            let repotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
+            return waterToday || feedToday || repotToday
+        }.count
     }
     
     // MARK: - Plant Analysis Functions
@@ -897,7 +999,81 @@ struct SmartRecommendation {
     let action: String
 }
 
+enum CompletionFilter { case all, watering, fertilizing, repotting }
+
+struct ChartFilterPill: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Text(title)
+            .font(.caption)
+            .fontWeight(.semibold)
+            .padding(.horizontal, BotanicaTheme.Spacing.sm)
+            .padding(.vertical, BotanicaTheme.Spacing.xs)
+            .background(isSelected ? BotanicaTheme.Colors.primary.opacity(0.15) : Color(.systemGray6))
+            .foregroundColor(isSelected ? BotanicaTheme.Colors.primary : .primary)
+            .clipShape(Capsule())
+            .onTapGesture { action() }
+    }
+}
+
 // MARK: - Supporting Views
+
+struct InlineStatusChips: View {
+    let overdue: Int
+    let dueToday: Int
+    let attention: Int
+    let onSelect: (InlineFilter) -> Void
+    
+    enum InlineFilter { case overdue, dueToday, attention }
+    
+    var body: some View {
+        HStack(spacing: BotanicaTheme.Spacing.sm) {
+            pill(title: "Overdue", count: overdue, color: BotanicaTheme.Colors.error, icon: "clock.badge.exclamationmark") {
+                onSelect(.overdue)
+            }
+            pill(title: "Due Today", count: dueToday, color: BotanicaTheme.Colors.waterBlue, icon: "calendar.badge.clock") {
+                onSelect(.dueToday)
+            }
+            pill(title: "Attention", count: attention, color: BotanicaTheme.Colors.warning, icon: "exclamationmark.triangle.fill") {
+                onSelect(.attention)
+            }
+        }
+        .frame(minHeight: 32)
+    }
+    
+    private func pill(title: String, count: Int, color: Color, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption)
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .lineLimit(1)
+                if count > 0 {
+                    Text("\(count)")
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.white.opacity(0.2))
+                        .clipShape(Capsule())
+                }
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, BotanicaTheme.Spacing.md)
+            .padding(.vertical, BotanicaTheme.Spacing.xs)
+            .background(color.opacity(count > 0 ? 0.9 : 0.6))
+            .clipShape(Capsule())
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: true)
+        }
+        .buttonStyle(.plain)
+    }
+}
 
 struct HealthMetricPill: View {
     let title: String
@@ -1160,26 +1336,30 @@ struct HealthTrendCard: View {
     let count: Int
     let color: Color
     let icon: String
+    let onTap: () -> Void
     
     var body: some View {
-        VStack(spacing: BotanicaTheme.Spacing.sm) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-            
-            Text("\(count)")
-                .font(BotanicaTheme.Typography.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
+        Button(action: onTap) {
+            VStack(spacing: BotanicaTheme.Spacing.sm) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundColor(color)
+                
+                Text("\(count)")
+                    .font(BotanicaTheme.Typography.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(BotanicaTheme.Spacing.md)
+            .background(color.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
         }
-        .frame(maxWidth: .infinity)
-        .padding(BotanicaTheme.Spacing.md)
-        .background(color.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
+        .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title). \(count) plants")
     }

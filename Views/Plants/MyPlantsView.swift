@@ -7,7 +7,7 @@ import Combine
 struct MyPlantsView: View {
     @Query(sort: \Plant.dateAdded, order: .reverse) private var plants: [Plant]
     @StateObject private var vm = MyPlantsViewModel()
-    @AppStorage("myPlants.viewMode") private var storedViewModeRaw: String = ViewMode.grid.rawValue
+    @AppStorage("default_view_mode") private var storedViewModeRaw: String = ViewMode.grid.rawValue
     @AppStorage("myPlants.sortBy") private var storedSortRaw: String = SortOption.dateAdded.rawValue
     @AppStorage("myPlants.groupBy") private var storedGroupRaw: String = GroupOption.none.rawValue
     @AppStorage("myPlants.careFilter") private var storedCareFilterRaw: String = ""
@@ -32,7 +32,7 @@ struct MyPlantsView: View {
     
     // Modern design computed properties
     private var urgentCarePlants: [Plant] {
-        plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue }
+        plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue || $0.isRepottingOverdue }
     }
     
     private var dueTodayPlants: [Plant] {
@@ -40,7 +40,10 @@ struct MyPlantsView: View {
         return plants.filter { plant in
             let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
             let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
-            return dueWaterToday || dueFeedToday
+            let dueRepotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
+            // Treat overdue as part of today's urgency
+            let isOverdue = plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue
+            return dueWaterToday || dueFeedToday || dueRepotToday || isOverdue
         }
     }
     
@@ -49,7 +52,8 @@ struct MyPlantsView: View {
         return plants.filter { plant in
             let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
             let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
-            return plant.isWateringOverdue || plant.isFertilizingOverdue || dueWaterToday || dueFeedToday
+            let dueRepotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
+            return plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue || dueWaterToday || dueFeedToday || dueRepotToday
         }.count
     }
     
@@ -57,13 +61,18 @@ struct MyPlantsView: View {
         plants.filter { $0.healthStatus == .excellent || $0.healthStatus == .healthy }.count
     }
     
+    private var overdueCount: Int {
+        plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue || $0.isRepottingOverdue }.count
+    }
+    
     private var smartChips: [SmartChip] {
         [
-            SmartChip(title: "All Plants", count: plants.count, filter: nil, isSelected: careNeededFilter == nil && filterBy == nil),
+            SmartChip(title: "Overdue", count: overdueCount, filter: .overdue, isSelected: careNeededFilter == .overdue),
+            SmartChip(title: "Due Today", count: dueTodayPlants.count, filter: .dueToday, isSelected: careNeededFilter == .dueToday),
             SmartChip(title: "Need Water", count: needsWaterCount, filter: .needsWatering, isSelected: careNeededFilter == .needsWatering),
             SmartChip(title: "Need Feed", count: plants.filter { $0.isFertilizingOverdue }.count, filter: .needsFertilizing, isSelected: careNeededFilter == .needsFertilizing),
-            SmartChip(title: "Due Today", count: dueTodayPlants.count, filter: .dueToday, isSelected: careNeededFilter == .dueToday),
-            SmartChip(title: "Up to Date", count: plants.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue }.count, filter: .upToDate, isSelected: careNeededFilter == .upToDate)
+            SmartChip(title: "Up to Date", count: plants.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue && !$0.isRepottingOverdue }.count, filter: .upToDate, isSelected: careNeededFilter == .upToDate),
+            SmartChip(title: "All Plants", count: plants.count, filter: nil, isSelected: careNeededFilter == nil && filterBy == nil)
         ]
     }
     
@@ -208,7 +217,14 @@ struct MyPlantsView: View {
     }
 
     private func syncPersistedState() {
-        viewMode = ViewMode(rawValue: storedViewModeRaw) ?? .grid
+        // Try to honor persisted choice or settings default (handles legacy lowercase values)
+        if let stored = ViewMode(rawValue: storedViewModeRaw) {
+            viewMode = stored
+        } else {
+            let lowered = storedViewModeRaw.lowercased()
+            viewMode = lowered == "list" ? .list : .grid
+            storedViewModeRaw = viewMode.rawValue
+        }
         sortBy = SortOption(rawValue: storedSortRaw) ?? .dateAdded
         groupBy = GroupOption(rawValue: storedGroupRaw) ?? .none
         careNeededFilter = CareNeededFilter(rawValue: storedCareFilterRaw)
@@ -264,7 +280,7 @@ struct MyPlantsView: View {
                             collectionHealthPercentage: collectionHealthPercentage,
                             todaysCareCount: todaysCareCount,
                             insight: collectionInsightMessage,
-                            summary: "\(plants.count) plants • \(todaysCareCount) due today • \(plants.filter { $0.isFertilizingOverdue }.count) need feed",
+                            summary: "\(plants.count) plants • \(todaysCareCount) due today • \(overdueCount) overdue",
                             chips: smartChips,
                             onChipTap: handleChip,
                             setHealthyFilter: {
@@ -491,14 +507,17 @@ final class MyPlantsViewModel: ObservableObject {
             switch careFilter {
             case .needsWatering: filtered = filtered.filter { $0.isWateringOverdue }
             case .needsFertilizing: filtered = filtered.filter { $0.isFertilizingOverdue }
-            case .needsAnyCare: filtered = filtered.filter { $0.isWateringOverdue || $0.isFertilizingOverdue }
-            case .upToDate: filtered = filtered.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue }
+            case .needsAnyCare: filtered = filtered.filter { $0.isWateringOverdue || $0.isFertilizingOverdue || $0.isRepottingOverdue }
+            case .overdue: filtered = filtered.filter { $0.isWateringOverdue || $0.isFertilizingOverdue || $0.isRepottingOverdue }
+            case .upToDate: filtered = filtered.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue && !$0.isRepottingOverdue }
             case .dueToday:
                 filtered = filtered.filter { plant in
                     let cal = Calendar.current
                     let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
                     let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
-                    return dueWaterToday || dueFeedToday
+                    let dueRepotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
+                    let isOverdue = plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue
+                    return dueWaterToday || dueFeedToday || dueRepotToday || isOverdue
                 }
             }
         }
@@ -884,7 +903,8 @@ struct ModernPlantCard: View {
         let cal = Calendar.current
         let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
         let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
-        return dueWaterToday || dueFeedToday
+        let dueRepotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
+        return dueWaterToday || dueFeedToday || dueRepotToday || plant.isRepottingOverdue
     }
     
     var body: some View {
@@ -973,7 +993,8 @@ struct ModernPlantListRow: View {
         let cal = Calendar.current
         let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
         let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
-        return dueWaterToday || dueFeedToday
+        let dueRepotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
+        return dueWaterToday || dueFeedToday || dueRepotToday || plant.isRepottingOverdue
     }
     
     var body: some View {
@@ -1056,6 +1077,12 @@ struct CareStatusBadge: View {
                     .font(.system(size: 10))
                     .foregroundStyle(.white)
             }
+            
+            if plant.isRepottingOverdue {
+                Image(systemName: "flowerpot.fill")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.white)
+            }
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
@@ -1105,6 +1132,12 @@ struct CareIndicators: View {
                 Label("Feed", systemImage: "leaf.fill")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(BotanicaTheme.Colors.leafGreen)
+            }
+            
+            if plant.isRepottingOverdue {
+                Label("Repot", systemImage: "flowerpot.fill")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(BotanicaTheme.Colors.soilBrown)
             }
         }
     }

@@ -7,6 +7,7 @@ import SwiftData
 final class AnalyticsViewModel: ObservableObject, ViewModel {
     @Published var loadState: LoadState = .idle
     @Published var snapshot: AnalyticsSnapshot?
+    @Published var inlineFilter: InlineStatusChips.InlineFilter?
     
     private let service: AnalyticsService
     
@@ -23,5 +24,16 @@ final class AnalyticsViewModel: ObservableObject, ViewModel {
                 setLoaded()
             }
         }
+    }
+    
+    /// Returns health delta vs previous range (placeholder until historic baselines are stored)
+    func healthDelta(for range: AnalyticsTimeRange) -> Double? {
+        // Without historical snapshot storage, return nil for now.
+        return nil
+    }
+    
+    func applyInlineFilter(_ filter: InlineStatusChips.InlineFilter, plants: [Plant]) {
+        inlineFilter = filter
+        // Future: route to a filtered list view or update a published collection.
     }
 }

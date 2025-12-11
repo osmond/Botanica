@@ -22,6 +22,15 @@ enum AnalyticsTimeRange: String, CaseIterable {
     var startDate: Date {
         Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
     }
+    
+    var subtitle: String {
+        switch self {
+        case .week: return "Last 7 days"
+        case .month: return "Last 30 days"
+        case .quarter: return "Last 90 days"
+        case .year: return "Last 12 months"
+        }
+    }
 }
 
 enum BotanicalSeason: String, CaseIterable {
