@@ -23,6 +23,7 @@ struct MyPlantsView: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var isRefreshing = false
     @State private var showingAdvancedFilters = false
+    @State private var showUnhealthyOnly = false
     
     // Groups computed by view model (debounced)
     private var organizedPlants: [PlantGroup] { vm.groups }
@@ -70,9 +71,7 @@ struct MyPlantsView: View {
             SmartChip(title: "Overdue", count: overdueCount, filter: .overdue, isSelected: careNeededFilter == .overdue),
             SmartChip(title: "Due Today", count: dueTodayPlants.count, filter: .dueToday, isSelected: careNeededFilter == .dueToday),
             SmartChip(title: "Need Water", count: needsWaterCount, filter: .needsWatering, isSelected: careNeededFilter == .needsWatering),
-            SmartChip(title: "Need Feed", count: plants.filter { $0.isFertilizingOverdue }.count, filter: .needsFertilizing, isSelected: careNeededFilter == .needsFertilizing),
-            SmartChip(title: "Up to Date", count: plants.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue && !$0.isRepottingOverdue }.count, filter: .upToDate, isSelected: careNeededFilter == .upToDate),
-            SmartChip(title: "All Plants", count: plants.count, filter: nil, isSelected: careNeededFilter == nil && filterBy == nil)
+            SmartChip(title: "Need Feed", count: plants.filter { $0.isFertilizingOverdue }.count, filter: .needsFertilizing, isSelected: careNeededFilter == .needsFertilizing)
         ]
     }
     
@@ -95,6 +94,7 @@ struct MyPlantsView: View {
             careNeededFilter = chip.filter
             filterBy = nil
             lightLevelFilter = nil
+            showUnhealthyOnly = false
         }
     }
     
@@ -195,6 +195,7 @@ struct MyPlantsView: View {
         .onChange(of: careNeededFilter) { _, _ in updateVM() }
         .onChange(of: sortBy) { _, _ in updateVM() }
         .onChange(of: groupBy) { _, _ in updateVM() }
+        .onChange(of: showUnhealthyOnly) { _, _ in updateVM() }
         .onChange(of: viewMode) { _, _ in persistState() }
         .onChange(of: sortBy) { _, _ in persistState() }
         .onChange(of: groupBy) { _, _ in persistState() }
@@ -207,7 +208,7 @@ struct MyPlantsView: View {
         vm.update(
             sourcePlants: plants,
             searchText: searchText,
-            filterBy: filterBy,
+            filterBy: showUnhealthyOnly ? nil : filterBy,
             lightLevelFilter: lightLevelFilter,
             careNeededFilter: careNeededFilter,
             sortBy: sortBy,
@@ -229,6 +230,7 @@ struct MyPlantsView: View {
         groupBy = GroupOption(rawValue: storedGroupRaw) ?? .none
         careNeededFilter = CareNeededFilter(rawValue: storedCareFilterRaw)
         filterBy = HealthStatus(rawValue: storedHealthFilterRaw)
+        showUnhealthyOnly = false
     }
     
     private func persistState() {
@@ -285,7 +287,9 @@ struct MyPlantsView: View {
                             onChipTap: handleChip,
                             setHealthyFilter: {
                                 withAnimation(.easeInOut(duration: 0.2)) {
-                                    filterBy = .healthy
+                                    // Surface unhealthy plants when tapping the healthy stat
+                                    showUnhealthyOnly = true
+                                    filterBy = nil
                                     careNeededFilter = nil
                                     lightLevelFilter = nil
                                 }
@@ -295,6 +299,7 @@ struct MyPlantsView: View {
                                     careNeededFilter = nil
                                     filterBy = nil
                                     lightLevelFilter = nil
+                                    showUnhealthyOnly = false
                                 }
                             },
                             activeFilterTitle: activeFilterTitle
