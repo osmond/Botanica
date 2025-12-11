@@ -507,6 +507,28 @@ struct PlantDetailView: View {
                     color: BotanicaTheme.Colors.sunYellow
                 )
                 
+                // Next due dates
+                DetailItem(
+                    icon: "calendar.badge.clock",
+                    title: "Next Water",
+                    value: nextDateText(for: nextWaterDate),
+                    color: BotanicaTheme.Colors.waterBlue
+                )
+                
+                DetailItem(
+                    icon: "calendar",
+                    title: "Next Fertilize",
+                    value: nextDateText(for: nextFertilizeDate),
+                    color: BotanicaTheme.Colors.leafGreen
+                )
+                
+                DetailItem(
+                    icon: "calendar.badge.clock",
+                    title: "Next Repot",
+                    value: nextDateText(for: nextRepotDate),
+                    color: BotanicaTheme.Colors.soilBrown
+                )
+                
                 // Cadence
                 DetailItem(
                     icon: "drop.fill",
@@ -529,36 +551,7 @@ struct PlantDetailView: View {
                     color: BotanicaTheme.Colors.soilBrown
                 )
                 
-                // Upcoming dates
-                DetailItem(
-                    icon: "calendar.badge.clock",
-                    title: "Next Water",
-                    value: nextDateText(for: nextWaterDate),
-                    color: BotanicaTheme.Colors.waterBlue
-                )
-                
-                DetailItem(
-                    icon: "calendar",
-                    title: "Next Fertilize",
-                    value: nextDateText(for: nextFertilizeDate),
-                    color: BotanicaTheme.Colors.leafGreen
-                )
-                
-                DetailItem(
-                    icon: "flowerpot.fill",
-                    title: "Next Repot",
-                    value: nextDateText(for: nextRepotDate),
-                    color: BotanicaTheme.Colors.soilBrown
-                )
-                
-                // Amounts and environment
-                DetailItem(
-                    icon: "drop.triangle.fill",
-                    title: "Water Amount",
-                    value: "\(plant.recommendedWateringAmount.amount)\(plant.recommendedWateringAmount.unit)",
-                    color: BotanicaTheme.Colors.waterBlue
-                )
-                
+                // Environment
                 DetailItem(
                     icon: "thermometer",
                     title: "Temperature",
@@ -566,22 +559,13 @@ struct PlantDetailView: View {
                     color: BotanicaTheme.Colors.textSecondary
                 )
                 
-                // Pot attributes
+                // Pot attributes (combined size/height)
                 DetailItem(
                     icon: "ruler",
                     title: "Pot Size",
-                    value: "\(plant.potSize) in",
+                    value: potSizeText,
                     color: BotanicaTheme.Colors.textSecondary
                 )
-                
-                if let potH = plant.potHeight, potH > 0 {
-                    DetailItem(
-                        icon: "ruler",
-                        title: "Pot Height",
-                        value: "\(potH) in",
-                        color: BotanicaTheme.Colors.textSecondary
-                    )
-                }
                 
                 DetailItem(
                     icon: "cube.box.fill",
@@ -670,6 +654,14 @@ struct PlantDetailView: View {
         try? modelContext.save()
         noteText = ""
         showingAddNote = false
+    }
+    
+    // Combined pot size/height text
+    private var potSizeText: String {
+        if let potH = plant.potHeight, potH > 0 {
+            return "\(plant.potSize) in (H \(potH) in)"
+        }
+        return "\(plant.potSize) in"
     }
     
 }
