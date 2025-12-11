@@ -506,8 +506,30 @@ struct PlantDetailView: View {
                     value: plant.lightLevel.displayName,
                     color: BotanicaTheme.Colors.sunYellow
                 )
-
-                // Next dates
+                
+                // Cadence
+                DetailItem(
+                    icon: "drop.fill",
+                    title: "Water Every",
+                    value: "\(plant.wateringFrequency) days",
+                    color: BotanicaTheme.Colors.waterBlue
+                )
+                
+                DetailItem(
+                    icon: "leaf.arrow.circlepath",
+                    title: "Fertilize Every",
+                    value: "\(plant.fertilizingFrequency) days",
+                    color: BotanicaTheme.Colors.leafGreen
+                )
+                
+                DetailItem(
+                    icon: "calendar.badge.plus",
+                    title: "Repot Every",
+                    value: "\(plant.repotFrequencyMonths ?? 12) months",
+                    color: BotanicaTheme.Colors.soilBrown
+                )
+                
+                // Upcoming dates
                 DetailItem(
                     icon: "calendar.badge.clock",
                     title: "Next Water",
@@ -529,13 +551,7 @@ struct PlantDetailView: View {
                     color: BotanicaTheme.Colors.soilBrown
                 )
                 
-                DetailItem(
-                    icon: "drop.fill",
-                    title: "Water Every",
-                    value: "\(plant.wateringFrequency) days",
-                    color: BotanicaTheme.Colors.waterBlue
-                )
-                
+                // Amounts and environment
                 DetailItem(
                     icon: "drop.triangle.fill",
                     title: "Water Amount",
@@ -544,34 +560,20 @@ struct PlantDetailView: View {
                 )
                 
                 DetailItem(
+                    icon: "thermometer",
+                    title: "Temperature",
+                    value: "\(plant.temperatureRange.min)-\(plant.temperatureRange.max)°F",
+                    color: BotanicaTheme.Colors.textSecondary
+                )
+                
+                // Pot attributes
+                DetailItem(
                     icon: "ruler",
                     title: "Pot Size",
                     value: "\(plant.potSize) in",
                     color: BotanicaTheme.Colors.textSecondary
                 )
                 
-                DetailItem(
-                    icon: "leaf.arrow.circlepath",
-                    title: "Fertilize Every",
-                    value: "\(plant.fertilizingFrequency) days",
-                    color: BotanicaTheme.Colors.leafGreen
-                )
-                
-                DetailItem(
-                    icon: "calendar.badge.plus",
-                    title: "Repot Every",
-                    value: "\(plant.repotFrequencyMonths ?? 12) months",
-                    color: BotanicaTheme.Colors.soilBrown
-                )
-                
-                DetailItem(
-                    icon: "thermometer",
-                    title: "Temperature",
-                    value: "\(plant.temperatureRange.min)-\(plant.temperatureRange.max)°F",
-                    color: BotanicaTheme.Colors.textSecondary
-                )
-
-                // Pot attributes
                 if let potH = plant.potHeight, potH > 0 {
                     DetailItem(
                         icon: "ruler",
@@ -680,6 +682,9 @@ struct QuickActionButton: View {
     let color: Color
     let isUrgent: Bool
     let subtitle: String?
+    @State private var isConfirming = false
+    @State private var showUndo = false
+    @State private var toastText: String = ""
     let action: () -> Void
     
     init(
@@ -700,29 +705,67 @@ struct QuickActionButton: View {
     
     var body: some View {
         Button {
+            guard !isConfirming else { return }
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                isConfirming = true
+                toastText = "Logged \(title.lowercased())"
+                showUndo = true
+            }
+            HapticManager.shared.light()
             action()
+            Task {
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                await MainActor.run {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        isConfirming = false
+                        showUndo = false
+                    }
+                }
+            }
         } label: {
             VStack(spacing: BotanicaTheme.Spacing.xs) {
                 ZStack {
                     Circle()
-                        .fill(color.opacity(0.15))
+                        .fill(isConfirming ? color.opacity(0.35) : color.opacity(0.15))
                         .frame(width: 40, height: 40)
                     
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(color)
+                        .foregroundStyle(isConfirming ? .white : color)
+                        .symbolEffect(.bounce, options: isConfirming ? .nonRepeating : .default)
+                        .overlay(
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.white)
+                                .opacity(isConfirming ? 1 : 0)
+                        )
                 }
                 
                 VStack(spacing: 2) {
-                    Text(title)
+                    Text(isConfirming ? "Logged" : title)
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(isUrgent ? color : BotanicaTheme.Colors.textPrimary)
+                        .foregroundStyle(isConfirming ? color : (isUrgent ? color : BotanicaTheme.Colors.textPrimary))
                     
                     if let subtitle {
                         Text(subtitle)
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                            .foregroundStyle(isConfirming ? color.opacity(0.8) : BotanicaTheme.Colors.textSecondary)
                     }
+                }
+                
+                if showUndo {
+                    Text("Undo")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(color)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(color.opacity(0.12))
+                        .clipShape(Capsule())
+                        .onTapGesture {
+                            withAnimation { showUndo = false; isConfirming = false }
+                            // Future: wire actual undo when CareEvent supports it
+                        }
+                        .transition(.opacity.combined(with: .scale))
                 }
             }
             .frame(maxWidth: .infinity)
