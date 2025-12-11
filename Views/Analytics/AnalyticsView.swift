@@ -105,7 +105,7 @@ struct AnalyticsView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         ScrollView {
-                            LazyVStack(spacing: BotanicaTheme.Spacing.lg) {
+                            LazyVStack(spacing: BotanicaTheme.Spacing.xl) {
                                 // Hero Section with Collection Health Score
                                 collectionHealthHero
                                 
