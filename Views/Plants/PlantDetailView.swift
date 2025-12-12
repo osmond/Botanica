@@ -486,93 +486,40 @@ struct PlantDetailView: View {
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(BotanicaTheme.Colors.textPrimary)
             
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: BotanicaTheme.Spacing.md) {
-                // Show location if available
-                if !plant.location.isEmpty {
-                    DetailItem(
-                        icon: "location.fill",
-                        title: "Location",
-                        value: plant.location,
-                        color: BotanicaTheme.Colors.primary
-                    )
-                }
+            VStack(spacing: BotanicaTheme.Spacing.lg) {
+                // 1) Care Status
+                detailGrid([
+                    DetailItemModel(icon: "calendar.badge.clock", title: "Next Water", value: nextDateText(for: nextWaterDate), color: BotanicaTheme.Colors.waterBlue),
+                    DetailItemModel(icon: "calendar", title: "Next Fertilize", value: nextDateText(for: nextFertilizeDate), color: BotanicaTheme.Colors.leafGreen),
+                    DetailItemModel(icon: "calendar.badge.clock", title: "Next Repot", value: nextDateText(for: nextRepotDate), color: BotanicaTheme.Colors.soilBrown)
+                ])
                 
-                DetailItem(
-                    icon: "sun.max.fill",
-                    title: "Light",
-                    value: plant.lightLevel.displayName,
-                    color: BotanicaTheme.Colors.sunYellow
-                )
+                // 2) Care Rhythm
+                detailGrid([
+                    DetailItemModel(icon: "drop.fill", title: "Water Every", value: "\(plant.wateringFrequency) days", color: BotanicaTheme.Colors.waterBlue),
+                    DetailItemModel(icon: "leaf.arrow.circlepath", title: "Fertilize Every", value: "\(plant.fertilizingFrequency) days", color: BotanicaTheme.Colors.leafGreen),
+                    DetailItemModel(icon: "calendar.badge.plus", title: "Repot Every", value: "\(plant.repotFrequencyMonths ?? 12) months", color: BotanicaTheme.Colors.soilBrown)
+                ])
                 
-                // Next due dates
-                DetailItem(
-                    icon: "calendar.badge.clock",
-                    title: "Next Water",
-                    value: nextDateText(for: nextWaterDate),
-                    color: BotanicaTheme.Colors.waterBlue
-                )
+                Divider()
+                    .background(Color.white.opacity(0.08))
                 
-                DetailItem(
-                    icon: "calendar",
-                    title: "Next Fertilize",
-                    value: nextDateText(for: nextFertilizeDate),
-                    color: BotanicaTheme.Colors.leafGreen
-                )
+                // 3) Placement & Light
+                detailGrid([
+                    DetailItemModel(icon: "location.fill", title: "Location", value: plant.location.isEmpty ? "Unspecified" : plant.location, color: BotanicaTheme.Colors.primary),
+                    DetailItemModel(icon: "sun.max.fill", title: "Light", value: plant.lightLevel.displayName, color: BotanicaTheme.Colors.sunYellow)
+                ])
                 
-                DetailItem(
-                    icon: "calendar.badge.clock",
-                    title: "Next Repot",
-                    value: nextDateText(for: nextRepotDate),
-                    color: BotanicaTheme.Colors.soilBrown
-                )
+                // 4) Environment
+                detailGrid([
+                    DetailItemModel(icon: "thermometer", title: "Temperature", value: "\(plant.temperatureRange.min)-\(plant.temperatureRange.max)°F", color: BotanicaTheme.Colors.textSecondary)
+                ])
                 
-                // Cadence
-                DetailItem(
-                    icon: "drop.fill",
-                    title: "Water Every",
-                    value: "\(plant.wateringFrequency) days",
-                    color: BotanicaTheme.Colors.waterBlue
-                )
-                
-                DetailItem(
-                    icon: "leaf.arrow.circlepath",
-                    title: "Fertilize Every",
-                    value: "\(plant.fertilizingFrequency) days",
-                    color: BotanicaTheme.Colors.leafGreen
-                )
-                
-                DetailItem(
-                    icon: "calendar.badge.plus",
-                    title: "Repot Every",
-                    value: "\(plant.repotFrequencyMonths ?? 12) months",
-                    color: BotanicaTheme.Colors.soilBrown
-                )
-                
-                // Environment
-                DetailItem(
-                    icon: "thermometer",
-                    title: "Temperature",
-                    value: "\(plant.temperatureRange.min)-\(plant.temperatureRange.max)°F",
-                    color: BotanicaTheme.Colors.textSecondary
-                )
-                
-                // Pot attributes (combined size/height)
-                DetailItem(
-                    icon: "ruler",
-                    title: "Pot Size",
-                    value: potSizeText,
-                    color: BotanicaTheme.Colors.textSecondary
-                )
-                
-                DetailItem(
-                    icon: "cube.box.fill",
-                    title: "Pot Material",
-                    value: (plant.potMaterial?.rawValue ?? "Unknown"),
-                    color: BotanicaTheme.Colors.textSecondary
-                )
+                // 5) Container Details
+                detailGrid([
+                    DetailItemModel(icon: "ruler", title: "Pot Size", value: potSizeText, color: BotanicaTheme.Colors.textSecondary),
+                    DetailItemModel(icon: "cube.box.fill", title: "Pot Material", value: (plant.potMaterial?.rawValue ?? "Unknown"), color: BotanicaTheme.Colors.textSecondary)
+                ])
             }
             
             if !plant.notes.isEmpty {
@@ -802,6 +749,30 @@ struct DetailItem: View {
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
                 .fill(color.opacity(0.08))
         )
+    }
+}
+
+struct DetailItemModel: Identifiable {
+    let id = UUID()
+    let icon: String
+    let title: String
+    let value: String
+    let color: Color
+}
+
+private func detailGrid(_ items: [DetailItemModel]) -> some View {
+    LazyVGrid(columns: [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ], spacing: BotanicaTheme.Spacing.md) {
+        ForEach(items) { item in
+            DetailItem(
+                icon: item.icon,
+                title: item.title,
+                value: item.value,
+                color: item.color
+            )
+        }
     }
 }
 
