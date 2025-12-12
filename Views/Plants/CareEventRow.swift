@@ -58,10 +58,10 @@ struct CareEventRow: View {
             ZStack {
                 Circle()
                     .fill(typeColor.opacity(0.1))
-                    .frame(width: 40, height: 40)
+                    .frame(width: 34, height: 34)
                 
                 Image(systemName: typeIcon)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(typeColor)
             }
             
@@ -77,20 +77,20 @@ struct CareEventRow: View {
                     
                     Text(event.date.formatted(.dateTime.month(.abbreviated).day().hour().minute()))
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textTertiary)
                 }
                 
                 if !event.notes.isEmpty {
                     Text(event.notes)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textTertiary)
                         .lineLimit(2)
                 }
                 
                 if let amount = event.amount {
                     Text("Amount: \(amount, specifier: "%.1f")")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textTertiary)
                 }
             }
         }

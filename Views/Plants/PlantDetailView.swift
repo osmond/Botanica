@@ -86,7 +86,7 @@ struct PlantDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: BotanicaTheme.Spacing.lg) {
+                VStack(spacing: BotanicaTheme.Spacing.md) {
                     // Hero section with photo or gradient
                     heroSection
                     
@@ -672,33 +672,39 @@ extension PlantDetailView {
     }
     
     private var comingUpCard: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+        let upcomingItems: [(String, String, Color, Date?)] = [
+            ("Water", "calendar.badge.clock", BotanicaTheme.Colors.waterBlue, nextWaterDate),
+            ("Fertilize", "calendar", BotanicaTheme.Colors.leafGreen, nextFertilizeDate),
+            ("Repot", "calendar.badge.plus", BotanicaTheme.Colors.soilBrown, nextRepotDate)
+        ].filter { entry in
+            guard let date = entry.3 else { return false }
+            return !Calendar.current.isDateInToday(date) && date > Date()
+        }
+        
+        return VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             HStack {
-                Text("Coming Up")
+                Text("Up Next")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                 Spacer()
             }
             
-            VStack(spacing: BotanicaTheme.Spacing.sm) {
-                upcomingRow(
-                    title: "Water",
-                    icon: "calendar.badge.clock",
-                    color: BotanicaTheme.Colors.waterBlue,
-                    date: nextWaterDate
-                )
-                upcomingRow(
-                    title: "Fertilize",
-                    icon: "calendar",
-                    color: BotanicaTheme.Colors.leafGreen,
-                    date: nextFertilizeDate
-                )
-                upcomingRow(
-                    title: "Repot",
-                    icon: "calendar.badge.plus",
-                    color: BotanicaTheme.Colors.soilBrown,
-                    date: nextRepotDate
-                )
+            if upcomingItems.isEmpty {
+                Text("Nothing else is queued. You’re all set.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    .padding(.vertical, BotanicaTheme.Spacing.sm)
+            } else {
+                VStack(spacing: BotanicaTheme.Spacing.sm) {
+                    ForEach(upcomingItems, id: \.0) { item in
+                        upcomingRow(
+                            title: item.0,
+                            icon: item.1,
+                            color: item.2,
+                            date: item.3
+                        )
+                    }
+                }
             }
         }
         .padding(BotanicaTheme.Spacing.lg)
