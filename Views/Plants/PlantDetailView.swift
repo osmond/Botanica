@@ -23,20 +23,6 @@ struct PlantDetailView: View {
     @State private var referenceImage: UIImage?
     @State private var showingAddNote = false
     @State private var noteText: String = ""
-    
-    private var waterAmountText: String {
-        let amount = plant.recommendedWateringAmount.amount
-        let unit = plant.recommendedWateringAmount.unit
-        return "\(amount) \(unit)"
-    }
-    
-    private var fertilizerAmountText: String {
-        let rec = plant.recommendedFertilizerAmount
-        let amountString: String = rec.amount.truncatingRemainder(dividingBy: 1) == 0
-            ? String(format: "%.0f", rec.amount)
-            : String(format: "%.1f", rec.amount)
-        return "\(amountString) \(rec.unit)"
-    }
 
     // MARK: - Formatting Helpers
     private var shortDateFormatter: DateFormatter {
@@ -112,11 +98,23 @@ struct PlantDetailView: View {
                         careRemindersCard
                     }
                     
-                    // Quick care actions
-                    quickActionsCard
+                    // Today / primary actions
+                    todayCard
                     
-                    // Plant details
-                    detailsCard
+                    // Coming up preview
+                    comingUpCard
+                    
+                    // Care rhythm
+                    careRhythmCard
+                    
+                    // Placement
+                    placementCard
+                    
+                    // Environment
+                    environmentCard
+                    
+                    // Container
+                    containerCard
                     
                     // Care history
                     careHistoryCard
@@ -438,107 +436,6 @@ struct PlantDetailView: View {
         .cardStyle()
     }
     
-    private var quickActionsCard: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            Text("Quick Actions")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-            
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: BotanicaTheme.Spacing.md), count: 3), spacing: BotanicaTheme.Spacing.md) {
-                QuickActionButton(
-                    icon: "drop.fill",
-                    title: "Water",
-                    color: BotanicaTheme.Colors.waterBlue,
-                    isUrgent: plant.isWateringOverdue,
-                    subtitle: waterAmountText
-                ) {
-                    vm.quickWaterPlant(plant, context: modelContext)
-                }
-                
-                QuickActionButton(
-                    icon: "leaf.arrow.circlepath",
-                    title: "Fertilize",
-                    color: BotanicaTheme.Colors.leafGreen,
-                    isUrgent: plant.isFertilizingOverdue,
-                    subtitle: fertilizerAmountText
-                ) {
-                    vm.quickFertilizePlant(plant, context: modelContext)
-                }
-                
-                QuickActionButton(
-                    icon: "plus.circle.fill",
-                    title: "Add Note",
-                    color: BotanicaTheme.Colors.primary,
-                    isUrgent: false
-                ) {
-                    showingAddNote = true
-                }
-            }
-            .disabled(vm.isPerformingAction)
-        }
-        .padding(BotanicaTheme.Spacing.lg)
-        .cardStyle()
-    }
-    
-    private var detailsCard: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            Text("Plant Details")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-            
-            VStack(spacing: BotanicaTheme.Spacing.lg) {
-                // 1) Care Status
-                detailGrid([
-                    DetailItemModel(icon: "calendar.badge.clock", title: "Next Water", value: nextDateText(for: nextWaterDate), color: BotanicaTheme.Colors.waterBlue),
-                    DetailItemModel(icon: "calendar", title: "Next Fertilize", value: nextDateText(for: nextFertilizeDate), color: BotanicaTheme.Colors.leafGreen),
-                    DetailItemModel(icon: "calendar.badge.clock", title: "Next Repot", value: nextDateText(for: nextRepotDate), color: BotanicaTheme.Colors.soilBrown)
-                ])
-                
-                // 2) Care Rhythm
-                detailGrid([
-                    DetailItemModel(icon: "drop.fill", title: "Water Every", value: "\(plant.wateringFrequency) days", color: BotanicaTheme.Colors.waterBlue),
-                    DetailItemModel(icon: "leaf.arrow.circlepath", title: "Fertilize Every", value: "\(plant.fertilizingFrequency) days", color: BotanicaTheme.Colors.leafGreen),
-                    DetailItemModel(icon: "calendar.badge.plus", title: "Repot Every", value: "\(plant.repotFrequencyMonths ?? 12) months", color: BotanicaTheme.Colors.soilBrown)
-                ])
-                
-                Divider()
-                    .background(Color.white.opacity(0.08))
-                
-                // 3) Placement & Light
-                detailGrid([
-                    DetailItemModel(icon: "location.fill", title: "Location", value: plant.location.isEmpty ? "Unspecified" : plant.location, color: BotanicaTheme.Colors.primary),
-                    DetailItemModel(icon: "sun.max.fill", title: "Light", value: plant.lightLevel.displayName, color: BotanicaTheme.Colors.sunYellow)
-                ])
-                
-                // 4) Environment
-                detailGrid([
-                    DetailItemModel(icon: "thermometer", title: "Temperature", value: "\(plant.temperatureRange.min)-\(plant.temperatureRange.max)°F", color: BotanicaTheme.Colors.textSecondary)
-                ])
-                
-                // 5) Container Details
-                detailGrid([
-                    DetailItemModel(icon: "ruler", title: "Pot Size", value: potSizeText, color: BotanicaTheme.Colors.textSecondary),
-                    DetailItemModel(icon: "cube.box.fill", title: "Pot Material", value: (plant.potMaterial?.rawValue ?? "Unknown"), color: BotanicaTheme.Colors.textSecondary)
-                ])
-            }
-            
-            if !plant.notes.isEmpty {
-                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                    Text("Notes")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-                    
-                    Text(plant.notes)
-                        .font(.system(size: 14))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                }
-                .padding(.top, BotanicaTheme.Spacing.sm)
-            }
-        }
-        .padding(BotanicaTheme.Spacing.lg)
-        .cardStyle()
-    }
-    
     private var careHistoryCard: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             HStack {
@@ -613,6 +510,385 @@ struct PlantDetailView: View {
     
 }
 
+// MARK: - New Card Stack Views
+
+private enum CareStatusState {
+    case overdue(Int)
+    case today
+    case soon(Int)
+    case scheduled(Date)
+    case unset
+}
+
+extension PlantDetailView {
+    private func careStatus(for date: Date?, overdue: Bool) -> CareStatusState {
+        guard let date else { return .unset }
+        if overdue { // explicit overdue flag from model
+            let days = max(1, Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 1)
+            return .overdue(days)
+        }
+        if Calendar.current.isDateInToday(date) { return .today }
+        if date < Date() { // fallback overdue
+            let days = max(1, Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 1)
+            return .overdue(days)
+        }
+        let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: date).day ?? 0
+        if daysUntil <= 3 { return .soon(max(1, daysUntil)) }
+        return .scheduled(date)
+    }
+    
+    private func statusLabel(for state: CareStatusState) -> String {
+        switch state {
+        case .overdue(let days): return days <= 1 ? "Overdue" : "Overdue \(days)d"
+        case .today: return "Due today"
+        case .soon(let days): return "Due in \(days)d"
+        case .scheduled(let date): return nextDateText(for: date)
+        case .unset: return "Not set"
+        }
+    }
+    
+    private func statusColor(for state: CareStatusState) -> Color {
+        switch state {
+        case .overdue: return .red
+        case .today: return BotanicaTheme.Colors.waterBlue
+        case .soon: return BotanicaTheme.Colors.sunYellow
+        case .scheduled, .unset: return BotanicaTheme.Colors.leafGreen
+        }
+    }
+    
+    private func showAction(for state: CareStatusState) -> Bool {
+        switch state {
+        case .overdue, .today: return true
+        default: return false
+        }
+    }
+    
+    private var todayCard: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+            HStack {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                    Text("Today")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                    Text("What needs attention right now")
+                        .font(.system(size: 14))
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                }
+                Spacer()
+            }
+            
+            VStack(spacing: BotanicaTheme.Spacing.sm) {
+                todayRow(
+                    title: "Water",
+                    icon: "drop.fill",
+                    accent: BotanicaTheme.Colors.waterBlue,
+                    date: nextWaterDate,
+                    overdue: plant.isWateringOverdue,
+                    actionTitle: "Log Water",
+                    action: { vm.quickWaterPlant(plant, context: modelContext) }
+                )
+                
+                todayRow(
+                    title: "Fertilize",
+                    icon: "leaf.arrow.circlepath",
+                    accent: BotanicaTheme.Colors.leafGreen,
+                    date: nextFertilizeDate,
+                    overdue: plant.isFertilizingOverdue,
+                    actionTitle: "Log Fertilizer",
+                    action: { vm.quickFertilizePlant(plant, context: modelContext) }
+                )
+                
+                todayRow(
+                    title: "Repot",
+                    icon: "calendar.badge.plus",
+                    accent: BotanicaTheme.Colors.soilBrown,
+                    date: nextRepotDate,
+                    overdue: plant.isRepottingOverdue,
+                    actionTitle: "Plan Repot",
+                    action: { showingEditPlant = true }
+                )
+            }
+        }
+        .padding(BotanicaTheme.Spacing.lg)
+        .cardStyle()
+    }
+    
+    private func todayRow(
+        title: String,
+        icon: String,
+        accent: Color,
+        date: Date?,
+        overdue: Bool,
+        actionTitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        let state = careStatus(for: date, overdue: overdue)
+        let status = statusLabel(for: state)
+        let stateColor = statusColor(for: state)
+        let actionable = showAction(for: state)
+        
+        return HStack(alignment: .center, spacing: BotanicaTheme.Spacing.md) {
+            ZStack {
+                Circle()
+                    .fill(accent.opacity(0.15))
+                    .frame(width: 40, height: 40)
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(accent)
+            }
+            
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                Text(status)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(stateColor)
+            }
+            
+            Spacer()
+            
+            if actionable {
+                Button(actionTitle) {
+                    guard !vm.isPerformingAction else { return }
+                    HapticManager.shared.light()
+                    action()
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                .padding(.vertical, BotanicaTheme.Spacing.xs)
+                .background(stateColor)
+                .clipShape(Capsule())
+                .disabled(vm.isPerformingAction)
+            }
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+        .background(
+            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                .fill(BotanicaTheme.Colors.surface.opacity(0.6))
+        )
+    }
+    
+    private var comingUpCard: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+            HStack {
+                Text("Coming Up")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                Spacer()
+            }
+            
+            VStack(spacing: BotanicaTheme.Spacing.sm) {
+                upcomingRow(
+                    title: "Water",
+                    icon: "calendar.badge.clock",
+                    color: BotanicaTheme.Colors.waterBlue,
+                    date: nextWaterDate
+                )
+                upcomingRow(
+                    title: "Fertilize",
+                    icon: "calendar",
+                    color: BotanicaTheme.Colors.leafGreen,
+                    date: nextFertilizeDate
+                )
+                upcomingRow(
+                    title: "Repot",
+                    icon: "calendar.badge.plus",
+                    color: BotanicaTheme.Colors.soilBrown,
+                    date: nextRepotDate
+                )
+            }
+        }
+        .padding(BotanicaTheme.Spacing.lg)
+        .cardStyle()
+    }
+    
+    private func upcomingRow(
+        title: String,
+        icon: String,
+        color: Color,
+        date: Date?
+    ) -> some View {
+        HStack(spacing: BotanicaTheme.Spacing.md) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(color)
+            Text(title)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+            Spacer()
+            Text(nextDateText(for: date))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+        .background(
+            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+        )
+    }
+    
+    private var careRhythmCard: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+            Text("Care Rhythm")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+            
+            VStack(spacing: BotanicaTheme.Spacing.sm) {
+                rhythmRow(
+                    title: "Water",
+                    value: "Every \(plant.wateringFrequency) days",
+                    icon: "drop.fill",
+                    color: BotanicaTheme.Colors.waterBlue
+                )
+                
+                rhythmRow(
+                    title: "Fertilize",
+                    value: "Every \(plant.fertilizingFrequency) days",
+                    icon: "leaf.arrow.circlepath",
+                    color: BotanicaTheme.Colors.leafGreen
+                )
+                
+                rhythmRow(
+                    title: "Repot",
+                    value: "Every \(plant.repotFrequencyMonths ?? 12) months",
+                    icon: "calendar.badge.plus",
+                    color: BotanicaTheme.Colors.soilBrown
+                )
+            }
+        }
+        .padding(BotanicaTheme.Spacing.lg)
+        .cardStyle()
+    }
+    
+    private func rhythmRow(title: String, value: String, icon: String, color: Color) -> some View {
+        HStack(spacing: BotanicaTheme.Spacing.md) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(color)
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                Text(value)
+                    .font(.system(size: 13, weight: .medium, design: .monospaced))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+        .background(
+            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+        )
+    }
+    
+    private var placementCard: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+            Text("Placement")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+            
+            VStack(spacing: BotanicaTheme.Spacing.sm) {
+                placementRow(icon: "location.fill", title: "Location", value: plant.location.isEmpty ? "Not set" : plant.location)
+                placementRow(icon: "sun.max.fill", title: "Light", value: plant.lightLevel.displayName)
+            }
+        }
+        .padding(BotanicaTheme.Spacing.lg)
+        .cardStyle()
+    }
+    
+    private func placementRow(icon: String, title: String, value: String) -> some View {
+        HStack(spacing: BotanicaTheme.Spacing.md) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(BotanicaTheme.Colors.primary)
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                Text(value)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+        .background(
+            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+        )
+    }
+    
+    private var environmentCard: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+            Text("Environment")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+            
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                Image(systemName: "thermometer")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                Text("Temperature")
+                    .font(.system(size: 14, weight: .semibold))
+                Spacer()
+                Text("\(plant.temperatureRange.min)–\(plant.temperatureRange.max)°F")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            }
+            .padding(.horizontal, BotanicaTheme.Spacing.sm)
+            .padding(.vertical, BotanicaTheme.Spacing.xs)
+            .background(
+                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                    .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+            )
+        }
+        .padding(BotanicaTheme.Spacing.lg)
+        .cardStyle()
+    }
+    
+    private var containerCard: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+            Text("Container")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+            
+            VStack(spacing: BotanicaTheme.Spacing.sm) {
+                containerRow(icon: "ruler", title: "Pot Size", value: potSizeText)
+                containerRow(icon: "cube.box.fill", title: "Pot Material", value: plant.potMaterial?.rawValue ?? "Unknown")
+            }
+        }
+        .padding(BotanicaTheme.Spacing.lg)
+        .cardStyle()
+    }
+    
+    private func containerRow(icon: String, title: String, value: String) -> some View {
+        HStack(spacing: BotanicaTheme.Spacing.md) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                Text(value)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+        .background(
+            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+        )
+    }
+}
+
 // MARK: - Helper Views
 
 struct QuickActionButton: View {
@@ -668,16 +944,23 @@ struct QuickActionButton: View {
                         .fill(isConfirming ? color.opacity(0.35) : color.opacity(0.15))
                         .frame(width: 40, height: 40)
                     
-                    Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(isConfirming ? .white : color)
-                        .symbolEffect(.bounce, options: isConfirming ? .nonRepeating : .default)
-                        .overlay(
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(.white)
-                                .opacity(isConfirming ? 1 : 0)
-                        )
+                    let checkOverlay = Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
+                        .opacity(isConfirming ? 1 : 0)
+                    
+                    if #available(iOS 18, *) {
+                        Image(systemName: icon)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(isConfirming ? .white : color)
+                            .symbolEffect(.bounce, options: isConfirming ? .nonRepeating : .default)
+                            .overlay(checkOverlay)
+                    } else {
+                        Image(systemName: icon)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(isConfirming ? .white : color)
+                            .overlay(checkOverlay)
+                    }
                 }
                 
                 VStack(spacing: 2) {
@@ -749,30 +1032,6 @@ struct DetailItem: View {
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
                 .fill(color.opacity(0.08))
         )
-    }
-}
-
-struct DetailItemModel: Identifiable {
-    let id = UUID()
-    let icon: String
-    let title: String
-    let value: String
-    let color: Color
-}
-
-private func detailGrid(_ items: [DetailItemModel]) -> some View {
-    LazyVGrid(columns: [
-        GridItem(.flexible()),
-        GridItem(.flexible())
-    ], spacing: BotanicaTheme.Spacing.md) {
-        ForEach(items) { item in
-            DetailItem(
-                icon: item.icon,
-                title: item.title,
-                value: item.value,
-                color: item.color
-            )
-        }
     }
 }
 
