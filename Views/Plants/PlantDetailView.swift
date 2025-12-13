@@ -187,6 +187,11 @@ struct PlantDetailView: View {
         } message: {
             Text(vm.actionError ?? "Something went wrong.")
         }
+        .overlay(alignment: .bottomTrailing) {
+            fabMenu
+                .padding(.trailing, BotanicaTheme.Spacing.lg)
+                .padding(.bottom, BotanicaTheme.Spacing.xl)
+        }
     }
     
     // MARK: - View Components
@@ -892,6 +897,50 @@ extension PlantDetailView {
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
                 .fill(BotanicaTheme.Colors.surface.opacity(0.45))
         )
+    }
+}
+
+// MARK: - Floating Action
+
+extension PlantDetailView {
+    private var fabMenu: some View {
+        Menu {
+            Button {
+                showingAddCareEvent = true
+            } label: {
+                Label("Log care", systemImage: "plus.circle")
+            }
+            
+            Button {
+                showingEditPlant = true
+            } label: {
+                Label("Edit details", systemImage: "slider.horizontal.3")
+            }
+            
+            Button {
+                showingAddCareEvent = true
+            } label: {
+                Label("Add to history", systemImage: "clock.badge.plus")
+            }
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(BotanicaTheme.Colors.primary)
+                    .frame(width: 60, height: 60)
+                    .shadow(
+                        color: BotanicaTheme.Colors.primary.opacity(0.3),
+                        radius: 8,
+                        x: 0,
+                        y: 4
+                    )
+                Image(systemName: "plus")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Quick actions")
+        .accessibilityHint("Log care, edit details, or add a history entry")
     }
 }
 
