@@ -40,7 +40,7 @@ struct PlantDetailView: View {
         f.timeStyle = .none
         return f
     }
-
+    
     private func nextDateText(for date: Date?) -> String {
         guard let date = date else { return "—" }
         let cal = Calendar.current
@@ -51,6 +51,15 @@ struct PlantDetailView: View {
             return "Overdue \(days)d"
         }
         return shortDateFormatter.string(from: date)
+    }
+    
+    private func relativeTimeText(for date: Date?) -> String {
+        guard let date else { return "Not set" }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        let now = Date()
+        if Calendar.current.isDateInToday(date) { return "Today" }
+        return formatter.localizedString(for: date, relativeTo: now)
     }
 
     private var nextWaterDate: Date? {
@@ -73,6 +82,30 @@ struct PlantDetailView: View {
         guard let nextRepotDate else { return false }
         let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: nextRepotDate).day ?? 0
         return daysUntil <= 14
+    }
+    
+    private var lastWateredText: String {
+        if let lastWater = plant.careEvents
+            .filter({ $0.type == .watering })
+            .sorted(by: { $0.date > $1.date })
+            .first?
+            .date {
+            return relativeTimeText(for: lastWater)
+        }
+        return "Not logged"
+    }
+    
+    private var nextKeyActionText: String {
+        if let date = nextWaterDate, Calendar.current.isDateInToday(date) {
+            return "Next: Water today"
+        }
+        if let date = nextFertilizeDate, Calendar.current.isDateInToday(date) {
+            return "Next: Fertilize today"
+        }
+        if let date = nextWaterDate {
+            return "Next: Water \(relativeTimeText(for: date))"
+        }
+        return "Next care not set"
     }
     
     private var plantAge: String {
@@ -102,6 +135,9 @@ struct PlantDetailView: View {
                     // Plant info card
                     plantInfoCard
                     
+                    // Status summary
+                    statusSummaryCard
+                    
                     // Care reminders if needed
                     if plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue || repotDueSoon {
                         careRemindersCard
@@ -114,17 +150,11 @@ struct PlantDetailView: View {
                     // Coming up preview
                     comingUpCard
                     
-                    // Care rhythm
-                    careRhythmCard
+                    // Growing conditions
+                    growingConditionsCard
                     
-                    // Placement
-                    placementCard
-                    
-                    // Environment
-                    environmentCard
-                    
-                    // Container
-                    containerCard
+                    // Care schedule (lower emphasis)
+                    careScheduleCard
                     
                     // Care history
                     careHistoryCard
@@ -340,6 +370,29 @@ struct PlantDetailView: View {
             
             Text("In collection \(plantAge)")
                 .font(.system(size: 14))
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+        }
+        .padding(BotanicaTheme.Spacing.lg)
+        .cardStyle()
+    }
+
+    private var statusSummaryCard: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+            HStack(spacing: BotanicaTheme.Spacing.xs) {
+                Circle()
+                    .fill(plant.healthStatusColor)
+                    .frame(width: 8, height: 8)
+                Text(plant.healthStatus == .healthy ? "Healthy • On schedule" : "Status • \(plant.healthStatus.rawValue)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+            }
+            
+            Text("Last watered \(lastWateredText)")
+                .font(.system(size: 13))
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            
+            Text(nextKeyActionText)
+                .font(.system(size: 13))
                 .foregroundStyle(BotanicaTheme.Colors.textSecondary)
         }
         .padding(BotanicaTheme.Spacing.lg)
@@ -574,7 +627,9 @@ extension PlantDetailView {
     }
     
     private var todayCard: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+        let primaryTask = highestPriorityTodayTask()
+        
+        return VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             HStack {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text("Today")
@@ -587,37 +642,22 @@ extension PlantDetailView {
                 Spacer()
             }
             
-            VStack(spacing: BotanicaTheme.Spacing.sm) {
+            if let task = primaryTask {
                 todayRow(
-                    title: "Water",
-                    icon: "drop.fill",
-                    accent: BotanicaTheme.Colors.waterBlue,
-                    date: nextWaterDate,
-                    overdue: plant.isWateringOverdue,
-                    actionTitle: "Log Water",
-                    action: { vm.quickWaterPlant(plant, context: modelContext) },
-                    detailText: "Use \(waterAmountText)"
+                    title: task.title,
+                    icon: task.icon,
+                    accent: task.color,
+                    date: task.date,
+                    overdue: task.overdue,
+                    actionTitle: task.actionTitle,
+                    action: task.action,
+                    detailText: task.detailText
                 )
-                
-                todayRow(
-                    title: "Fertilize",
-                    icon: "leaf.arrow.circlepath",
-                    accent: BotanicaTheme.Colors.leafGreen,
-                    date: nextFertilizeDate,
-                    overdue: plant.isFertilizingOverdue,
-                    actionTitle: "Log Fertilizer",
-                    action: { vm.quickFertilizePlant(plant, context: modelContext) }
-                )
-                
-                todayRow(
-                    title: "Repot",
-                    icon: "calendar.badge.plus",
-                    accent: BotanicaTheme.Colors.soilBrown,
-                    date: nextRepotDate,
-                    overdue: plant.isRepottingOverdue,
-                    actionTitle: "Plan Repot",
-                    action: { showingEditPlant = true }
-                )
+            } else {
+                Text("You’re all set for today.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    .padding(.vertical, BotanicaTheme.Spacing.sm)
             }
         }
         .padding(BotanicaTheme.Spacing.lg)
@@ -685,19 +725,24 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.1))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.08))
         )
     }
     
     private var comingUpCard: some View {
-        let upcomingItems: [(String, String, Color, Date?)] = [
+        let upcomingItems = [
             ("Water", "calendar.badge.clock", BotanicaTheme.Colors.waterBlue, nextWaterDate),
             ("Fertilize", "calendar", BotanicaTheme.Colors.leafGreen, nextFertilizeDate),
             ("Repot", "calendar.badge.plus", BotanicaTheme.Colors.soilBrown, nextRepotDate)
         ].filter { entry in
             guard let date = entry.3 else { return false }
             return !Calendar.current.isDateInToday(date) && date > Date()
+        }.sorted { lhs, rhs in
+            guard let l = lhs.3, let r = rhs.3 else { return false }
+            return l < r
         }
+        
+        let limitedItems = Array(upcomingItems.prefix(2))
         
         return VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             HStack {
@@ -707,14 +752,14 @@ extension PlantDetailView {
                 Spacer()
             }
             
-            if upcomingItems.isEmpty {
+            if limitedItems.isEmpty {
                 Text("Nothing else is queued. You’re all set.")
                     .font(.system(size: 14))
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     .padding(.vertical, BotanicaTheme.Spacing.sm)
             } else {
                 VStack(spacing: BotanicaTheme.Spacing.sm) {
-                    ForEach(upcomingItems, id: \.0) { item in
+                    ForEach(limitedItems, id: \.0) { item in
                         upcomingRow(
                             title: item.0,
                             icon: item.1,
@@ -751,15 +796,19 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.1))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.08))
         )
     }
     
-    private var careRhythmCard: some View {
+    private var careScheduleCard: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            Text("Care Rhythm")
+            Text("Care Schedule")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+            
+            Text("Water every \(plant.wateringFrequency) days • Fertilize every \(plant.fertilizingFrequency) days • Repot every \(plant.repotFrequencyMonths ?? 12) months")
+                .font(.system(size: 13))
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
             
             VStack(spacing: BotanicaTheme.Spacing.sm) {
                 rhythmRow(
@@ -806,70 +855,21 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.08))
         )
     }
     
-    private var placementCard: some View {
+    private var growingConditionsCard: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            Text("Placement")
+            Text("Growing Conditions")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(BotanicaTheme.Colors.textPrimary)
             
             VStack(spacing: BotanicaTheme.Spacing.sm) {
-                placementRow(icon: "location.fill", title: "Location", value: plant.location.isEmpty ? "Not set" : plant.location)
-                placementRow(icon: "sun.max.fill", title: "Light", value: plant.lightLevel.displayName)
+                simpleRow(icon: "location.fill", title: "Location", value: plant.location.isEmpty ? "Not set" : plant.location)
+                simpleRow(icon: "sun.max.fill", title: "Light", value: plant.lightLevel.displayName)
+                simpleRow(icon: "thermometer", title: "Temperature", value: "\(plant.temperatureRange.min)–\(plant.temperatureRange.max)°F")
             }
-        }
-        .padding(BotanicaTheme.Spacing.lg)
-        .cardStyle()
-    }
-    
-    private func placementRow(icon: String, title: String, value: String) -> some View {
-        HStack(spacing: BotanicaTheme.Spacing.md) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(BotanicaTheme.Colors.primary)
-            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                Text(title)
-                    .font(.system(size: 14, weight: .semibold))
-                Text(value)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-            }
-            Spacer()
-        }
-        .padding(.horizontal, BotanicaTheme.Spacing.sm)
-        .padding(.vertical, BotanicaTheme.Spacing.xs)
-        .background(
-            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
-        )
-    }
-    
-    private var environmentCard: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            Text("Environment")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-            
-            HStack(spacing: BotanicaTheme.Spacing.md) {
-                Image(systemName: "thermometer")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                Text("Temperature")
-                    .font(.system(size: 14, weight: .semibold))
-                Spacer()
-                Text("\(plant.temperatureRange.min)–\(plant.temperatureRange.max)°F")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-            }
-            .padding(.horizontal, BotanicaTheme.Spacing.sm)
-            .padding(.vertical, BotanicaTheme.Spacing.xs)
-            .background(
-            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.1))
-            )
         }
         .padding(BotanicaTheme.Spacing.lg)
         .cardStyle()
@@ -882,19 +882,19 @@ extension PlantDetailView {
                 .foregroundStyle(BotanicaTheme.Colors.textPrimary)
             
             VStack(spacing: BotanicaTheme.Spacing.sm) {
-                containerRow(icon: "ruler", title: "Pot Size", value: potSizeText)
-                containerRow(icon: "cube.box.fill", title: "Pot Material", value: plant.potMaterial?.rawValue ?? "Unknown")
+                simpleRow(icon: "ruler", title: "Pot Size", value: potSizeText, iconColor: BotanicaTheme.Colors.textSecondary)
+                simpleRow(icon: "cube.box.fill", title: "Pot Material", value: plant.potMaterial?.rawValue ?? "Unknown", iconColor: BotanicaTheme.Colors.textSecondary)
             }
         }
         .padding(BotanicaTheme.Spacing.lg)
         .cardStyle()
     }
-    
-    private func containerRow(icon: String, title: String, value: String) -> some View {
+
+    private func simpleRow(icon: String, title: String, value: String, iconColor: Color = BotanicaTheme.Colors.primary) -> some View {
         HStack(spacing: BotanicaTheme.Spacing.md) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                .foregroundStyle(iconColor)
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
@@ -908,8 +908,71 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.1))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.08))
         )
+    }
+}
+
+// MARK: - Today Task Helper
+
+extension PlantDetailView {
+    private struct TodayTask {
+        let title: String
+        let icon: String
+        let color: Color
+        let date: Date?
+        let overdue: Bool
+        let actionTitle: String
+        let action: () -> Void
+        let detailText: String?
+    }
+    
+    private func highestPriorityTodayTask() -> TodayTask? {
+        let cal = Calendar.current
+        let waterDue = nextWaterDate.map { cal.isDateInToday($0) } ?? false
+        let fertDue = nextFertilizeDate.map { cal.isDateInToday($0) } ?? false
+        let repotDue = nextRepotDate.map { cal.isDateInToday($0) } ?? false
+        
+        if waterDue || plant.isWateringOverdue {
+            return TodayTask(
+                title: "Water",
+                icon: "drop.fill",
+                color: BotanicaTheme.Colors.waterBlue,
+                date: nextWaterDate,
+                overdue: plant.isWateringOverdue,
+                actionTitle: "Log Water",
+                action: { vm.quickWaterPlant(plant, context: modelContext) },
+                detailText: "Use \(waterAmountText)"
+            )
+        }
+        
+        if fertDue || plant.isFertilizingOverdue {
+            return TodayTask(
+                title: "Fertilize",
+                icon: "leaf.arrow.circlepath",
+                color: BotanicaTheme.Colors.leafGreen,
+                date: nextFertilizeDate,
+                overdue: plant.isFertilizingOverdue,
+                actionTitle: "Log Fertilizer",
+                action: { vm.quickFertilizePlant(plant, context: modelContext) },
+                detailText: nil
+            )
+        }
+        
+        if repotDue || plant.isRepottingOverdue {
+            return TodayTask(
+                title: "Repot",
+                icon: "calendar.badge.plus",
+                color: BotanicaTheme.Colors.soilBrown,
+                date: nextRepotDate,
+                overdue: plant.isRepottingOverdue,
+                actionTitle: "Plan Repot",
+                action: { showingEditPlant = true },
+                detailText: nil
+            )
+        }
+        
+        return nil
     }
 }
 
