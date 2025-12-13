@@ -912,6 +912,21 @@ struct ModernPlantCard: View {
         return dueWaterToday || dueFeedToday || dueRepotToday || plant.isRepottingOverdue
     }
     
+    private var waterDueToday: Bool {
+        let cal = Calendar.current
+        return plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+    }
+    
+    private var waterAmountText: String? {
+        guard waterDueToday else { return nil }
+        let rec = plant.recommendedWateringAmount
+        let amountValue = Double(rec.amount)
+        let amountString: String = amountValue.truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", amountValue)
+            : String(format: "%.1f", amountValue)
+        return "\(amountString) \(rec.unit)"
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Enhanced image section
@@ -944,6 +959,12 @@ struct ModernPlantCard: View {
                             .font(.system(size: 10, weight: .semibold))
                             .foregroundColor(BotanicaTheme.Colors.sunYellow)
                         Text("Due today")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    }
+                    
+                    if let amount = waterAmountText {
+                        Text("Water · \(amount)")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     }
@@ -1002,6 +1023,21 @@ struct ModernPlantListRow: View {
         return dueWaterToday || dueFeedToday || dueRepotToday || plant.isRepottingOverdue
     }
     
+    private var waterDueToday: Bool {
+        let cal = Calendar.current
+        return plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+    }
+    
+    private var waterAmountText: String? {
+        guard waterDueToday else { return nil }
+        let rec = plant.recommendedWateringAmount
+        let amountValue = Double(rec.amount)
+        let amountString: String = amountValue.truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", amountValue)
+            : String(format: "%.1f", amountValue)
+        return "\(amountString) \(rec.unit)"
+    }
+    
     var body: some View {
         HStack(spacing: BotanicaTheme.Spacing.md) {
             AsyncPlantThumbnail(photo: plant.primaryPhoto, plant: plant, size: 60)
@@ -1018,6 +1054,12 @@ struct ModernPlantListRow: View {
                             .font(.system(size: 10, weight: .semibold))
                             .foregroundColor(BotanicaTheme.Colors.sunYellow)
                         Text("Due today")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    }
+                    
+                    if let amount = waterAmountText {
+                        Text("Water · \(amount)")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     }

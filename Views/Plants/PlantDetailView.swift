@@ -24,6 +24,15 @@ struct PlantDetailView: View {
     @State private var showingAddNote = false
     @State private var noteText: String = ""
 
+    private var waterAmountText: String {
+        let rec = plant.recommendedWateringAmount
+        let amountValue = Double(rec.amount)
+        let amountString: String = amountValue.truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", amountValue)
+            : String(format: "%.1f", amountValue)
+        return "\(amountString) \(rec.unit)"
+    }
+    
     // MARK: - Formatting Helpers
     private var shortDateFormatter: DateFormatter {
         let f = DateFormatter()
@@ -590,7 +599,8 @@ extension PlantDetailView {
                     date: nextWaterDate,
                     overdue: plant.isWateringOverdue,
                     actionTitle: "Log Water",
-                    action: { vm.quickWaterPlant(plant, context: modelContext) }
+                    action: { vm.quickWaterPlant(plant, context: modelContext) },
+                    detailText: "Use \(waterAmountText)"
                 )
                 
                 todayRow(
@@ -625,7 +635,8 @@ extension PlantDetailView {
         date: Date?,
         overdue: Bool,
         actionTitle: String,
-        action: @escaping () -> Void
+        action: @escaping () -> Void,
+        detailText: String? = nil
     ) -> some View {
         let state = careStatus(for: date, overdue: overdue)
         let status = statusLabel(for: state)
@@ -649,6 +660,12 @@ extension PlantDetailView {
                 Text(status)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(stateColor)
+                
+                if let detailText {
+                    Text(detailText)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                }
             }
             
             Spacer()
