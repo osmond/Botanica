@@ -685,7 +685,7 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.6))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
         )
     }
     
@@ -751,7 +751,7 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
         )
     }
     
@@ -797,7 +797,7 @@ extension PlantDetailView {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
                 Text(value)
-                    .font(.system(size: 13, weight: .medium, design: .monospaced))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
             }
             Spacer()
@@ -806,7 +806,7 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
         )
     }
     
@@ -843,7 +843,7 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
         )
     }
     
@@ -867,8 +867,8 @@ extension PlantDetailView {
             .padding(.horizontal, BotanicaTheme.Spacing.sm)
             .padding(.vertical, BotanicaTheme.Spacing.xs)
             .background(
-                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                    .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
             )
         }
         .padding(BotanicaTheme.Spacing.lg)
@@ -908,7 +908,7 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.45))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
         )
     }
 }
