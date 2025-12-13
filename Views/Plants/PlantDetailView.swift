@@ -685,7 +685,7 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.1))
         )
     }
     
@@ -751,7 +751,7 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.1))
         )
     }
     
@@ -868,7 +868,7 @@ extension PlantDetailView {
             .padding(.vertical, BotanicaTheme.Spacing.xs)
             .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.1))
             )
         }
         .padding(BotanicaTheme.Spacing.lg)
@@ -908,7 +908,7 @@ extension PlantDetailView {
         .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(BotanicaTheme.Colors.surface.opacity(0.2))
+                .fill(BotanicaTheme.Colors.surface.opacity(0.1))
         )
     }
 }
