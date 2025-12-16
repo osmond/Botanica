@@ -128,24 +128,15 @@ struct PlantDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: BotanicaTheme.Spacing.sm) {
+                VStack(spacing: BotanicaTheme.Spacing.md) {
                     // Hero section with photo or gradient
                     heroSection
                     
                     // Plant info card
                     plantInfoCard
-                    
-                    // Status summary
-                    statusSummaryCard
-                    
-                    // Care reminders if needed
-                    if plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue || repotDueSoon {
-                        careRemindersCard
-                    }
-                    
+
                     // Today / primary actions
                     todayCard
-                        .padding(.top, -BotanicaTheme.Spacing.sm)
                     
                     // Coming up preview
                     comingUpCard
@@ -376,129 +367,6 @@ struct PlantDetailView: View {
         .cardStyle()
     }
 
-    private var statusSummaryCard: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-            HStack(spacing: BotanicaTheme.Spacing.xs) {
-                Circle()
-                    .fill(plant.healthStatusColor)
-                    .frame(width: 8, height: 8)
-                Text(plant.healthStatus == .healthy ? "Healthy • On schedule" : "Status • \(plant.healthStatus.rawValue)")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-            }
-            
-            Text("Last watered \(lastWateredText)")
-                .font(.system(size: 13))
-                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-            
-            Text(nextKeyActionText)
-                .font(.system(size: 13))
-                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-        }
-        .padding(BotanicaTheme.Spacing.lg)
-        .cardStyle()
-    }
-    
-    private var careRemindersCard: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            HStack {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(.orange)
-                
-                Text("Care Needed")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.orange)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: BotanicaTheme.Spacing.sm) {
-                if plant.isWateringOverdue {
-                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                        HStack {
-                            Image(systemName: "drop.fill")
-                                .foregroundStyle(BotanicaTheme.Colors.waterBlue)
-                            Text("Watering overdue")
-                                .font(.system(size: 14, weight: .medium))
-                            Spacer()
-                            Button("Water Now") {
-                                vm.quickWaterPlant(plant, context: modelContext)
-                            }
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                            .padding(.vertical, BotanicaTheme.Spacing.xs)
-                            .background(BotanicaTheme.Colors.waterBlue)
-                            .cornerRadius(BotanicaTheme.CornerRadius.small)
-                        }
-                        
-                        Text("Use \(plant.recommendedWateringAmount.amount)\(plant.recommendedWateringAmount.unit) of water")
-                            .font(.system(size: 12))
-                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                            .padding(.leading, 20) // Align with text above
-                    }
-                }
-                
-                if plant.isFertilizingOverdue {
-                    HStack {
-                        Image(systemName: "leaf.arrow.circlepath")
-                            .foregroundStyle(BotanicaTheme.Colors.leafGreen)
-                        Text("Fertilizing due")
-                            .font(.system(size: 14, weight: .medium))
-                        Spacer()
-                        Button("Fertilize") {
-                            vm.quickFertilizePlant(plant, context: modelContext)
-                        }
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                        .padding(.vertical, BotanicaTheme.Spacing.xs)
-                        .background(BotanicaTheme.Colors.leafGreen)
-                        .cornerRadius(BotanicaTheme.CornerRadius.small)
-                    }
-                }
-                
-                if plant.isRepottingOverdue {
-                    HStack {
-                        Image(systemName: "flowerpot.fill")
-                            .foregroundStyle(BotanicaTheme.Colors.soilBrown)
-                        Text("Repotting overdue")
-                            .font(.system(size: 14, weight: .medium))
-                        Spacer()
-                        Button("Plan repot") {
-                            showingEditPlant = true
-                        }
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                        .padding(.vertical, BotanicaTheme.Spacing.xs)
-                        .background(BotanicaTheme.Colors.soilBrown)
-                        .cornerRadius(BotanicaTheme.CornerRadius.small)
-                    }
-                    
-                    Text("Update last repot date once you finish to reset reminders.")
-                        .font(.system(size: 12))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                        .padding(.leading, 20)
-                } else if let nextRepotDate {
-                    let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: nextRepotDate).day ?? 0
-                    if daysUntil <= 14 {
-                        HStack(spacing: BotanicaTheme.Spacing.xs) {
-                            Image(systemName: "calendar.badge.clock")
-                                .foregroundColor(BotanicaTheme.Colors.soilBrown)
-                            Text(daysUntil <= 0 ? "Repotting due now" : "Repot soon (\(daysUntil) days)")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                        }
-                    }
-                }
-            }
-        }
-        .padding(BotanicaTheme.Spacing.lg)
-        .cardStyle()
-    }
-    
     private var careHistoryCard: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             HStack {
@@ -630,17 +498,30 @@ extension PlantDetailView {
         let primaryTask = highestPriorityTodayTask()
         
         return VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            HStack {
-                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                    Text("Today")
-                        .font(.system(size: 18, weight: .bold))
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                HStack(spacing: BotanicaTheme.Spacing.sm) {
+                    Circle()
+                        .fill(plant.healthStatusColor)
+                        .frame(width: 10, height: 10)
+                    Text(plant.healthStatus == .healthy ? "Healthy • On schedule" : "Status • \(plant.healthStatus.rawValue)")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-                    Text("What needs attention right now")
-                        .font(.system(size: 14))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    Spacer()
                 }
-                Spacer()
+                
+                Text("Last watered \(lastWateredText)")
+                    .font(.system(size: 13))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                Text(nextKeyActionText)
+                    .font(.system(size: 13))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
             }
+            
+            Divider().opacity(0.1)
+            
+            Text("Today")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(BotanicaTheme.Colors.textPrimary)
             
             if let task = primaryTask {
                 todayRow(
