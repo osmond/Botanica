@@ -7,12 +7,12 @@ import Combine
 struct MyPlantsView: View {
     @Query(sort: \Plant.dateAdded, order: .reverse) private var plants: [Plant]
     @StateObject private var vm = MyPlantsViewModel()
+    @EnvironmentObject private var coordinator: MainTabCoordinator
     @AppStorage("default_view_mode") private var storedViewModeRaw: String = ViewMode.grid.rawValue
     @AppStorage("myPlants.sortBy") private var storedSortRaw: String = SortOption.dateAdded.rawValue
     @AppStorage("myPlants.groupBy") private var storedGroupRaw: String = GroupOption.none.rawValue
     @AppStorage("myPlants.careFilter") private var storedCareFilterRaw: String = ""
     @AppStorage("myPlants.healthFilter") private var storedHealthFilterRaw: String = ""
-    @State private var showingAddPlant = false
     @State private var viewMode: ViewMode = .grid
     @State private var searchText = ""
     @State private var filterBy: HealthStatus? = nil
@@ -271,7 +271,7 @@ struct MyPlantsView: View {
                     LazyVStack(spacing: 0) {
                 if plants.isEmpty {
                     ModernEmptyStateView {
-                        showingAddPlant = true
+                        coordinator.handleAddButtonTap()
                         HapticManager.shared.medium()
                     }
                 } else {
@@ -320,7 +320,7 @@ struct MyPlantsView: View {
                     HapticManager.shared.light()
                 }
             }
-            .navigationTitle("My Garden")
+            .navigationTitle("My Plants")
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $searchText, prompt: "Search your plants...")
             .toolbar {
@@ -429,9 +429,6 @@ struct MyPlantsView: View {
                     
 
                 }
-            }
-            .sheet(isPresented: $showingAddPlant) {
-                AddPlantView()
             }
             .sheet(isPresented: $showingAdvancedFilters) {
                 AdvancedFiltersView(
@@ -1352,6 +1349,7 @@ struct CardButtonStyle: ButtonStyle {
 #Preview("With Plants") {
     MyPlantsView()
         .modelContainer(MockDataGenerator.previewContainer())
+        .environmentObject(MainTabCoordinator(notificationService: AppServices.shared.notifications))
 }
 
 struct PlantCareReminderRow: View {
@@ -1443,4 +1441,5 @@ struct ModernStatCard: View {
 #Preview("Empty State") {
     MyPlantsView()
         .modelContainer(for: [Plant.self, CareEvent.self, Reminder.self, Photo.self, CarePlan.self], inMemory: true)
+        .environmentObject(MainTabCoordinator(notificationService: AppServices.shared.notifications))
 }

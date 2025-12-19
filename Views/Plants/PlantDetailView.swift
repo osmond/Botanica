@@ -25,8 +25,8 @@ struct PlantDetailView: View {
     @State private var noteText: String = ""
     @State private var showAllHistory: Bool = false
     @State private var showingDeletePlantConfirmation = false
-    @State private var showingScheduleSheet = false
-    @State private var showingConditionsSheet = false
+    @State private var scheduleExpanded = false
+    @State private var conditionsExpanded = false
 
     private let sectionGap: CGFloat = 24
     private let rowGap: CGFloat = 10
@@ -173,16 +173,10 @@ struct PlantDetailView: View {
             EditPlantView(plant: plant)
         }
         .sheet(isPresented: $showingAddCareEvent) {
-            Text("Add Care Event View - Coming Soon")
+            AddCareEventView(plant: plant)
         }
         .sheet(isPresented: $showingPhotoManager) {
             PhotoManager(plant: plant)
-        }
-        .sheet(isPresented: $showingScheduleSheet) {
-            scheduleDetailSheet
-        }
-        .sheet(isPresented: $showingConditionsSheet) {
-            conditionsDetailSheet
         }
         .sheet(isPresented: $showingAddNote) {
             NavigationStack {
@@ -342,10 +336,8 @@ struct PlantDetailView: View {
             .padding(.bottom, BotanicaTheme.Spacing.md)
         }
         .onTapGesture {
-            if !plant.photos.isEmpty {
-                HapticManager.shared.light()
-                showingPhotoManager = true
-            }
+            HapticManager.shared.light()
+            showingPhotoManager = true
         }
         .task(id: plant.id) {
             // Only try to fetch a reference image if the user hasn't added one.
@@ -368,6 +360,7 @@ struct PlantDetailView: View {
     private var belowHeroSections: some View {
         VStack(alignment: .leading, spacing: sectionGap) {
             upNextSection
+            logCareSection
             careHistorySection
             careScheduleSection
             growingConditionsSection
@@ -529,54 +522,119 @@ extension PlantDetailView {
             }
         }
     }
+
+    private var logCareSection: some View {
+        Button {
+            showingAddCareEvent = true
+        } label: {
+            HStack(spacing: BotanicaTheme.Spacing.sm) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(BotanicaTheme.Colors.primary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Log care")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                    Text("Record watering, feeding, or other care")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
+            }
+            .padding(BotanicaTheme.Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
+        }
+        .buttonStyle(.plain)
+    }
     
     private var careScheduleSection: some View {
         let repotMonths = plant.repotFrequencyMonths ?? 12
         let repotText = repotMonths >= 12 ? "Repot yearly" : "Repot every \(repotMonths) months"
         let summary = "Water every \(plant.wateringFrequency) days · Fertilize every \(plant.fertilizingFrequency) days · \(repotText)"
 
-        return Button {
-            showingScheduleSheet = true
-        } label: {
-            VStack(alignment: .leading, spacing: sectionHeaderGap) {
-                sectionHeader("Care Schedule")
+        return VStack(alignment: .leading, spacing: sectionHeaderGap) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    scheduleExpanded.toggle()
+                }
+            } label: {
                 HStack(spacing: BotanicaTheme.Spacing.sm) {
-                    Text(summary)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                        .lineLimit(1)
+                    sectionHeader("Care Schedule")
                     Spacer()
-                    Image(systemName: "chevron.right")
+                    Image(systemName: scheduleExpanded ? "chevron.down" : "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
                 }
             }
+            .buttonStyle(.plain)
+
+            Text(summary)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                .lineLimit(1)
+
+            if scheduleExpanded {
+                VStack(alignment: .leading, spacing: rowGap) {
+                    infoRow(title: "Water", value: "Every \(plant.wateringFrequency) days")
+                    infoRow(title: "Fertilize", value: "Every \(plant.fertilizingFrequency) days")
+                    infoRow(title: "Repot", value: repotText)
+
+                    Button("Edit Schedule") {
+                        showingEditPlant = true
+                    }
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .buttonStyle(.plain)
     }
 
     private var growingConditionsSection: some View {
         let locationText = plant.location.isEmpty ? "Location not set" : plant.location
         let summary = "\(locationText) · \(plant.lightLevel.displayName) · \(plant.temperatureRange.min) to \(plant.temperatureRange.max)°F"
 
-        return Button {
-            showingConditionsSheet = true
-        } label: {
-            VStack(alignment: .leading, spacing: sectionHeaderGap) {
-                sectionHeader("Growing Conditions")
+        return VStack(alignment: .leading, spacing: sectionHeaderGap) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    conditionsExpanded.toggle()
+                }
+            } label: {
                 HStack(spacing: BotanicaTheme.Spacing.sm) {
-                    Text(summary)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                        .lineLimit(1)
+                    sectionHeader("Growing Conditions")
                     Spacer()
-                    Image(systemName: "chevron.right")
+                    Image(systemName: conditionsExpanded ? "chevron.down" : "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
                 }
             }
+            .buttonStyle(.plain)
+
+            Text(summary)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                .lineLimit(1)
+
+            if conditionsExpanded {
+                VStack(alignment: .leading, spacing: rowGap) {
+                    infoRow(title: "Location", value: locationText)
+                    infoRow(title: "Light", value: plant.lightLevel.displayName)
+                    infoRow(title: "Temperature", value: "\(plant.temperatureRange.min)–\(plant.temperatureRange.max)°F")
+
+                    Button("Edit Conditions") {
+                        showingEditPlant = true
+                    }
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .buttonStyle(.plain)
     }
     
     private func infoRow(title: String, value: String) -> some View {
@@ -590,90 +648,6 @@ extension PlantDetailView {
         }
     }
 
-    private var scheduleDetailSheet: some View {
-        let repotMonths = plant.repotFrequencyMonths ?? 12
-        let repotText = repotMonths >= 12 ? "Yearly" : "Every \(repotMonths) months"
-
-        return NavigationStack {
-            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-                VStack(alignment: .leading, spacing: rowGap) {
-                    Text("Water")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                    Text("Every \(plant.wateringFrequency) days")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-                }
-
-                VStack(alignment: .leading, spacing: rowGap) {
-                    Text("Fertilize")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                    Text("Every \(plant.fertilizingFrequency) days")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-                }
-
-                VStack(alignment: .leading, spacing: rowGap) {
-                    Text("Repot")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-                    Text(repotText)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
-                }
-
-                Button("Edit Schedule") {
-                    showingScheduleSheet = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        showingEditPlant = true
-                    }
-                }
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-
-                Spacer()
-            }
-            .padding(BotanicaTheme.Spacing.lg)
-            .navigationTitle("Care Schedule")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { showingScheduleSheet = false }
-                }
-            }
-        }
-    }
-
-    private var conditionsDetailSheet: some View {
-        let locationText = plant.location.isEmpty ? "Location not set" : plant.location
-
-        return NavigationStack {
-            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-                infoRow(title: "Location", value: locationText)
-                infoRow(title: "Light", value: plant.lightLevel.displayName)
-                infoRow(title: "Temperature", value: "\(plant.temperatureRange.min)–\(plant.temperatureRange.max)°F")
-
-                Button("Edit Conditions") {
-                    showingConditionsSheet = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        showingEditPlant = true
-                    }
-                }
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
-
-                Spacer()
-            }
-            .padding(BotanicaTheme.Spacing.lg)
-            .navigationTitle("Growing Conditions")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { showingConditionsSheet = false }
-                }
-            }
-        }
-    }
-    
     private func sectionHeaderRow(
         _ title: String,
         trailingTitle: String? = nil,
@@ -761,6 +735,7 @@ struct QuickActionButton: View {
     let color: Color
     let isUrgent: Bool
     let subtitle: String?
+    let undoAction: (() -> Void)?
     @State private var isConfirming = false
     @State private var showUndo = false
     @State private var toastText: String = ""
@@ -772,6 +747,7 @@ struct QuickActionButton: View {
         color: Color,
         isUrgent: Bool,
         subtitle: String? = nil,
+        undoAction: (() -> Void)? = nil,
         action: @escaping () -> Void
     ) {
         self.icon = icon
@@ -779,6 +755,7 @@ struct QuickActionButton: View {
         self.color = color
         self.isUrgent = isUrgent
         self.subtitle = subtitle
+        self.undoAction = undoAction
         self.action = action
     }
     
@@ -788,7 +765,7 @@ struct QuickActionButton: View {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                 isConfirming = true
                 toastText = "Logged \(title.lowercased())"
-                showUndo = true
+                showUndo = undoAction != nil
             }
             HapticManager.shared.light()
             action()
@@ -849,7 +826,7 @@ struct QuickActionButton: View {
                         .clipShape(Capsule())
                         .onTapGesture {
                             withAnimation { showUndo = false; isConfirming = false }
-                            // Future: wire actual undo when CareEvent supports it
+                            undoAction?()
                         }
                         .transition(.opacity.combined(with: .scale))
                 }

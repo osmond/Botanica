@@ -7,7 +7,6 @@ import UserNotifications
 @main
 struct BotanicaApp: App {
     @StateObject private var notificationManager = NotificationManager.shared
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("theme_mode") private var themeMode = "system"
     
     var colorScheme: ColorScheme? {

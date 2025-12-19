@@ -4,8 +4,6 @@ import SwiftData
 /// Boots the app by seeding initial data before showing content/onboarding.
 struct RootBootstrapView: View {
     @Environment(\.modelContext) private var modelContext
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @State private var isSeeded = false
     @State private var loadState: LoadState = .idle
     @State private var lastError: String?
 
@@ -15,13 +13,7 @@ struct RootBootstrapView: View {
             retry: { Task { await seedIfNeeded() } },
             loading: { launchLoading }
         ) {
-            if hasCompletedOnboarding {
-                ContentView()
-            } else {
-                OnboardingView {
-                    hasCompletedOnboarding = true
-                }
-            }
+            ContentView()
         }
         .task { await seedIfNeeded() }
     }
@@ -44,7 +36,6 @@ struct RootBootstrapView: View {
         await DataMigrationService.migratePotSizeFromNotesIfNeeded(context: modelContext)
         await DataMigrationService.migrateRepotDefaultsIfNeeded(context: modelContext)
         await MainActor.run {
-            isSeeded = true
             loadState = .loaded
         }
     }

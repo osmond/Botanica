@@ -36,6 +36,7 @@
 		A00001001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift */; };
 		A00001001F0000010000001C /* Views/AI/PlantHealthVisionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */; };
 		A00001001F0000010000001D /* Views/AI/PlantIdentificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */; };
+		A00001001F00000100000044 /* Views/AI/AIHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000044 /* Views/AI/AIHubView.swift */; };
 		A00001001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift */; };
 		A00001001F0000010000001F /* Views/Analytics/AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001F /* Views/Analytics/AnalyticsView.swift */; };
 		A00001001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift */; };
@@ -136,6 +137,7 @@
 		A00002001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/PlantHealthSelectionView.swift; sourceTree = "<group>"; };
 		A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/PlantHealthVisionView.swift; sourceTree = "<group>"; };
 		A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/PlantIdentificationView.swift; sourceTree = "<group>"; };
+		A00002001F00000100000044 /* Views/AI/AIHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/AIHubView.swift; sourceTree = "<group>"; };
 		A00002001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/AdvancedAnalyticsView.swift; sourceTree = "<group>"; };
 		A00002001F0000010000001F /* Views/Analytics/AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/AnalyticsView.swift; sourceTree = "<group>"; };
 		A00002001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/EnvironmentAnalyticsView.swift; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 				A00002001F00000100000018 /* Views/AI/AICoachView.swift */,
 				A00002001F00000100000019 /* Views/AI/AIPlantIdentification.swift */,
 				A00002001F0000010000001A /* Views/AI/AISettingsView.swift */,
+				A00002001F00000100000044 /* Views/AI/AIHubView.swift */,
 				A00002001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift */,
 				A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */,
 				A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */,
@@ -507,6 +510,7 @@
 				A00001001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift in Sources */,
 				A00001001F0000010000001C /* Views/AI/PlantHealthVisionView.swift in Sources */,
 				A00001001F0000010000001D /* Views/AI/PlantIdentificationView.swift in Sources */,
+				A00001001F00000100000044 /* Views/AI/AIHubView.swift in Sources */,
 				A00001001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift in Sources */,
 				A00001001F0000010000001F /* Views/Analytics/AnalyticsView.swift in Sources */,
 				A00001001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift in Sources */,

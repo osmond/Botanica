@@ -108,7 +108,7 @@ struct SettingsView: View {
     
     private var notificationsSection: some View {
         Section("Notifications") {
-            NavigationLink(destination: SimpleNotificationSettingsView()) {
+            NavigationLink(destination: NotificationSettingsView()) {
                 HStack(spacing: BotanicaTheme.Spacing.md) {
                     // Icon
                     ZStack {
@@ -303,76 +303,6 @@ struct SettingsView: View {
     private func requestAppStoreReview() {
         // In a real app, this would trigger the App Store review prompt
         HapticManager.shared.success()
-    }
-}
-
-// MARK: - Simple Notification Settings View (Temporary)
-
-struct SimpleNotificationSettingsView: View {
-    @StateObject private var notificationManager = NotificationManager.shared
-    @State private var notificationsEnabled = true
-    
-    var body: some View {
-        List {
-            Section {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Image(systemName: notificationManager.authorizationStatus == .authorized ? "bell.fill" : "bell.slash.fill")
-                            .foregroundColor(notificationManager.authorizationStatus == .authorized ? .green : .red)
-                            .font(.title2)
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Notification Permission")
-                                .font(.headline)
-                            Text(notificationManager.authorizationStatus == .authorized ? "Notifications are enabled" : "Notifications are disabled")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        if notificationManager.authorizationStatus != .authorized {
-                            Button("Enable") {
-                                Task {
-                                    await notificationManager.requestNotificationPermission()
-                                }
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                    }
-                }
-                .padding(.vertical, 4)
-            } header: {
-                Text("Permission")
-            }
-            
-            if notificationManager.authorizationStatus == .authorized {
-                Section {
-                    HStack {
-                        Image(systemName: "drop.fill")
-                            .foregroundColor(.blue)
-                        Text("Watering Reminders")
-                        Spacer()
-                        Toggle("", isOn: $notificationsEnabled)
-                    }
-                    
-                    HStack {
-                        Image(systemName: "leaf.fill")
-                            .foregroundColor(.green)
-                        Text("Fertilizing Reminders")
-                        Spacer()
-                        Toggle("", isOn: $notificationsEnabled)
-                    }
-                } header: {
-                    Text("Notification Types")
-                }
-            }
-        }
-        .navigationTitle("Notification Settings")
-        .navigationBarTitleDisplayMode(.large)
-        .task {
-            await notificationManager.updateAuthorizationStatus()
-        }
     }
 }
 
