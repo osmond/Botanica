@@ -1,10 +1,13 @@
 import SwiftUI
+import SwiftData
+import Foundation
 
 /// AI-powered plant care assistant view
 /// Provides intelligent care recommendations and answers plant care questions
 struct AICareAssistantView: View {
     let plant: Plant
     
+    @Environment(\.modelContext) private var modelContext
     @StateObject private var aiCoach = AIPlantCoach()
     @State private var selectedTab = 0
     @State private var careQuestion = ""
@@ -17,6 +20,8 @@ struct AICareAssistantView: View {
     @State private var carePlanState: LoadState = .idle
     @State private var questionState: LoadState = .idle
     @State private var diagnosisState: LoadState = .idle
+    @State private var applyingCarePlan = false
+    @State private var showingApplySuccess = false
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -60,6 +65,11 @@ struct AICareAssistantView: View {
                 }
             } message: {
                 Text(errorMessage ?? aiCoach.lastError?.localizedDescription ?? "An error occurred")
+            }
+            .alert("Care Plan Applied", isPresented: $showingApplySuccess) {
+                Button("OK") { }
+            } message: {
+                Text("Your schedule and conditions have been updated.")
             }
         }
     }
@@ -134,6 +144,8 @@ struct AICareAssistantView: View {
     
     private func carePlanContent(_ plan: PlantCareRecommendation) -> some View {
         LazyVStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
+            applyCarePlanCard(plan)
+            
             // Watering Schedule
             careSection(
                 title: "Watering Schedule",
@@ -333,6 +345,54 @@ struct AICareAssistantView: View {
         .padding()
     }
     
+    private func applyCarePlanCard(_ plan: PlantCareRecommendation) -> some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+            Text("Apply to this plant")
+                .font(BotanicaTheme.Typography.headline)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
+            
+            Text(applySummary(for: plan))
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
+            
+            Text("Water amount uses pot size, material, and light to stay accurate.")
+                .font(BotanicaTheme.Typography.caption2)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
+            
+            Button(action: { applyCarePlan(plan) }) {
+                HStack {
+                    if applyingCarePlan {
+                        ProgressView()
+                            .scaleEffect(0.9)
+                    }
+                    Text(applyingCarePlan ? "Applying..." : "Apply Care Plan")
+                        .font(BotanicaTheme.Typography.button)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(BotanicaTheme.Colors.primary)
+            .disabled(applyingCarePlan)
+        }
+        .padding()
+        .background(BotanicaTheme.Colors.surface)
+        .cornerRadius(BotanicaTheme.CornerRadius.medium)
+    }
+    
+    private func applySummary(for plan: PlantCareRecommendation) -> String {
+        let waterLine = planLine(from: plan.wateringSchedule.frequency, fallbackPrefix: "Water")
+        let feedLine = planLine(from: plan.fertilizingSchedule.frequency, fallbackPrefix: "Fertilize")
+        let lightLine = plan.lightRequirements.intensity.isEmpty ? "Light stays as-is" : "Light: \(plan.lightRequirements.intensity)"
+        return [waterLine, feedLine, lightLine].joined(separator: " · ")
+    }
+    
+    private func planLine(from frequency: String, fallbackPrefix: String) -> String {
+        if let days = parseIntervalDays(frequency) {
+            return "\(fallbackPrefix) every \(days) days"
+        }
+        return "\(fallbackPrefix): \(frequency)"
+    }
+    
     private func generateCarePlan() {
         Task {
             carePlanState = .loading
@@ -349,6 +409,198 @@ struct AICareAssistantView: View {
                 HapticManager.shared.error()
             }
         }
+    }
+    
+    private func applyCarePlan(_ plan: PlantCareRecommendation) {
+        applyingCarePlan = true
+        errorMessage = nil
+        
+        let wateringDays = parseIntervalDays(plan.wateringSchedule.frequency) ?? plant.wateringFrequency
+        let fertilizingDays = parseIntervalDays(plan.fertilizingSchedule.frequency) ?? plant.fertilizingFrequency
+        let repotMonths = parseIntervalMonths(plan.generalCare.repotting) ?? (plant.repotFrequencyMonths ?? 12)
+        let lightLevel = parseLightLevel(plan.lightRequirements.intensity) ?? plant.lightLevel
+        let humidity = parseHumidityPreference(plan.generalCare.humidity) ?? plant.humidityPreference
+        let temperatureRange = parseTemperatureRange(plan.generalCare.temperature) ?? plant.temperatureRange
+        
+        plant.wateringFrequency = max(1, wateringDays)
+        plant.fertilizingFrequency = max(1, fertilizingDays)
+        plant.repotFrequencyMonths = max(1, repotMonths)
+        plant.lightLevel = lightLevel
+        plant.humidityPreference = min(max(humidity, 20), 90)
+        plant.temperatureRange = temperatureRange
+        
+        let recommendation = CareCalculator.recommendedWateringAmount(
+            potSize: plant.potSize,
+            plantType: PlantWateringType.from(
+                commonNames: plant.commonNames,
+                family: plant.family,
+                scientificName: plant.scientificName
+            ),
+            season: .current,
+            environment: .indoor,
+            potMaterial: plant.potMaterial ?? .unknown,
+            lightLevel: plant.lightLevel,
+            potHeight: plant.potHeight
+        )
+        plant.recommendedWaterAmount = Double(recommendation.amount)
+        plant.waterUnit = waterUnit(for: recommendation.unit)
+        
+        upsertCarePlan(plan, wateringDays: plant.wateringFrequency, fertilizingDays: plant.fertilizingFrequency)
+        
+        do {
+            try modelContext.save()
+            HapticManager.shared.success()
+            showingApplySuccess = true
+        } catch {
+            let message = ErrorMessageFormatter.userFriendlyMessage(for: error)
+            errorMessage = message
+            showingError = true
+            HapticManager.shared.error()
+        }
+        
+        applyingCarePlan = false
+    }
+    
+    private func upsertCarePlan(_ plan: PlantCareRecommendation, wateringDays: Int, fertilizingDays: Int) {
+        let planModel = plant.carePlan ?? CarePlan(source: .ai)
+        if plant.carePlan == nil {
+            modelContext.insert(planModel)
+            plant.carePlan = planModel
+        }
+        
+        planModel.source = .ai
+        planModel.wateringInterval = wateringDays
+        planModel.fertilizingInterval = fertilizingDays
+        planModel.lightRequirements = [plan.lightRequirements.intensity, plan.lightRequirements.placement]
+            .filter { !$0.isEmpty }
+            .joined(separator: " | ")
+        planModel.humidityRequirements = plan.generalCare.humidity
+        planModel.temperatureRequirements = plan.generalCare.temperature
+        
+        let seasonalPieces = [
+            plan.wateringSchedule.seasonalAdjustments,
+            plan.lightRequirements.seasonalConsiderations,
+            plan.fertilizingSchedule.seasonalSchedule
+        ]
+        planModel.seasonalNotes = seasonalPieces
+            .filter { !$0.isEmpty }
+            .joined(separator: " | ")
+        planModel.aiExplanation = "Applied from AI Care Assistant."
+        planModel.userApproved = true
+        planModel.lastUpdated = Date()
+    }
+    
+    private func parseIntervalDays(_ text: String) -> Int? {
+        let lower = text.lowercased()
+        if lower.contains("every other day") { return 2 }
+        if lower.contains("every other week") { return 14 }
+        if lower.contains("daily") { return 1 }
+        if lower.contains("weekly") { return 7 }
+        if lower.contains("biweekly") { return 14 }
+        if lower.contains("monthly") { return 30 }
+        
+        let numbers = extractNumbers(text)
+        guard let first = numbers.first else { return nil }
+        let value = averageIfRange(numbers, in: lower)
+        
+        if lower.contains("week") { return max(1, Int(round(value * 7))) }
+        if lower.contains("month") { return max(1, Int(round(value * 30))) }
+        if lower.contains("year") { return max(1, Int(round(value * 365))) }
+        if lower.contains("day") { return max(1, Int(round(value))) }
+        
+        return max(1, Int(round(first)))
+    }
+    
+    private func parseIntervalMonths(_ text: String) -> Int? {
+        let lower = text.lowercased()
+        if lower.contains("every other year") { return 24 }
+        if lower.contains("yearly") || lower.contains("annually") { return 12 }
+        
+        let numbers = extractNumbers(text)
+        guard let first = numbers.first else { return nil }
+        let value = averageIfRange(numbers, in: lower)
+        
+        if lower.contains("month") { return max(1, Int(round(value))) }
+        if lower.contains("year") { return max(1, Int(round(value * 12))) }
+        
+        return max(1, Int(round(first)))
+    }
+    
+    private func parseHumidityPreference(_ text: String) -> Int? {
+        let lower = text.lowercased()
+        let numbers = extractNumbers(text)
+        if !numbers.isEmpty {
+            return Int(round(averageIfRange(numbers, in: lower)))
+        }
+        
+        if lower.contains("high") || lower.contains("humid") { return 70 }
+        if lower.contains("medium") || lower.contains("moderate") { return 50 }
+        if lower.contains("low") || lower.contains("dry") { return 35 }
+        
+        return nil
+    }
+    
+    private func parseTemperatureRange(_ text: String) -> TemperatureRange? {
+        let numbers = extractNumbers(text)
+        guard !numbers.isEmpty else { return nil }
+        
+        let lower = text.lowercased()
+        let isCelsius = lower.contains("celsius") || (!lower.contains("f") && numbers.allSatisfy { $0 <= 45 })
+        let temps = numbers.map { isCelsius ? ($0 * 9 / 5 + 32) : $0 }
+        
+        let minValue = temps.min() ?? 65
+        let maxValue = temps.max() ?? 80
+        let minTemp = Int(round(minValue))
+        let maxTemp = Int(round(maxValue))
+        
+        if minTemp == maxTemp {
+            return TemperatureRange(
+                min: max(40, minTemp - 5),
+                max: min(95, maxTemp + 5)
+            )
+        }
+        
+        return TemperatureRange(
+            min: max(40, minTemp),
+            max: min(95, maxTemp)
+        )
+    }
+    
+    private func parseLightLevel(_ text: String) -> LightLevel? {
+        let lower = text.lowercased()
+        if lower.contains("direct") { return .direct }
+        if lower.contains("bright") { return .bright }
+        if lower.contains("indirect") { return .bright }
+        if lower.contains("low") { return .low }
+        if lower.contains("medium") || lower.contains("moderate") { return .medium }
+        return nil
+    }
+    
+    private func waterUnit(for unit: String) -> WaterUnit {
+        let lower = unit.lowercased()
+        if lower.contains("oz") { return .ounces }
+        if lower.contains("cup") { return .cups }
+        if lower.contains("l") && !lower.contains("ml") { return .liters }
+        return .milliliters
+    }
+    
+    private func extractNumbers(_ text: String) -> [Double] {
+        let pattern = #"\d+(\.\d+)?"#
+        let regex = try? NSRegularExpression(pattern: pattern, options: [])
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        let matches = regex?.matches(in: text, options: [], range: range) ?? []
+        return matches.compactMap { match in
+            guard let range = Range(match.range, in: text) else { return nil }
+            return Double(text[range])
+        }
+    }
+    
+    private func averageIfRange(_ numbers: [Double], in text: String) -> Double {
+        guard numbers.count >= 2 else { return numbers.first ?? 0 }
+        if text.contains("-") || text.contains(" to ") {
+            return (numbers[0] + numbers[1]) / 2
+        }
+        return numbers[0]
     }
     
     private func askAIQuestion() {
