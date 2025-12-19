@@ -201,6 +201,15 @@ struct MyPlantsView: View {
         .onChange(of: groupBy) { _, _ in persistState() }
         .onChange(of: careNeededFilter) { _, _ in persistState() }
         .onChange(of: filterBy) { _, _ in persistState() }
+        .onChange(of: storedViewModeRaw) { _, newValue in
+            let normalized = ViewMode(rawValue: newValue) ?? (newValue.lowercased() == "list" ? .list : .grid)
+            if viewMode != normalized {
+                viewMode = normalized
+            }
+            if newValue != normalized.rawValue {
+                storedViewModeRaw = normalized.rawValue
+            }
+        }
     }
 
     // Keep VM in sync with inputs

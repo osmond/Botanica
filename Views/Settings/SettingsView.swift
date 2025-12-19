@@ -6,22 +6,13 @@
 //
 
 import SwiftUI
-import SwiftData
 
 /// Main settings screen for the Botanica app
-/// Provides access to user preferences, notifications, AI configuration, and app information
+/// Provides access to preferences, notifications, data management, and app information
 struct SettingsView: View {
-    @Query private var plants: [Plant]
-    @Query private var careEvents: [CareEvent]
-    
-    @AppStorage("notifications_enabled") private var notificationsEnabled = true
-    @AppStorage("care_reminders_enabled") private var careRemindersEnabled = true
-    @AppStorage("daily_summary_enabled") private var dailySummaryEnabled = true
-    @AppStorage("photo_backup_enabled") private var photoBackupEnabled = false
     @AppStorage("default_view_mode") private var defaultViewMode = ViewMode.grid.rawValue
     @AppStorage("theme_mode") private var themeMode = "system"
     
-    @State private var showingAISettings = false
     @State private var showingAbout = false
     @State private var showingDataManagement = false
     @State private var showingExportData = false
@@ -30,29 +21,12 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Profile Section
-                profileSection
-                
-                // Notifications Section
-                notificationsSection
-                
-                // Display Preferences Section
-                displaySection
-                
-                // AI Features Section
-                aiSection
-                
-                // Data & Privacy Section
+                careSection
+                appearanceSection
                 dataSection
-                
-                // Support & Info Section
-                supportSection
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
-        }
-        .sheet(isPresented: $showingAISettings) {
-            AISettingsView()
         }
         .sheet(isPresented: $showingAbout) {
             AboutView()
@@ -68,49 +42,12 @@ struct SettingsView: View {
         }
     }
     
-    // MARK: - Profile Section
+    // MARK: - Care & Notifications
     
-    private var profileSection: some View {
-        Section {
-            HStack(spacing: BotanicaTheme.Spacing.md) {
-                // Profile avatar
-                ZStack {
-                    Circle()
-                        .fill(BotanicaTheme.Colors.primary.opacity(0.1))
-                        .frame(width: 60, height: 60)
-                    
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 35))
-                        .foregroundColor(BotanicaTheme.Colors.primary)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Plant Parent")
-                        .font(BotanicaTheme.Typography.headline)
-                        .foregroundColor(.primary)
-                    
-                    Text("\\(plants.count) plants • \\(careEvents.count) care events")
-                        .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text("Member since \\(memberSinceText)")
-                        .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-            }
-            .padding(.vertical, BotanicaTheme.Spacing.sm)
-        }
-    }
-    
-    // MARK: - Notifications Section
-    
-    private var notificationsSection: some View {
-        Section("Notifications") {
+    private var careSection: some View {
+        Section("Care & Notifications") {
             NavigationLink(destination: NotificationSettingsView()) {
                 HStack(spacing: BotanicaTheme.Spacing.md) {
-                    // Icon
                     ZStack {
                         Circle()
                             .fill(BotanicaTheme.Colors.primary.opacity(0.1))
@@ -121,9 +58,8 @@ struct SettingsView: View {
                             .foregroundColor(BotanicaTheme.Colors.primary)
                     }
                     
-                    // Content
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Notification Settings")
+                        Text("Notifications")
                             .font(BotanicaTheme.Typography.subheadline)
                             .foregroundColor(.primary)
                         
@@ -137,29 +73,13 @@ struct SettingsView: View {
                 .padding(.vertical, 2)
             }
             .buttonStyle(.plain)
-            
-            SettingsToggleRow(
-                title: "Care Reminders",
-                subtitle: "Get notified when plants need care",
-                icon: "drop.fill",
-                color: BotanicaTheme.Colors.waterBlue,
-                isOn: $careRemindersEnabled
-            )
-            
-            SettingsToggleRow(
-                title: "Daily Summary",
-                subtitle: "Morning overview of today's plant tasks",
-                icon: "sun.max.fill",
-                color: BotanicaTheme.Colors.nutrientOrange,
-                isOn: $dailySummaryEnabled
-            )
         }
     }
     
-    // MARK: - Display Section
+    // MARK: - Appearance
     
-    private var displaySection: some View {
-        Section("Display Preferences") {
+    private var appearanceSection: some View {
+        Section("Appearance") {
             SettingsPickerRow(
                 title: "Default Plant View",
                 subtitle: "How plants are displayed in lists",
@@ -187,41 +107,10 @@ struct SettingsView: View {
         }
     }
     
-    // MARK: - AI Section
-    
-    private var aiSection: some View {
-        Section("AI Features") {
-            SettingsActionRow(
-                title: "AI Plant Coach",
-                subtitle: "Configure OpenAI integration",
-                icon: "brain.head.profile.fill",
-                color: BotanicaTheme.Colors.primary
-            ) {
-                showingAISettings = true
-            }
-            
-            SettingsInfoRow(
-                title: "Plant Identification",
-                subtitle: "AI-powered plant recognition",
-                icon: "camera.viewfinder",
-                color: BotanicaTheme.Colors.leafGreen,
-                value: OpenAIConfig.shared.isConfigured ? "Enabled" : "Setup Required"
-            )
-        }
-    }
-    
-    // MARK: - Data Section
+    // MARK: - Data & App
     
     private var dataSection: some View {
-        Section("Data & Privacy") {
-            SettingsToggleRow(
-                title: "Photo Backup",
-                subtitle: "Automatically backup plant photos",
-                icon: "icloud.and.arrow.up.fill",
-                color: BotanicaTheme.Colors.waterBlue,
-                isOn: $photoBackupEnabled
-            )
-            
+        Section("Data & App") {
             SettingsActionRow(
                 title: "Manage Data",
                 subtitle: "View and manage your plant data",
@@ -248,13 +137,7 @@ struct SettingsView: View {
             ) {
                 showingImportData = true
             }
-        }
-    }
-    
-    // MARK: - Support Section
-    
-    private var supportSection: some View {
-        Section("Support & Information") {
+            
             SettingsActionRow(
                 title: "About Botanica",
                 subtitle: "App version and information",
@@ -263,46 +146,7 @@ struct SettingsView: View {
             ) {
                 showingAbout = true
             }
-            
-            SettingsLinkRow(
-                title: "Help & Support",
-                subtitle: "Get help with using the app",
-                icon: "questionmark.circle.fill",
-                color: BotanicaTheme.Colors.leafGreen,
-                url: "https://botanica.app/support"
-            )
-            
-            SettingsLinkRow(
-                title: "Privacy Policy",
-                subtitle: "How we protect your data",
-                icon: "hand.raised.fill",
-                color: BotanicaTheme.Colors.terracotta,
-                url: "https://botanica.app/privacy"
-            )
-            
-            SettingsActionRow(
-                title: "Rate Botanica",
-                subtitle: "Leave a review on the App Store",
-                icon: "star.fill",
-                color: BotanicaTheme.Colors.nutrientOrange
-            ) {
-                requestAppStoreReview()
-            }
         }
-    }
-    
-    // MARK: - Helper Methods
-    
-    private var memberSinceText: String {
-        // In a real app, this would come from user account creation date
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: Date().addingTimeInterval(-TimeInterval.random(in: 86400*30...86400*365)))
-    }
-    
-    private func requestAppStoreReview() {
-        // In a real app, this would trigger the App Store review prompt
-        HapticManager.shared.success()
     }
 }
 

@@ -7,7 +7,6 @@ import SwiftData
 final class AnalyticsViewModel: ObservableObject, ViewModel {
     @Published var loadState: LoadState = .idle
     @Published var snapshot: AnalyticsSnapshot?
-    @Published var inlineFilter: InlineStatusChips.InlineFilter?
     
     private let service: AnalyticsService
     
@@ -32,8 +31,5 @@ final class AnalyticsViewModel: ObservableObject, ViewModel {
         return nil
     }
     
-    func applyInlineFilter(_ filter: InlineStatusChips.InlineFilter, plants: [Plant]) {
-        inlineFilter = filter
-        // Future: route to a filtered list view or update a published collection.
-    }
+    // Placeholder for future filter state if analytics adds drill-down interactions.
 }

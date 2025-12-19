@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 
 /// One-off data migrations and cleanups
+@MainActor
 enum DataMigrationService {
     /// Pulls pot diameter from notes (e.g. "Pot diameter: 15.2 cm") and stores it in `potSize` (inches).
     /// Cleans the pot height/diameter fragments from notes. Runs once per install.

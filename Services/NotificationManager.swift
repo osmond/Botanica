@@ -33,7 +33,9 @@ final class NotificationManager: ObservableObject {
     /// Update the current authorization status
     func updateAuthorizationStatus() async {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
-        self.authorizationStatus = settings.authorizationStatus
+        await MainActor.run {
+            self.authorizationStatus = settings.authorizationStatus
+        }
     }
     
     // MARK: - Notification Scheduling

@@ -1,57 +1,5 @@
 import SwiftUI
 import SwiftData
-import Charts
-
-// MARK: - Plant Performance Analytics
-struct PlantHealthMetrics {
-    let careConsistency: Double
-    let growthRate: Double
-    let seasonalAdaptation: Double
-    let overallHealth: Double
-    let trend: UIHealthTrend
-    
-    var performanceGrade: String {
-        let average = (careConsistency + growthRate + seasonalAdaptation + overallHealth) / 4.0
-        switch average {
-        case 0.9...1.0: return "A+"
-        case 0.8..<0.9: return "A"
-        case 0.7..<0.8: return "B+"
-        case 0.6..<0.7: return "B"
-        case 0.5..<0.6: return "C"
-        default: return "D"
-        }
-    }
-}
-
-enum UIHealthTrend {
-    case improving
-    case stable
-    case declining
-    
-    var icon: String {
-        switch self {
-        case .improving: return "arrow.up.circle.fill"
-        case .stable: return "minus.circle.fill"
-        case .declining: return "arrow.down.circle.fill"
-        }
-    }
-    
-    var color: Color {
-        switch self {
-        case .improving: return BotanicaTheme.Colors.success
-        case .stable: return BotanicaTheme.Colors.waterBlue
-        case .declining: return BotanicaTheme.Colors.warning
-        }
-    }
-    
-    var accessibilityDescription: String {
-        switch self {
-        case .improving: return "improving"
-        case .stable: return "stable"
-        case .declining: return "declining"
-        }
-    }
-}
 
 /// Advanced Analytics view providing botanical insights, plant care optimization,
 /// seasonal care guidance, and predictive plant health analytics
@@ -62,8 +10,9 @@ struct AnalyticsView: View {
     @AppStorage("analytics.timeRange") private var storedRange: String = AnalyticsTimeRange.month.rawValue
     @State private var selectedTimeRange: AnalyticsTimeRange = .month
     @State private var showingSeasonalGuidance = false
+    @State private var reviewSheet: ReviewSheet?
+    @State private var selectedPlantForCare: Plant?
     @State private var selectedPlantForDetails: Plant?
-    @State private var showingAdvancedAnalytics = false
 
     var body: some View {
         NavigationStack {
@@ -85,7 +34,7 @@ struct AnalyticsView: View {
                         VStack(spacing: BotanicaTheme.Spacing.md) {
                             ProgressView("Analyzing collection…")
                                 .progressViewStyle(.circular)
-                            Text("Crunching health and care trends")
+                            Text("Summarizing your logs and schedules")
                                 .font(BotanicaTheme.Typography.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -106,37 +55,22 @@ struct AnalyticsView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: BotanicaTheme.Spacing.xl) {
-                                // Hero Section with Collection Health Score
+                                // Collection summary
                                 collectionHealthHero
                                 
-                                // Time range selector
-                                modernTimeRangeSelector
+                                // Care focus
+                                careFocusSection
                                 
-                                // Quick log care
-                                logCareCTA
+                                // Care activity
+                                careActivitySection
+                                
+                                // Health check-ins
+                                healthCheckinsSection
                                 
                                 // Seasonal Botanical Guidance
                                 seasonalGuidanceCard
                                 
-                                // Advanced Analytics Quick Access
-                                advancedAnalyticsSection
-                                
-                                // Plant Performance Dashboard
-                                plantPerformanceDashboard
-                                
-                                // Care Effectiveness Analytics
-                                careEffectivenessSection
-                                
-                                // Health & Growth Trends
-                                healthTrendsSection
-                                
-                                // Species-Specific Insights
-                                speciesInsightsSection
-                                
-                                // Botanical Achievements
-                                botanicalAchievementsSection
-                                
-                                // Smart Recommendations
+                                // Insights
                                 smartRecommendationsSection
                             }
                             .padding(.horizontal, BotanicaTheme.Spacing.lg)
@@ -155,11 +89,29 @@ struct AnalyticsView: View {
             .sheet(isPresented: $showingSeasonalGuidance) {
                 SeasonalCareGuidanceView(plants: plants)
             }
-            .sheet(item: $selectedPlantForDetails) { plant in
-                PlantDetailAnalyticsView(plant: plant)
+            .sheet(item: $reviewSheet) { sheet in
+                switch sheet {
+                case .careFocus:
+                    CareFocusListView(
+                        title: "Care Focus",
+                        subtitle: "Plants due today or overdue.",
+                        plants: careFocusPlants,
+                        statusProvider: careFocusStatus(for:)
+                    )
+                case .attention:
+                    CareFocusListView(
+                        title: "Needs Attention",
+                        subtitle: "Based on your health status updates.",
+                        plants: attentionPlants,
+                        statusProvider: attentionStatus(for:)
+                    )
+                }
             }
-            .sheet(isPresented: $showingAdvancedAnalytics) {
-                AdvancedAnalyticsView()
+            .sheet(item: $selectedPlantForCare) { plant in
+                AddCareEventView(plant: plant)
+            }
+            .sheet(item: $selectedPlantForDetails) { plant in
+                PlantDetailView(plant: plant)
             }
             .task(id: selectedTimeRange) {
                 viewModel.refresh(plants: plants, careEvents: careEvents, range: selectedTimeRange)
@@ -180,174 +132,265 @@ struct AnalyticsView: View {
     // MARK: - Modern Botanical Analytics Components
     
     private var collectionHealthHero: some View {
-        VStack(spacing: BotanicaTheme.Spacing.lg) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                    Text("Collection Health Score")
-                        .font(BotanicaTheme.Typography.title3)
-                        .foregroundStyle(.secondary)
-                    
-                    Text("\(String(format: "%.0f", collectionHealthScore))")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .foregroundStyle(healthScoreColor)
-                    
-                    HStack(spacing: 6) {
-                        Text(collectionHealthGrade)
-                            .font(BotanicaTheme.Typography.callout)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(healthScoreColor)
-                        let delta = viewModel.healthDelta(for: selectedTimeRange)
-                        if let delta {
-                            Text(delta > 0 ? "+\(Int(delta))" : "\(Int(delta))")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .foregroundStyle(delta >= 0 ? BotanicaTheme.Colors.success : BotanicaTheme.Colors.error)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background((delta >= 0 ? BotanicaTheme.Colors.success : BotanicaTheme.Colors.error).opacity(0.12))
-                                .clipShape(Capsule())
-                        }
-                    }
-                }
-                
-                Spacer(minLength: BotanicaTheme.Spacing.md)
-                
-                VStack(spacing: BotanicaTheme.Spacing.sm) {
-                    Circle()
-                        .trim(from: 0, to: collectionHealthScore / 100)
-                        .stroke(healthScoreColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                        .frame(width: 80, height: 80)
-                        .rotationEffect(.degrees(-90))
-                        .background(
-                            Circle()
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 8)
-                        )
-                    
-                    Text("\(plants.count) Plants")
-                        .font(BotanicaTheme.Typography.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
+            Text("Collection Summary")
+                .font(BotanicaTheme.Typography.title2)
+                .fontWeight(.bold)
             
-            HStack(spacing: BotanicaTheme.Spacing.lg) {
-                HealthMetricPill(
-                    title: "Thriving",
-                    count: healthyPlantsCount,
+            Text(collectionSummaryLine)
+                .font(BotanicaTheme.Typography.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                SummaryMetricPill(
+                    title: "On schedule",
+                    count: onScheduleCount,
                     color: BotanicaTheme.Colors.success,
-                    icon: "heart.fill"
+                    icon: "checkmark.circle.fill"
                 )
                 
-                HealthMetricPill(
-                    title: "Attention",
-                    count: attentionNeededCount,
+                SummaryMetricPill(
+                    title: "Due today",
+                    count: dueTodayCount,
+                    color: BotanicaTheme.Colors.waterBlue,
+                    icon: "calendar.badge.clock"
+                )
+                
+                SummaryMetricPill(
+                    title: "Overdue",
+                    count: overdueCount,
                     color: BotanicaTheme.Colors.warning,
-                    icon: "exclamationmark.triangle.fill"
-                )
-                
-                HealthMetricPill(
-                    title: "Care Streak",
-                    count: currentCareStreak,
-                    color: BotanicaTheme.Colors.nutrientOrange,
-                    icon: "flame.fill"
+                    icon: "clock.badge.exclamationmark"
                 )
             }
             
-            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    InlineStatusChips(
-                        overdue: overdueCount,
-                        dueToday: dueTodayCount,
-                        attention: attentionNeededCount,
-                        onSelect: { filter in viewModel.applyInlineFilter(filter, plants: plants) }
-                    )
-                    .padding(.trailing, BotanicaTheme.Spacing.sm)
-                }
-                
-                NavigationLink(destination: ActivityView().navigationBarHidden(true)) {
-                    let totalActionable = overdueCount + dueTodayCount
-                    HStack(spacing: BotanicaTheme.Spacing.xs) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.white)
-                        Text(totalActionable > 0 ? "Log care (\(totalActionable))" : "Log care")
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
+            Text(healthSummaryLine)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundStyle(.secondary)
+            
+            Text(dataBasisLine)
+                .font(BotanicaTheme.Typography.caption2)
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            
+            if overdueCount + dueTodayCount > 0 {
+                Button(action: { reviewSheet = .careFocus }) {
+                    HStack {
+                        Text("Review due plants")
+                            .fontWeight(.medium)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
                     }
-                    .padding(.horizontal, BotanicaTheme.Spacing.md)
-                    .padding(.vertical, BotanicaTheme.Spacing.sm)
-                    .background(BotanicaTheme.Colors.primary)
-                    .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
+                .foregroundColor(BotanicaTheme.Colors.primary)
             }
         }
         .padding(BotanicaTheme.Spacing.lg)
-        .heroCardStyle()
+        .cardStyle()
     }
     
-    private var modernTimeRangeSelector: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            HStack {
-                Text("Analysis Period")
-                    .font(BotanicaTheme.Typography.headline)
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(selectedTimeRange.subtitle)
-                    .font(BotanicaTheme.Typography.caption)
-                    .foregroundStyle(.secondary)
+    private var careFocusSection: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
+            Text("Care Focus")
+                .font(BotanicaTheme.Typography.title2)
+                .fontWeight(.bold)
+            
+            Text(careFocusSummaryLine)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
+            
+            if careFocusPlants.isEmpty {
+                EmptyStateCard(
+                    icon: "checkmark.circle",
+                    title: "Nothing due today",
+                    description: "You are up to date. Next care actions will show here."
+                )
+            } else {
+                VStack(spacing: BotanicaTheme.Spacing.md) {
+                    ForEach(careFocusPlants.prefix(4), id: \.id) { plant in
+                        CareFocusRow(
+                            plant: plant,
+                            status: careFocusStatus(for: plant),
+                            onOpen: { selectedPlantForDetails = plant },
+                            onLogCare: { selectedPlantForCare = plant }
+                        )
+                    }
+                }
+                
+                if careFocusPlants.count > 4 {
+                    Button(action: { reviewSheet = .careFocus }) {
+                        HStack {
+                            Text("View all due plants")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                        }
+                    }
+                    .foregroundColor(BotanicaTheme.Colors.primary)
+                }
             }
             
-            Picker("Time Range", selection: $selectedTimeRange) {
-                ForEach(AnalyticsTimeRange.allCases, id: \.self) { range in
-                    Text(range.rawValue)
-                        .tag(range)
-                }
-            }
-            .pickerStyle(.segmented)
+            Text("Based on schedules and last logged care.")
+                .font(BotanicaTheme.Typography.caption2)
+                .foregroundColor(.secondary)
         }
         .cardStyle()
-        .accessibilityLabel("Analysis period selector")
-        .padding(.bottom, BotanicaTheme.Spacing.md)
+        .accessibilityLabel("Care focus")
     }
     
-    private var logCareCTA: some View {
-        NavigationLink(destination: ActivityView()) {
-            HStack {
-                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                    Text("Log care now")
+    private var careActivitySection: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
+            Text("Care Activity")
+                .font(BotanicaTheme.Typography.title2)
+                .fontWeight(.bold)
+            
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+                HStack {
+                    Text("Analysis Period")
                         .font(BotanicaTheme.Typography.headline)
-                    Text("Quickly record watering, feeding, or repotting")
+                        .fontWeight(.semibold)
+                    Spacer()
+                    Text(selectedTimeRange.subtitle)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Picker("Time Range", selection: $selectedTimeRange) {
+                    ForEach(AnalyticsTimeRange.allCases, id: \.self) { range in
+                        Text(range.rawValue)
+                            .tag(range)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+            
+            if careEventsInRange.isEmpty {
+                EmptyStateCard(
+                    icon: "calendar.badge.clock",
+                    title: "No care logs",
+                    description: "Log care actions to see patterns over time."
+                )
+            } else {
+                Text(careActivitySummaryLine)
+                    .font(BotanicaTheme.Typography.callout)
+                    .foregroundColor(.secondary)
+                
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: BotanicaTheme.Spacing.md) {
+                    AnalyticsMetricCard(
+                        title: "Care logs",
+                        value: "\(careEventsInRange.count)",
+                        subtitle: selectedTimeRange.subtitle,
+                        tint: BotanicaTheme.Colors.leafGreen
+                    )
+                    
+                    AnalyticsMetricCard(
+                        title: "Plants cared for",
+                        value: "\(plantsCaredForCount)/\(plants.count)",
+                        subtitle: "with logs",
+                        tint: BotanicaTheme.Colors.waterBlue
+                    )
+                    
+                    AnalyticsMetricCard(
+                        title: "Most common",
+                        value: mostCommonCareType?.rawValue ?? "—",
+                        subtitle: "care type",
+                        tint: BotanicaTheme.Colors.nutrientOrange
+                    )
+                    
+                    AnalyticsMetricCard(
+                        title: "Average gap",
+                        value: averageCareGapText,
+                        subtitle: "between logs",
+                        tint: BotanicaTheme.Colors.primary
+                    )
+                }
+                
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
+                    Text("Care logs by type")
+                        .font(BotanicaTheme.Typography.headline)
+                        .fontWeight(.semibold)
+                    Text(selectedTimeRange.subtitle)
                         .font(BotanicaTheme.Typography.caption)
                         .foregroundColor(.secondary)
+                    CareTypeEffectivenessGrid(careEvents: careEventsInRange)
                 }
-                Spacer()
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(BotanicaTheme.Colors.primary)
             }
-            .padding(BotanicaTheme.Spacing.lg)
-            .cardStyle()
         }
-        .buttonStyle(.plain)
+        .cardStyle()
+        .accessibilityLabel("Care activity")
+    }
+    
+    private var healthCheckinsSection: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
+            Text("Health Check-ins")
+                .font(BotanicaTheme.Typography.title2)
+                .fontWeight(.bold)
+            
+            Text("Current status based on the health you set per plant.")
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
+            
+            if plants.isEmpty {
+                EmptyStateCard(
+                    icon: "heart.text.square",
+                    title: "No Health Data",
+                    description: "Add plants to see a health overview."
+                )
+            } else {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: BotanicaTheme.Spacing.md) {
+                    AnalyticsMetricCard(
+                        title: "Doing well",
+                        value: "\(healthyPlantsCount)",
+                        subtitle: "excellent or healthy",
+                        tint: BotanicaTheme.Colors.success
+                    )
+                    
+                    AnalyticsMetricCard(
+                        title: "Watch",
+                        value: "\(watchPlantsCount)",
+                        subtitle: "fair",
+                        tint: BotanicaTheme.Colors.waterBlue
+                    )
+                    
+                    AnalyticsMetricCard(
+                        title: "Needs attention",
+                        value: "\(attentionNeededCount)",
+                        subtitle: "poor or critical",
+                        tint: BotanicaTheme.Colors.warning
+                    )
+                }
+                
+                if attentionNeededCount > 0 {
+                    Button(action: { reviewSheet = .attention }) {
+                        HStack {
+                            Text("Review health needs")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                        }
+                    }
+                    .foregroundColor(BotanicaTheme.Colors.primary)
+                }
+            }
+        }
+        .cardStyle()
+        .accessibilityLabel("Health check-ins")
     }
     
     private var seasonalGuidanceCard: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
             HStack {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                    Text("\(BotanicalSeason.current.rawValue) Care Guide")
+                    Text("\(BotanicalSeason.current.rawValue) Guidance")
                         .font(BotanicaTheme.Typography.title3)
                         .fontWeight(.semibold)
                     
-                    HStack(spacing: BotanicaTheme.Spacing.sm) {
-                        Text("Applies to \(seasonalAppliesCount) plants")
-                            .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
-                        Capsule()
-                            .fill(BotanicaTheme.Colors.primary.opacity(0.15))
-                            .frame(width: 6, height: 6)
-                        Text("\(seasonalTaskCount(for: BotanicalSeason.current)) tasks ready")
-                            .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    Text("General seasonal guidance. Review each plant before adjusting schedules.")
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
                     
                     Text(BotanicalSeason.current.careModifications)
                         .font(BotanicaTheme.Typography.callout)
@@ -364,7 +407,7 @@ struct AnalyticsView: View {
             
             Button(action: { showingSeasonalGuidance = true }) {
                 HStack {
-                    Text("View Seasonal Care Calendar")
+                    Text("Review seasonal guidance")
                         .fontWeight(.medium)
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -372,355 +415,35 @@ struct AnalyticsView: View {
                 }
                 .foregroundColor(BotanicaTheme.Colors.primary)
             }
-            
-            Button {
-                showingSeasonalGuidance = true
-            } label: {
-                HStack {
-                    Text("Apply to \(plants.count) plants")
-                        .fontWeight(.semibold)
-                    Spacer()
-                    Image(systemName: "leaf.fill")
-                        .foregroundColor(BotanicaTheme.Colors.primary)
-                }
-                .padding(.horizontal, BotanicaTheme.Spacing.md)
-                .padding(.vertical, BotanicaTheme.Spacing.sm)
-                .frame(maxWidth: .infinity)
-                .background(BotanicaTheme.Colors.primary.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
-            }
         }
         .cardStyle()
         .accessibilityLabel("Seasonal care guide")
         .padding(.bottom, BotanicaTheme.Spacing.md)
     }
     
-    private func seasonalTaskCount(for season: BotanicalSeason) -> Int {
-        let title = season.rawValue
-        return SeasonalCareSection.sampleData.first(where: { $0.title == title })?.tasks.count ?? 0
-    }
-    
-    private var seasonalAppliesCount: Int {
-        plants.count
-    }
-    
-    private var advancedAnalyticsSection: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            HStack {
-                Text("Advanced Analytics")
-                    .font(BotanicaTheme.Typography.title2)
-                    .fontWeight(.bold)
-                Spacer()
-                NavigationLink {
-                    AdvancedAnalyticsView()
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("See all")
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                    }
-                }
-                .font(BotanicaTheme.Typography.callout)
-                .foregroundColor(BotanicaTheme.Colors.primary)
-            }
-            
-            HStack(spacing: BotanicaTheme.Spacing.md) {
-                statPill(icon: "heart.text.square", title: "Attention", subtitle: "Needs review", value: attentionNeededCount)
-                statPill(icon: "checkmark.circle", title: "Completion", subtitle: selectedTimeRange.subtitle, valueText: "\(Int(averageCompletionRate * 100))%")
-                statPill(icon: "leaf.fill", title: "Healthy", subtitle: "Thriving now", value: healthyPlantsCount)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .cardStyle()
-        .accessibilityLabel("Advanced analytics section")
-    }
-    
-    private func statPill(icon: String, title: String, subtitle: String = "", value: Int) -> some View {
-        statPill(icon: icon, title: title, subtitle: subtitle, valueText: "\(value)")
-    }
-    
-    private func statPill(icon: String, title: String, subtitle: String = "", valueText: String) -> some View {
-        HStack(spacing: BotanicaTheme.Spacing.xs) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(BotanicaTheme.Colors.primary)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(valueText)
-                    .font(BotanicaTheme.Typography.callout)
-                    .fontWeight(.semibold)
-                Text(title)
-                    .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
-                if !subtitle.isEmpty {
-                    Text(subtitle)
-                        .font(BotanicaTheme.Typography.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding(.horizontal, BotanicaTheme.Spacing.md)
-        .padding(.vertical, BotanicaTheme.Spacing.sm)
-        .background(BotanicaTheme.Colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
-    }
-    
-    private var plantPerformanceDashboard: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-            HStack {
-                Text("Plant Performance")
-                    .font(BotanicaTheme.Typography.title2)
-                    .fontWeight(.bold)
-                
-                Spacer()
-                
-                Button("View All") {
-                    // Show detailed performance view
-                }
-                .font(BotanicaTheme.Typography.callout)
-                .foregroundColor(BotanicaTheme.Colors.primary)
-            }
-            
-            if plants.isEmpty {
-                EmptyStateCard(
-                    icon: "chart.bar.fill",
-                    title: "No Performance Data",
-                    description: "Add plants and care events to see performance analytics"
-                )
-            } else {
-                let top4 = Array(topPerformingPlants.prefix(4))
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: BotanicaTheme.Spacing.md) {
-                    ForEach(top4, id: \.id) { plant in
-                        PlantPerformanceCard(
-                            plant: plant,
-                            metrics: generatePlantMetrics(for: plant)
-                        ) {
-                            selectedPlantForDetails = plant
-                        }
-                    }
-                }
-            }
-        }
-        .cardStyle()
-        .accessibilityLabel("Plant performance overview")
-    }
-    
-    private var careEffectivenessSection: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-            Text("Care Effectiveness")
-                .font(BotanicaTheme.Typography.title2)
-                .fontWeight(.bold)
-            
-            if plants.isEmpty || careEvents.isEmpty {
-                EmptyStateCard(
-                    icon: "chart.line.uptrend.xyaxis",
-                    title: "No Care Data",
-                    description: "Start caring for your plants to see effectiveness trends"
-                )
-            } else {
-                VStack(spacing: BotanicaTheme.Spacing.lg) {
-                    // Care completion rate chart
-                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-                        HStack {
-                            Text("Care Completion Rate")
-                                .font(BotanicaTheme.Typography.headline)
-                                .fontWeight(.semibold)
-                            
-                            Spacer()
-                            
-                            Text("\(String(format: "%.0f", averageCompletionRate * 100))%")
-                                .font(BotanicaTheme.Typography.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(BotanicaTheme.Colors.success)
-                        }
-                        
-                        HStack(spacing: BotanicaTheme.Spacing.sm) {
-                            ChartFilterPill(title: "All", isSelected: completionFilter == .all) { completionFilter = .all }
-                            ChartFilterPill(title: "Water", isSelected: completionFilter == .watering) { completionFilter = .watering }
-                            ChartFilterPill(title: "Feed", isSelected: completionFilter == .fertilizing) { completionFilter = .fertilizing }
-                            ChartFilterPill(title: "Repot", isSelected: completionFilter == .repotting) { completionFilter = .repotting }
-                            Spacer()
-                            Text(selectedTimeRange.subtitle)
-                                .font(BotanicaTheme.Typography.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Chart {
-                            ForEach(filteredCompletionData, id: \.date) { dataPoint in
-                                LineMark(
-                                    x: .value("Date", dataPoint.date),
-                                    y: .value("Rate", dataPoint.completionRate * 100)
-                                )
-                                .foregroundStyle(BotanicaTheme.Colors.primary)
-                                .symbol(.circle)
-                                
-                                AreaMark(
-                                    x: .value("Date", dataPoint.date),
-                                    y: .value("Rate", dataPoint.completionRate * 100)
-                                )
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [BotanicaTheme.Colors.primary.opacity(0.2), .clear],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
-                            }
-                            
-                            RuleMark(y: .value("Target", 90))
-                                .lineStyle(.init(lineWidth: 1, dash: [4]))
-                                .foregroundStyle(BotanicaTheme.Colors.success.opacity(0.6))
-                                .annotation(position: .leading) {
-                                    Text("Target 90%")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
-                        }
-                        .chartYScale(domain: 0...100)
-                        .chartYAxis {
-                            AxisMarks(values: [0, 25, 50, 75, 100]) { value in
-                                AxisGridLine()
-                                AxisValueLabel {
-                                    if let intValue = value.as(Int.self) {
-                                        Text("\(intValue)%")
-                                            .font(.caption2)
-                                    }
-                                }
-                            }
-                        }
-                        .frame(height: 180)
-                    }
-                    .padding(BotanicaTheme.Spacing.lg)
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large))
-                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-                    
-                    // Care type effectiveness
-                    CareTypeEffectivenessGrid(careEvents: careEventsInRange)
-                }
-            }
-        }
-        .cardStyle()
-        .accessibilityLabel("Care effectiveness")
-    }
-    
-    private var healthTrendsSection: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-            Text("Health & Growth Trends")
-                .font(BotanicaTheme.Typography.title2)
-                .fontWeight(.bold)
-            
-            if plants.isEmpty {
-                EmptyStateCard(
-                    icon: "heart.text.square",
-                    title: "No Health Data",
-                    description: "Track your plants' health over time to see trends"
-                )
-            } else {
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: BotanicaTheme.Spacing.md) {
-                    HealthTrendCard(
-                        title: "Improving",
-                        count: healthTrendCounts.improving,
-                        color: BotanicaTheme.Colors.success,
-                        icon: "arrow.up.circle.fill",
-                        onTap: { viewModel.inlineFilter = nil /* placeholder: hook into filters */ }
-                    )
-                    
-                    HealthTrendCard(
-                        title: "Stable",
-                        count: healthTrendCounts.stable,
-                        color: BotanicaTheme.Colors.waterBlue,
-                        icon: "minus.circle.fill",
-                        onTap: { viewModel.inlineFilter = nil }
-                    )
-                    
-                    HealthTrendCard(
-                        title: "Declining",
-                        count: healthTrendCounts.declining,
-                        color: BotanicaTheme.Colors.warning,
-                        icon: "arrow.down.circle.fill",
-                        onTap: { viewModel.inlineFilter = nil }
-                    )
-                }
-            }
-        }
-        .cardStyle()
-        .accessibilityLabel("Health and growth trends")
-    }
-    
-    private var speciesInsightsSection: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-            Text("Species Insights")
-                .font(BotanicaTheme.Typography.title2)
-                .fontWeight(.bold)
-            
-            if plants.isEmpty {
-                EmptyStateCard(
-                    icon: "leaf.arrow.triangle.circlepath",
-                    title: "No Species Data",
-                    description: "Add plants to see species-specific care insights"
-                )
-            } else {
-                VStack(spacing: BotanicaTheme.Spacing.md) {
-                    ForEach(topSpeciesInsights, id: \.species) { insight in
-                        SpeciesInsightCard(insight: insight)
-                    }
-                }
-            }
-        }
-        .cardStyle()
-        .accessibilityLabel("Species insights")
-    }
-    
-    private var botanicalAchievementsSection: some View {
-        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-            HStack {
-                Text("Botanical Achievements")
-                    .font(BotanicaTheme.Typography.title2)
-                    .fontWeight(.bold)
-                
-                Spacer()
-                
-                Text("\(botanicalAchievements.filter { $0.isUnlocked }.count)/\(botanicalAchievements.count)")
-                    .font(BotanicaTheme.Typography.callout)
-                    .foregroundColor(.secondary)
-            }
-            
-            let topAchievements = Array(botanicalAchievements.prefix(6))
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: BotanicaTheme.Spacing.md) {
-                ForEach(topAchievements, id: \.title) { achievement in
-                    BotanicalAchievementCard(achievement: achievement)
-                }
-            }
-        }
-        .cardStyle()
-        .accessibilityLabel("Botanical achievements")
-    }
-    
     private var smartRecommendationsSection: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
-            Text("Smart Recommendations")
+            Text("Insights")
                 .font(BotanicaTheme.Typography.title2)
                 .fontWeight(.bold)
+            Text("Based on your logs and schedules.")
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
             
-            VStack(spacing: BotanicaTheme.Spacing.md) {
-                ForEach(smartRecommendations, id: \.title) { recommendation in
-                    SmartRecommendationCard(recommendation: recommendation)
+            if smartRecommendations.isEmpty {
+                Text("No new insights yet. Keep logging care to reveal patterns.")
+                    .font(BotanicaTheme.Typography.callout)
+                    .foregroundColor(.secondary)
+            } else {
+                VStack(spacing: BotanicaTheme.Spacing.md) {
+                    ForEach(smartRecommendations, id: \.title) { recommendation in
+                        SmartRecommendationCard(recommendation: recommendation)
+                    }
                 }
             }
         }
         .cardStyle()
-        .accessibilityLabel("Smart recommendations")
+        .accessibilityLabel("Insights")
     }
     
     // MARK: - Botanical Analytics Data Processing
@@ -729,34 +452,16 @@ struct AnalyticsView: View {
         return careEvents.filter { $0.date >= selectedTimeRange.startDate }
     }
     
-    private var collectionHealthScore: Double {
-        viewModel.snapshot?.summary.healthScore ?? 0
+    private var healthyPlantsCount: Int {
+        plants.filter { $0.healthStatus == .excellent || $0.healthStatus == .healthy }.count
     }
     
-    private var collectionHealthGrade: String {
-        switch collectionHealthScore {
-        case 90...100: return "Exceptional Care"
-        case 80..<90: return "Excellent Care"
-        case 70..<80: return "Good Care"
-        case 60..<70: return "Needs Attention"
-        default: return "Needs Improvement"
-        }
+    private var watchPlantsCount: Int {
+        plants.filter { $0.healthStatus == .fair }.count
     }
     
-    private var healthScoreColor: Color {
-        switch collectionHealthScore {
-        case 80...100: return BotanicaTheme.Colors.success
-        case 60..<80: return BotanicaTheme.Colors.warning
-        default: return BotanicaTheme.Colors.error
-        }
-    }
-    
-    private var healthyPlantsCount: Int { viewModel.snapshot?.summary.healthyCount ?? 0 }
-    
-    private var attentionNeededCount: Int { viewModel.snapshot?.summary.attentionCount ?? 0 }
-    
-    private var topPerformingPlants: [Plant] {
-        plants.sorted { $0.healthScore > $1.healthScore }
+    private var attentionNeededCount: Int {
+        plants.filter { $0.healthStatus == .poor || $0.healthStatus == .critical }.count
     }
     
     private var currentSeasonIcon: String {
@@ -766,29 +471,6 @@ struct AnalyticsView: View {
         case .fall: return "leaf.circle.fill"
         case .winter: return "snowflake"
         }
-    }
-    
-    private var currentCareStreak: Int { viewModel.snapshot?.summary.careStreak ?? 0 }
-    
-    private var completionData: [CompletionDataPoint] {
-        viewModel.snapshot?.completionData ?? []
-    }
-    
-    @State private var completionFilter: CompletionFilter = .all
-    @State private var hoveredDate: Date?
-    
-    private var filteredCompletionData: [CompletionDataPoint] {
-        guard completionFilter != .all else { return completionData }
-        // Placeholder: if we had per-type breakdown, filter it here. For now return full data.
-        return completionData
-    }
-    
-    private var averageCompletionRate: Double {
-        viewModel.snapshot?.averageCompletionRate ?? 0
-    }
-    
-    private var healthTrendCounts: HealthTrendBreakdown {
-        viewModel.snapshot?.healthTrends ?? HealthTrendBreakdown(improving: 0, stable: 0, declining: 0)
     }
     
     private var overdueCount: Int {
@@ -804,179 +486,248 @@ struct AnalyticsView: View {
             return waterToday || feedToday || repotToday
         }.count
     }
-    
-    // MARK: - Plant Analysis Functions
-    
-    private func generatePlantMetrics(for plant: Plant) -> PlantHealthMetrics {
-        let careConsistency = calculateCareConsistency(for: plant)
-        let growthRate = calculateGrowthRate(for: plant)
-        let seasonalAdaptation = calculateSeasonalAdaptation(for: plant)
-        let trend = determineTrend(for: plant)
-        
-        return PlantHealthMetrics(
-            careConsistency: careConsistency,
-            growthRate: growthRate,
-            seasonalAdaptation: seasonalAdaptation,
-            overallHealth: plant.healthScore,
-            trend: trend
-        )
+
+    private var onScheduleCount: Int {
+        max(plants.count - overdueCount - dueTodayCount, 0)
     }
     
-    private func calculateCareConsistency(for plant: Plant) -> Double {
-        let calendar = Calendar.current
-        let windowStart = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-        let recentEvents = plant.careEvents.filter { $0.date >= windowStart }
-        // Expected watering + fertilizing events over 30 days
-        let expectedWater = plant.wateringFrequency > 0 ? 30.0 / Double(plant.wateringFrequency) : 0
-        let expectedFertilize = plant.fertilizingFrequency > 0 ? 30.0 / Double(plant.fertilizingFrequency) : 0
-        let expectedEvents = max(expectedWater + expectedFertilize, 1.0)
-        return min(Double(recentEvents.count) / expectedEvents, 1.0)
+    private var careFocusPlants: [Plant] {
+        plants
+            .filter { isDueToday($0) || isOverdue($0) }
+            .sorted { careFocusPriority($0) > careFocusPriority($1) }
     }
     
-    private func calculateGrowthRate(for plant: Plant) -> Double {
-        // Use normalized health score as a proxy for growth stability
-        return min(max(plant.healthScore, 0.0), 1.0)
+    private var attentionPlants: [Plant] {
+        plants
+            .filter { $0.healthStatus == .poor || $0.healthStatus == .critical }
+            .sorted { attentionPriority($0) > attentionPriority($1) }
     }
-    
-    private func calculateSeasonalAdaptation(for plant: Plant) -> Double {
-        // Rough heuristic: align light level with season
-        let season = BotanicalSeason.current
-        switch (season, plant.lightLevel) {
-        case (.summer, .bright), (.summer, .direct), (.spring, .bright), (.spring, .medium):
-            return 0.9
-        case (.winter, .low), (.winter, .medium):
-            return 0.85
-        default:
-            return 0.75
+
+    private var collectionSummaryLine: String {
+        if plants.isEmpty {
+            return "Add plants to see collection patterns."
         }
+        if overdueCount + dueTodayCount == 0 {
+            return "\(onScheduleCount) plants on schedule. No care due today."
+        }
+        return "\(onScheduleCount) on schedule, \(dueTodayCount) due today, \(overdueCount) overdue."
     }
     
-    private func determineTrend(for plant: Plant) -> UIHealthTrend {
+    private var healthSummaryLine: String {
+        if plants.isEmpty {
+            return "Health status appears once you add plants."
+        }
+        if attentionNeededCount > 0 {
+            return "\(attentionNeededCount) plants marked as needing attention."
+        }
+        return "No plants currently marked as needing attention."
+    }
+    
+    private var dataBasisLine: String {
+        if plants.isEmpty {
+            return "Based on your schedules and logs."
+        }
+        let rangeText = selectedTimeRange.subtitle.lowercased()
+        if careEventsInRange.isEmpty {
+            return "Based on your schedules. No logs in \(rangeText)."
+        }
+        return "Based on your schedules and \(careEventsInRange.count) logs \(rangeText)."
+    }
+    
+    private var careFocusSummaryLine: String {
+        if careFocusPlants.isEmpty {
+            return "No care due today."
+        }
+        let total = overdueCount + dueTodayCount
+        return "\(total) plants are due today or overdue."
+    }
+    
+    private var plantsCaredForCount: Int {
+        let ids = careEventsInRange.compactMap { $0.plant?.id }
+        return Set(ids).count
+    }
+    
+    private var mostCommonCareType: CareType? {
+        let counts = Dictionary(grouping: careEventsInRange, by: \.type)
+            .mapValues { $0.count }
+        return counts.max { $0.value < $1.value }?.key
+    }
+    
+    private var averageCareGapDays: Double? {
+        let sortedEvents = careEventsInRange.sorted { $0.date < $1.date }
+        guard sortedEvents.count >= 2 else { return nil }
+        let intervals = zip(sortedEvents.dropFirst(), sortedEvents.dropLast()).map { (next, prev) -> Double in
+            Calendar.current.dateComponents([.day], from: prev.date, to: next.date).day.map(Double.init) ?? 0
+        }
+        guard !intervals.isEmpty else { return nil }
+        let total = intervals.reduce(0, +)
+        return total / Double(intervals.count)
+    }
+    
+    private var averageCareGapText: String {
+        guard let gap = averageCareGapDays, gap > 0 else { return "—" }
+        let rounded = Int(gap.rounded())
+        return rounded == 1 ? "1 day" : "\(rounded) days"
+    }
+    
+    private var careActivitySummaryLine: String {
+        if careEventsInRange.isEmpty {
+            return "No care logged \(selectedTimeRange.subtitle.lowercased())."
+        }
+        let rangeText = selectedTimeRange.subtitle.lowercased()
+        let plantCount = plantsCaredForCount
+        let totalPlants = plants.count
+        if totalPlants == 0 {
+            return "You logged \(careEventsInRange.count) care actions \(rangeText)."
+        }
+        if let common = mostCommonCareType {
+            return "You logged \(careEventsInRange.count) care actions \(rangeText), mostly \(common.rawValue.lowercased()). \(plantCount) of \(totalPlants) plants had activity."
+        }
+        return "You logged \(careEventsInRange.count) care actions \(rangeText). \(plantCount) of \(totalPlants) plants had activity."
+    }
+    
+    private func isOverdue(_ plant: Plant) -> Bool {
+        plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue
+    }
+    
+    private func isDueToday(_ plant: Plant) -> Bool {
+        let cal = Calendar.current
+        let waterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+        let feedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
+        let repotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
+        return waterToday || feedToday || repotToday
+    }
+    
+    private func careFocusPriority(_ plant: Plant) -> Int {
+        var score = 0
+        if plant.isWateringOverdue { score += 4 }
+        if plant.isFertilizingOverdue { score += 3 }
+        if plant.isRepottingOverdue { score += 2 }
+        if isDueToday(plant) { score += 1 }
+        return score
+    }
+    
+    private func attentionPriority(_ plant: Plant) -> Int {
+        plant.healthStatus == .critical ? 2 : 1
+    }
+    
+    private func careFocusStatus(for plant: Plant) -> ReviewStatus {
+        let overdueTypes = careTypes(for: plant, overdue: true)
+        if !overdueTypes.isEmpty {
+            return ReviewStatus(
+                title: "Overdue",
+                detail: detailLine(for: overdueTypes, suffix: "overdue"),
+                color: BotanicaTheme.Colors.warning
+            )
+        }
+        
+        let dueTodayTypes = careTypes(for: plant, overdue: false)
+        if !dueTodayTypes.isEmpty {
+            return ReviewStatus(
+                title: "Due today",
+                detail: detailLine(for: dueTodayTypes, suffix: "due today"),
+                color: BotanicaTheme.Colors.waterBlue
+            )
+        }
+        
+        return ReviewStatus(title: "On schedule", detail: "No care due today", color: BotanicaTheme.Colors.success)
+    }
+    
+    private func attentionStatus(for plant: Plant) -> ReviewStatus {
         switch plant.healthStatus {
-        case .excellent, .healthy: return .improving
-        case .fair: return .stable
-        case .poor, .critical: return .declining
+        case .critical:
+            return ReviewStatus(title: "Critical", detail: "Needs attention", color: BotanicaTheme.Colors.warning)
+        case .poor:
+            return ReviewStatus(title: "Poor", detail: "Needs attention", color: BotanicaTheme.Colors.warning)
+        case .fair:
+            return ReviewStatus(title: "Fair", detail: "Watch closely", color: BotanicaTheme.Colors.waterBlue)
+        case .healthy:
+            return ReviewStatus(title: "Healthy", detail: "On track", color: BotanicaTheme.Colors.success)
+        case .excellent:
+            return ReviewStatus(title: "Excellent", detail: "On track", color: BotanicaTheme.Colors.success)
         }
     }
     
-    private var topSpeciesInsights: [SpeciesInsight] {
-        viewModel.snapshot?.speciesInsights ?? []
+    private func careTypes(for plant: Plant, overdue: Bool) -> [CareType] {
+        if overdue {
+            var types: [CareType] = []
+            if plant.isWateringOverdue { types.append(.watering) }
+            if plant.isFertilizingOverdue { types.append(.fertilizing) }
+            if plant.isRepottingOverdue { types.append(.repotting) }
+            return types
+        }
+        
+        let cal = Calendar.current
+        var types: [CareType] = []
+        if let date = plant.nextWateringDate, cal.isDateInToday(date) { types.append(.watering) }
+        if let date = plant.nextFertilizingDate, cal.isDateInToday(date) { types.append(.fertilizing) }
+        if let date = plant.nextRepottingDate, cal.isDateInToday(date) { types.append(.repotting) }
+        return types
     }
     
-    private var botanicalAchievements: [BotanicalAchievement] {
-        var achievements: [BotanicalAchievement] = []
-        
-        achievements.append(BotanicalAchievement(
-            title: "Plant Parent",
-            description: "Care for your first plant",
-            icon: "leaf.fill",
-            isUnlocked: plants.count >= 1,
-            category: .collection
-        ))
-        
-        achievements.append(BotanicalAchievement(
-            title: "Green Collector",
-            description: "Own 5 plants",
-            icon: "hand.raised.fill",
-            isUnlocked: plants.count >= 5,
-            category: .collection
-        ))
-        
-        achievements.append(BotanicalAchievement(
-            title: "Plant Whisperer",
-            description: "Maintain 90%+ health across collection",
-            icon: "heart.circle.fill",
-            isUnlocked: collectionHealthScore >= 90,
-            category: .care
-        ))
-        
-        achievements.append(BotanicalAchievement(
-            title: "Streak Master",
-            description: "30-day care streak",
-            icon: "flame.fill",
-            isUnlocked: currentCareStreak >= 30,
-            category: .consistency
-        ))
-        
-        achievements.append(BotanicalAchievement(
-            title: "Species Expert",
-            description: "Care for 3+ different species",
-            icon: "books.vertical.fill",
-            isUnlocked: Set(plants.map { $0.scientificName }).count >= 3,
-            category: .knowledge
-        ))
-        
-        achievements.append(BotanicalAchievement(
-            title: "Season Sage",
-            description: "Adapt care for all seasons",
-            icon: "calendar.circle.fill",
-            isUnlocked: hasSeasonalCareAdaptation,
-            category: .knowledge
-        ))
-        
-        return achievements
-    }
-    
-    private var hasSeasonalCareAdaptation: Bool {
-        return careEvents.count > 50 // Simplified check
+    private func detailLine(for types: [CareType], suffix: String) -> String {
+        guard !types.isEmpty else { return "No care due" }
+        if types.count == 1 {
+            return "\(types[0].rawValue) \(suffix)"
+        }
+        return "Multiple tasks \(suffix)"
     }
     
     private var smartRecommendations: [SmartRecommendation] {
         var recommendations: [SmartRecommendation] = []
         
-        let season = BotanicalSeason.current
-        recommendations.append(SmartRecommendation(
-            title: "Seasonal Adjustment",
-            description: season.careModifications,
-            priority: .high,
-            icon: currentSeasonIcon,
-            action: "Adjust care schedule for \(season.rawValue.lowercased())"
-        ))
+        if overdueCount + dueTodayCount > 0 {
+            recommendations.append(SmartRecommendation(
+                title: "Care due now",
+                description: "\(overdueCount + dueTodayCount) plants are due today or overdue.",
+                evidence: "Based on your schedules and last logged care.",
+                priority: .high,
+                icon: "calendar.badge.clock",
+                actionTitle: "Review due plants",
+                action: { reviewSheet = .careFocus }
+            ))
+        }
         
         if attentionNeededCount > 0 {
+            let names = attentionPlants.prefix(3).map { $0.displayName }.joined(separator: ", ")
+            let summary = attentionPlants.count > 3 ? "\(names) and \(attentionPlants.count - 3) more" : names
             recommendations.append(SmartRecommendation(
-                title: "Health Alert",
-                description: "\(attentionNeededCount) plants need immediate attention",
-                priority: .high,
-                icon: "exclamationmark.triangle.fill",
-                action: "Review plant health status"
-            ))
-        }
-        
-        if averageCompletionRate < 0.8 {
-            recommendations.append(SmartRecommendation(
-                title: "Improve Consistency",
-                description: "Set up reminders to maintain regular care schedule",
+                title: "Health check needed",
+                description: summary,
+                evidence: "Based on your health status entries.",
                 priority: .medium,
-                icon: "bell.fill",
-                action: "Enable smart notifications"
+                icon: "exclamationmark.triangle.fill",
+                actionTitle: "Review health",
+                action: { reviewSheet = .attention }
             ))
         }
         
-        if collectionHealthScore > 80 {
+        if careEventsInRange.isEmpty {
             recommendations.append(SmartRecommendation(
-                title: "Expansion Ready",
-                description: "Your plants are thriving! Consider adding new species",
+                title: "No care logged",
+                description: "There are no care logs in \(selectedTimeRange.subtitle.lowercased()).",
+                evidence: "Based on your care history.",
                 priority: .low,
-                icon: "plus.circle.fill",
-                action: "Explore new plant varieties"
+                icon: "clock.arrow.circlepath",
+                actionTitle: "Review due plants",
+                action: { reviewSheet = .careFocus }
             ))
         }
         
-        return recommendations
+        if recommendations.isEmpty {
+            recommendations.append(SmartRecommendation(
+                title: "\(BotanicalSeason.current.rawValue) guidance",
+                description: BotanicalSeason.current.careModifications,
+                evidence: "General seasonal guidance. Review per plant before changing schedules.",
+                priority: .low,
+                icon: currentSeasonIcon,
+                actionTitle: "Review guidance",
+                action: { showingSeasonalGuidance = true }
+            ))
+        }
+        
+        return Array(recommendations.prefix(2))
     }
-}
-
-enum AchievementCategory {
-    case collection, care, consistency, knowledge
-}
-
-struct BotanicalAchievement {
-    let title: String
-    let description: String
-    let icon: String
-    let isUnlocked: Bool
-    let category: AchievementCategory
 }
 
 enum UIRecommendationPriority {
@@ -984,9 +735,9 @@ enum UIRecommendationPriority {
     
     var color: Color {
         switch self {
-        case .high: return BotanicaTheme.Colors.error
-        case .medium: return BotanicaTheme.Colors.warning
-        case .low: return BotanicaTheme.Colors.waterBlue
+        case .high: return BotanicaTheme.Colors.warning
+        case .medium: return BotanicaTheme.Colors.waterBlue
+        case .low: return BotanicaTheme.Colors.leafGreen
         }
     }
 }
@@ -994,88 +745,28 @@ enum UIRecommendationPriority {
 struct SmartRecommendation {
     let title: String
     let description: String
+    let evidence: String
     let priority: UIRecommendationPriority
     let icon: String
-    let action: String
+    let actionTitle: String?
+    let action: (() -> Void)?
 }
 
-enum CompletionFilter { case all, watering, fertilizing, repotting }
-
-struct ChartFilterPill: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
+enum ReviewSheet: Identifiable {
+    case careFocus
+    case attention
     
-    var body: some View {
-        Text(title)
-            .font(.caption)
-            .fontWeight(.semibold)
-            .padding(.horizontal, BotanicaTheme.Spacing.sm)
-            .padding(.vertical, BotanicaTheme.Spacing.xs)
-            .background(isSelected ? BotanicaTheme.Colors.primary.opacity(0.15) : Color(.systemGray6))
-            .foregroundColor(isSelected ? BotanicaTheme.Colors.primary : .primary)
-            .clipShape(Capsule())
-            .onTapGesture { action() }
+    var id: String {
+        switch self {
+        case .careFocus: return "careFocus"
+        case .attention: return "attention"
+        }
     }
 }
 
 // MARK: - Supporting Views
 
-struct InlineStatusChips: View {
-    let overdue: Int
-    let dueToday: Int
-    let attention: Int
-    let onSelect: (InlineFilter) -> Void
-    
-    enum InlineFilter { case overdue, dueToday, attention }
-    
-    var body: some View {
-        HStack(spacing: BotanicaTheme.Spacing.sm) {
-            pill(title: "Overdue", count: overdue, color: BotanicaTheme.Colors.error, icon: "clock.badge.exclamationmark") {
-                onSelect(.overdue)
-            }
-            pill(title: "Due Today", count: dueToday, color: BotanicaTheme.Colors.waterBlue, icon: "calendar.badge.clock") {
-                onSelect(.dueToday)
-            }
-            pill(title: "Attention", count: attention, color: BotanicaTheme.Colors.warning, icon: "exclamationmark.triangle.fill") {
-                onSelect(.attention)
-            }
-        }
-        .frame(minHeight: 32)
-    }
-    
-    private func pill(title: String, count: Int, color: Color, icon: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.caption)
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .lineLimit(1)
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.white.opacity(0.2))
-                        .clipShape(Capsule())
-                }
-            }
-            .foregroundColor(.white)
-            .padding(.horizontal, BotanicaTheme.Spacing.md)
-            .padding(.vertical, BotanicaTheme.Spacing.xs)
-            .background(color.opacity(count > 0 ? 0.9 : 0.6))
-            .clipShape(Capsule())
-            .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: true)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-struct HealthMetricPill: View {
+struct SummaryMetricPill: View {
     let title: String
     let count: Int
     let color: Color
@@ -1107,135 +798,168 @@ struct HealthMetricPill: View {
     }
 }
 
-struct OverdueChip: View {
-    let waterCount: Int
-    let feedCount: Int
+struct ReviewStatus {
+    let title: String
+    let detail: String
+    let color: Color
+}
+
+struct AnalyticsMetricCard: View {
+    let title: String
+    let value: String
+    let subtitle: String
+    let tint: Color
     
     var body: some View {
-        HStack(spacing: BotanicaTheme.Spacing.sm) {
-            if waterCount > 0 {
-                Label("\(waterCount) water", systemImage: "drop.fill")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                    .padding(.vertical, BotanicaTheme.Spacing.xs)
-                    .background(BotanicaTheme.Colors.waterBlue)
-                    .clipShape(Capsule())
-            }
-            if feedCount > 0 {
-                Label("\(feedCount) feed", systemImage: "leaf.fill")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                    .padding(.vertical, BotanicaTheme.Spacing.xs)
-                    .background(BotanicaTheme.Colors.leafGreen)
-                    .clipShape(Capsule())
-            }
-            if waterCount == 0 && feedCount == 0 {
-                Label("No overdue", systemImage: "checkmark.circle")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                    .padding(.vertical, BotanicaTheme.Spacing.xs)
-                    .background(BotanicaTheme.Colors.success)
-                    .clipShape(Capsule())
-            }
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+            Text(value)
+                .font(BotanicaTheme.Typography.title3)
+                .fontWeight(.bold)
+                .foregroundColor(tint)
+            
+            Text(title)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
+            
+            Text(subtitle)
+                .font(BotanicaTheme.Typography.caption2)
+                .foregroundColor(.secondary)
         }
+        .padding(BotanicaTheme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(tint.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
     }
 }
 
-struct AdvancedFeatureCard: View {
-    let icon: String
+struct StatusPill: View {
     let title: String
-    let description: String
     let color: Color
     
     var body: some View {
-        VStack(spacing: BotanicaTheme.Spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 50, height: 50)
-                
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(color)
-            }
-            
-            VStack(spacing: BotanicaTheme.Spacing.xs) {
-                Text(title)
-                    .font(BotanicaTheme.Typography.callout)
-                    .fontWeight(.semibold)
-                    .multilineTextAlignment(.center)
-                
-                Text(description)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
+            Text(title)
+                .font(.caption2)
+                .foregroundColor(color)
         }
-        .frame(maxWidth: .infinity)
-        .padding(BotanicaTheme.Spacing.lg)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large))
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+        .background(color.opacity(0.1))
+        .clipShape(Capsule())
     }
 }
 
-struct PlantPerformanceCard: View {
+struct CareFocusRow: View {
     let plant: Plant
-    let metrics: PlantHealthMetrics
-    let onTap: () -> Void
+    let status: ReviewStatus
+    let onOpen: () -> Void
+    let onLogCare: () -> Void
     
     var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(plant.nickname)
-                            .font(BotanicaTheme.Typography.callout)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primary)
-                        
-                        Text(plant.scientificName)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+            HStack(alignment: .top, spacing: BotanicaTheme.Spacing.md) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(plant.displayName)
+                        .font(BotanicaTheme.Typography.callout)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
                     
-                    Spacer()
-                    
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(metrics.performanceGrade)
-                            .font(BotanicaTheme.Typography.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(gradeColor(metrics.performanceGrade))
-                        
-                        Image(systemName: metrics.trend.icon)
-                            .font(.caption)
-                            .foregroundColor(metrics.trend.color)
-                    }
+                    Text(status.detail)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
                 }
                 
-                ProgressView(value: metrics.overallHealth)
-                    .progressViewStyle(LinearProgressViewStyle(tint: gradeColor(metrics.performanceGrade)))
-                    .scaleEffect(y: 0.5)
+                Spacer()
+                
+                Button("Log care", action: onLogCare)
+                    .font(.caption)
+                    .foregroundColor(BotanicaTheme.Colors.primary)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    .background(BotanicaTheme.Colors.primary.opacity(0.1))
+                    .clipShape(Capsule())
             }
-            .padding(BotanicaTheme.Spacing.md)
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
-            .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: 1)
+            
+            StatusPill(title: status.title, color: status.color)
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding(BotanicaTheme.Spacing.md)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
+        .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: 1)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onOpen)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(plant.nickname). Grade \(metrics.performanceGrade). Health trend \(metrics.trend.accessibilityDescription)")
+        .accessibilityLabel("\(plant.displayName). \(status.detail).")
     }
+}
+
+struct PlantReviewRow: View {
+    let plant: Plant
+    let status: ReviewStatus
     
-    private func gradeColor(_ grade: String) -> Color {
-        switch grade {
-        case "A+", "A": return BotanicaTheme.Colors.success
-        case "B+", "B": return BotanicaTheme.Colors.waterBlue
-        case "C": return BotanicaTheme.Colors.warning
-        default: return BotanicaTheme.Colors.error
+    var body: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+            Text(plant.displayName)
+                .font(BotanicaTheme.Typography.callout)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+            
+            Text(status.detail)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            StatusPill(title: status.title, color: status.color)
+        }
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+    }
+}
+
+struct CareFocusListView: View {
+    let title: String
+    let subtitle: String
+    let plants: [Plant]
+    let statusProvider: (Plant) -> ReviewStatus
+    
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedPlantForCare: Plant?
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text(subtitle)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                if plants.isEmpty {
+                    Text("No plants to review right now.")
+                        .font(BotanicaTheme.Typography.callout)
+                        .foregroundColor(.secondary)
+                } else {
+                    ForEach(plants, id: \.id) { plant in
+                        NavigationLink(destination: PlantDetailView(plant: plant)) {
+                            PlantReviewRow(plant: plant, status: statusProvider(plant))
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button("Log care") { selectedPlantForCare = plant }
+                                .tint(BotanicaTheme.Colors.primary)
+                        }
+                    }
+                }
+            }
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .sheet(item: $selectedPlantForCare) { plant in
+            AddCareEventView(plant: plant)
         }
     }
 }
@@ -1331,93 +1055,42 @@ struct CareTypeEffectivenessCard: View {
     }
 }
 
-struct HealthTrendCard: View {
-    let title: String
-    let count: Int
-    let color: Color
-    let icon: String
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: BotanicaTheme.Spacing.sm) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(color)
-                
-                Text("\(count)")
-                    .font(BotanicaTheme.Typography.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(BotanicaTheme.Spacing.md)
-            .background(color.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(title). \(count) plants")
-    }
-}
-
-// Simplified supporting views to avoid bloating
-struct SpeciesInsightCard: View {
-    let insight: SpeciesInsight
-    
-    var body: some View {
-        Text("Species insights for \(insight.species) coming soon!")
-            .padding()
-            .background(Color(.systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-}
-
-struct BotanicalAchievementCard: View {
-    let achievement: BotanicalAchievement
-    
-    var body: some View {
-        VStack {
-            Image(systemName: achievement.icon)
-                .foregroundColor(achievement.isUnlocked ? .green : .gray)
-            Text(achievement.title)
-                .font(.caption)
-                .fontWeight(.medium)
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .opacity(achievement.isUnlocked ? 1.0 : 0.6)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(achievement.title). \(achievement.isUnlocked ? "Unlocked" : "Locked") achievement")
-    }
-}
-
 struct SmartRecommendationCard: View {
     let recommendation: SmartRecommendation
     
     var body: some View {
-        HStack {
-            Image(systemName: recommendation.icon)
-                .foregroundColor(recommendation.priority.color)
-            VStack(alignment: .leading) {
-                Text(recommendation.title)
-                    .font(.headline)
-                Text(recommendation.description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+            HStack(alignment: .top, spacing: BotanicaTheme.Spacing.sm) {
+                Image(systemName: recommendation.icon)
+                    .foregroundColor(recommendation.priority.color)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(recommendation.title)
+                        .font(.headline)
+                    Text(recommendation.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(recommendation.evidence)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
             }
-            Spacer()
+            
+            if let actionTitle = recommendation.actionTitle, let action = recommendation.action {
+                Button(actionTitle, action: action)
+                    .font(.caption)
+                    .foregroundColor(BotanicaTheme.Colors.primary)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    .background(BotanicaTheme.Colors.primary.opacity(0.1))
+                    .clipShape(Capsule())
+            }
         }
         .padding()
         .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(recommendation.title). \(recommendation.description)")
+        .accessibilityLabel("\(recommendation.title). \(recommendation.description). \(recommendation.evidence)")
     }
 }
 
@@ -1617,23 +1290,6 @@ private extension SeasonalCareGuidanceView {
             selectedPlantIDs.remove(id)
         } else {
             selectedPlantIDs.insert(id)
-        }
-    }
-}
-
-struct PlantDetailAnalyticsView: View {
-    let plant: Plant
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            Text("Plant analytics for \(plant.nickname) coming soon!")
-                .navigationTitle(plant.nickname)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Done") { dismiss() }
-                    }
-                }
         }
     }
 }

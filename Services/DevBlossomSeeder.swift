@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 
 /// Development-time seeder to import Blossom JSON into SwiftData once.
+@MainActor
 enum DevBlossomSeeder {
     private static let flagKey = "dev_seed_blossom_done"
 
