@@ -26,7 +26,11 @@ struct CareCalculator {
         // Get base recommendation if not provided
         let base = baseRecommendation ?? recommendedWateringAmount(
             potSize: plant.potSize,
-            plantType: PlantWateringType.from(plant: plant),
+            plantType: PlantWateringType.from(
+                commonNames: plant.commonNames,
+                family: plant.family,
+                scientificName: plant.scientificName
+            ),
             season: .current,
             environment: .indoor,
             potMaterial: plant.potMaterial ?? .unknown,

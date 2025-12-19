@@ -18,13 +18,11 @@
 		A00001001F00000100000009 /* Models/ModelExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000009 /* Models/ModelExtensions.swift */; };
 		A00001001F0000010000000A /* Services/AIPlantCoach.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000A /* Services/AIPlantCoach.swift */; };
 		A00001001F0000010000000B /* Services/AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000B /* Services/AIService.swift */; };
-		A00001001F0000010000000C /* Services/AdvancedAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000C /* Services/AdvancedAnalytics.swift */; };
 		A00001001F0000010000000D /* Services/CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000D /* Services/CameraCapture.swift */; };
 		A00001001F0000010000000E /* Services/CareCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000E /* Services/CareCalculator.swift */; };
 		A00001001F0000010000000F /* Services/NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000000F /* Services/NotificationManager.swift */; };
 		A00001001F00000100000010 /* Services/OpenAIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000010 /* Services/OpenAIConfig.swift */; };
 		A00001001F00000100000011 /* Services/OpenAIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000011 /* Services/OpenAIModels.swift */; };
-		A00001001F00000100000012 /* Services/PlantAnalyticsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000012 /* Services/PlantAnalyticsEngine.swift */; };
 		A00001001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift */; };
 		A00001001F00000100000014 /* Services/WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000014 /* Services/WeatherService.swift */; };
 		A00001001F00000100000015 /* Utils/AnimationPerformance.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000015 /* Utils/AnimationPerformance.swift */; };
@@ -37,16 +35,12 @@
 		A00001001F0000010000001C /* Views/AI/PlantHealthVisionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */; };
 		A00001001F0000010000001D /* Views/AI/PlantIdentificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */; };
 		A00001001F00000100000044 /* Views/AI/AIHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000044 /* Views/AI/AIHubView.swift */; };
-		A00001001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift */; };
-		A00001001F0000010000001F /* Views/Analytics/AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000001F /* Views/Analytics/AnalyticsView.swift */; };
-		A00001001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift */; };
-		A00001001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift */; };
-		A00001001F00000100000022 /* Views/Analytics/HealthTrendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000022 /* Views/Analytics/HealthTrendsView.swift */; };
-		A00001001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift */; };
 		A00001001F00000100000024 /* Views/Components/ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000024 /* Views/Components/ErrorBanner.swift */; };
 		A00001001F00000100000025 /* Views/Components/FeedbackSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000025 /* Views/Components/FeedbackSystem.swift */; };
 		A00001001F00000100000026 /* Views/Components/FloatingActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000026 /* Views/Components/FloatingActionButton.swift */; };
 		A00001001F00000100000027 /* Views/Components/LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000027 /* Views/Components/LoadingView.swift */; };
+		9198929AA125FB1D7084AD93 /* Views/Components/CareFocusComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F09CD2AEFC6F8A300E70C4 /* Views/Components/CareFocusComponents.swift */; };
+		5050E56E55A88ABA08655C84 /* Views/Components/SeasonalCareGuidanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB242A92FB129FE004668AB /* Views/Components/SeasonalCareGuidanceView.swift */; };
 		A00001001F00000100000028 /* Views/Navigation/MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000028 /* Views/Navigation/MainTabView.swift */; };
 		A00001001F00000100000029 /* Views/Plants/AddCareEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F00000100000029 /* Views/Plants/AddCareEventView.swift */; };
 		A00001001F0000010000002A /* Views/Plants/AddPlant/AddPlantBasicInfoSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00002001F0000010000002A /* Views/Plants/AddPlant/AddPlantBasicInfoSection.swift */; };
@@ -95,10 +89,8 @@
 			D10000000000000000000082 /* Utils/LoadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000002 /* Utils/LoadState.swift */; };
 			D10000000000000000000083 /* Services/OpenAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000003 /* Services/OpenAIClient.swift */; };
 			D10000000000000000000084 /* Services/NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000004 /* Services/NotificationService.swift */; };
-			D10000000000000000000085 /* Services/AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000005 /* Services/AnalyticsService.swift */; };
 			D10000000000000000000086 /* ViewModels/PlantFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000006 /* ViewModels/PlantFormViewModel.swift */; };
 			D10000000000000000000087 /* ViewModels/MainTabCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000007 /* ViewModels/MainTabCoordinator.swift */; };
-		D10000000000000000000088 /* ViewModels/AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000008 /* ViewModels/AnalyticsViewModel.swift */; };
 		D20000000000000000000001 /* ViewModels/PlantDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000002 /* ViewModels/PlantDetailViewModel.swift */; };
 			D10000000000000000000089 /* Views/Components/LoadStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000009 /* Views/Components/LoadStateView.swift */; };
 			D10000000000000000000090 /* PlantFormViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000021 /* PlantFormViewModelTests.swift */; };
@@ -119,13 +111,11 @@
 		A00002001F00000100000009 /* Models/ModelExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ModelExtensions.swift; sourceTree = "<group>"; };
 		A00002001F0000010000000A /* Services/AIPlantCoach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AIPlantCoach.swift; sourceTree = "<group>"; };
 		A00002001F0000010000000B /* Services/AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AIService.swift; sourceTree = "<group>"; };
-		A00002001F0000010000000C /* Services/AdvancedAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AdvancedAnalytics.swift; sourceTree = "<group>"; };
 		A00002001F0000010000000D /* Services/CameraCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CameraCapture.swift; sourceTree = "<group>"; };
 		A00002001F0000010000000E /* Services/CareCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CareCalculator.swift; sourceTree = "<group>"; };
 		A00002001F0000010000000F /* Services/NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/NotificationManager.swift; sourceTree = "<group>"; };
 		A00002001F00000100000010 /* Services/OpenAIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OpenAIConfig.swift; sourceTree = "<group>"; };
 		A00002001F00000100000011 /* Services/OpenAIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OpenAIModels.swift; sourceTree = "<group>"; };
-		A00002001F00000100000012 /* Services/PlantAnalyticsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlantAnalyticsEngine.swift; sourceTree = "<group>"; };
 		A00002001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlantHealthVisionAnalyzer.swift; sourceTree = "<group>"; };
 		A00002001F00000100000014 /* Services/WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/WeatherService.swift; sourceTree = "<group>"; };
 		A00002001F00000100000015 /* Utils/AnimationPerformance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/AnimationPerformance.swift; sourceTree = "<group>"; };
@@ -138,16 +128,12 @@
 		A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/PlantHealthVisionView.swift; sourceTree = "<group>"; };
 		A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/PlantIdentificationView.swift; sourceTree = "<group>"; };
 		A00002001F00000100000044 /* Views/AI/AIHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AI/AIHubView.swift; sourceTree = "<group>"; };
-		A00002001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/AdvancedAnalyticsView.swift; sourceTree = "<group>"; };
-		A00002001F0000010000001F /* Views/Analytics/AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/AnalyticsView.swift; sourceTree = "<group>"; };
-		A00002001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/EnvironmentAnalyticsView.swift; sourceTree = "<group>"; };
-		A00002001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/GrowthPatternsView.swift; sourceTree = "<group>"; };
-		A00002001F00000100000022 /* Views/Analytics/HealthTrendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/HealthTrendsView.swift; sourceTree = "<group>"; };
-		A00002001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Analytics/MLAnalyticsView.swift; sourceTree = "<group>"; };
 		A00002001F00000100000024 /* Views/Components/ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/ErrorBanner.swift; sourceTree = "<group>"; };
 		A00002001F00000100000025 /* Views/Components/FeedbackSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/FeedbackSystem.swift; sourceTree = "<group>"; };
 		A00002001F00000100000026 /* Views/Components/FloatingActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/FloatingActionButton.swift; sourceTree = "<group>"; };
 		A00002001F00000100000027 /* Views/Components/LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/LoadingView.swift; sourceTree = "<group>"; };
+		B3F09CD2AEFC6F8A300E70C4 /* Views/Components/CareFocusComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/CareFocusComponents.swift; sourceTree = "<group>"; };
+		EBB242A92FB129FE004668AB /* Views/Components/SeasonalCareGuidanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/SeasonalCareGuidanceView.swift; sourceTree = "<group>"; };
 		A00002001F00000100000028 /* Views/Navigation/MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Navigation/MainTabView.swift; sourceTree = "<group>"; };
 		A00002001F00000100000029 /* Views/Plants/AddCareEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddCareEventView.swift; sourceTree = "<group>"; };
 		A00002001F0000010000002A /* Views/Plants/AddPlant/AddPlantBasicInfoSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/AddPlant/AddPlantBasicInfoSection.swift; sourceTree = "<group>"; };
@@ -182,10 +168,8 @@
 			D10000000000000000000002 /* Utils/LoadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/LoadState.swift; sourceTree = "<group>"; };
 			D10000000000000000000003 /* Services/OpenAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OpenAIClient.swift; sourceTree = "<group>"; };
 			D10000000000000000000004 /* Services/NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/NotificationService.swift; sourceTree = "<group>"; };
-			D10000000000000000000005 /* Services/AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnalyticsService.swift; sourceTree = "<group>"; };
 			D10000000000000000000006 /* ViewModels/PlantFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantFormViewModel.swift; sourceTree = "<group>"; };
 			D10000000000000000000007 /* ViewModels/MainTabCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabCoordinator.swift; sourceTree = "<group>"; };
-			D10000000000000000000008 /* ViewModels/AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModel.swift; sourceTree = "<group>"; };
 			D1000000000000000000000A /* Views/Plants/MyPlantsSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Plants/MyPlantsSections.swift; sourceTree = "<group>"; };
 			D10000000000000000000009 /* Views/Components/LoadStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Components/LoadStateView.swift; sourceTree = "<group>"; };
 		D10000000000000000000021 /* PlantFormViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantFormViewModelTests.swift; sourceTree = "<group>"; };
@@ -265,8 +249,6 @@
 				B0F000021111111100000005 /* Models/PlantListTypes.swift */,
 				A00002001F0000010000000A /* Services/AIPlantCoach.swift */,
 				A00002001F0000010000000B /* Services/AIService.swift */,
-				A00002001F0000010000000C /* Services/AdvancedAnalytics.swift */,
-				D10000000000000000000005 /* Services/AnalyticsService.swift */,
 				A00002001F0000010000000D /* Services/CameraCapture.swift */,
 				A00002001F0000010000000E /* Services/CareCalculator.swift */,
 				A00002001F0000010000000F /* Services/NotificationManager.swift */,
@@ -274,7 +256,6 @@
 				D10000000000000000000003 /* Services/OpenAIClient.swift */,
 				A00002001F00000100000010 /* Services/OpenAIConfig.swift */,
 				A00002001F00000100000011 /* Services/OpenAIModels.swift */,
-				A00002001F00000100000012 /* Services/PlantAnalyticsEngine.swift */,
 				A00002001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift */,
 				A00002001F00000100000014 /* Services/WeatherService.swift */,
 				B0F000021111111100000003 /* Services/CoachEngine.swift */,
@@ -291,16 +272,12 @@
 				A00002001F0000010000001B /* Views/AI/PlantHealthSelectionView.swift */,
 				A00002001F0000010000001C /* Views/AI/PlantHealthVisionView.swift */,
 				A00002001F0000010000001D /* Views/AI/PlantIdentificationView.swift */,
-				A00002001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift */,
-				A00002001F0000010000001F /* Views/Analytics/AnalyticsView.swift */,
-				A00002001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift */,
-				A00002001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift */,
-				A00002001F00000100000022 /* Views/Analytics/HealthTrendsView.swift */,
-				A00002001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift */,
 					A00002001F00000100000024 /* Views/Components/ErrorBanner.swift */,
 					A00002001F00000100000025 /* Views/Components/FeedbackSystem.swift */,
 					A00002001F00000100000026 /* Views/Components/FloatingActionButton.swift */,
 					A00002001F00000100000027 /* Views/Components/LoadingView.swift */,
+					B3F09CD2AEFC6F8A300E70C4 /* Views/Components/CareFocusComponents.swift */,
+					EBB242A92FB129FE004668AB /* Views/Components/SeasonalCareGuidanceView.swift */,
 					B0F000021111111100000004 /* Views/Components/CoachCard.swift */,
 					D10000000000000000000009 /* Views/Components/LoadStateView.swift */,
 					B0F000021111111100000002 /* Views/Components/PlantThumbnail.swift */,
@@ -355,7 +332,6 @@
 			D10000000000000000000010 /* ViewModels */ = {
 				isa = PBXGroup;
 				children = (
-					D10000000000000000000008 /* ViewModels/AnalyticsViewModel.swift */,
 					D10000000000000000000006 /* ViewModels/PlantFormViewModel.swift */,
 					D10000000000000000000007 /* ViewModels/MainTabCoordinator.swift */,
 					D20000000000000000000002 /* ViewModels/PlantDetailViewModel.swift */,
@@ -491,13 +467,11 @@
 				B0F000011111111100000005 /* Models/PlantListTypes.swift in Sources */,
 				A00001001F0000010000000A /* Services/AIPlantCoach.swift in Sources */,
 				A00001001F0000010000000B /* Services/AIService.swift in Sources */,
-				A00001001F0000010000000C /* Services/AdvancedAnalytics.swift in Sources */,
 				A00001001F0000010000000D /* Services/CameraCapture.swift in Sources */,
 				A00001001F0000010000000E /* Services/CareCalculator.swift in Sources */,
 				A00001001F0000010000000F /* Services/NotificationManager.swift in Sources */,
 				A00001001F00000100000010 /* Services/OpenAIConfig.swift in Sources */,
 				A00001001F00000100000011 /* Services/OpenAIModels.swift in Sources */,
-				A00001001F00000100000012 /* Services/PlantAnalyticsEngine.swift in Sources */,
 				A00001001F00000100000013 /* Services/PlantHealthVisionAnalyzer.swift in Sources */,
 				A00001001F00000100000014 /* Services/WeatherService.swift in Sources */,
 				B0F000011111111100000003 /* Services/CoachEngine.swift in Sources */,
@@ -511,16 +485,12 @@
 				A00001001F0000010000001C /* Views/AI/PlantHealthVisionView.swift in Sources */,
 				A00001001F0000010000001D /* Views/AI/PlantIdentificationView.swift in Sources */,
 				A00001001F00000100000044 /* Views/AI/AIHubView.swift in Sources */,
-				A00001001F0000010000001E /* Views/Analytics/AdvancedAnalyticsView.swift in Sources */,
-				A00001001F0000010000001F /* Views/Analytics/AnalyticsView.swift in Sources */,
-				A00001001F00000100000020 /* Views/Analytics/EnvironmentAnalyticsView.swift in Sources */,
-				A00001001F00000100000021 /* Views/Analytics/GrowthPatternsView.swift in Sources */,
-				A00001001F00000100000022 /* Views/Analytics/HealthTrendsView.swift in Sources */,
-				A00001001F00000100000023 /* Views/Analytics/MLAnalyticsView.swift in Sources */,
 				A00001001F00000100000024 /* Views/Components/ErrorBanner.swift in Sources */,
 					A00001001F00000100000025 /* Views/Components/FeedbackSystem.swift in Sources */,
 					A00001001F00000100000026 /* Views/Components/FloatingActionButton.swift in Sources */,
 					A00001001F00000100000027 /* Views/Components/LoadingView.swift in Sources */,
+					9198929AA125FB1D7084AD93 /* Views/Components/CareFocusComponents.swift in Sources */,
+					5050E56E55A88ABA08655C84 /* Views/Components/SeasonalCareGuidanceView.swift in Sources */,
 					D10000000000000000000089 /* Views/Components/LoadStateView.swift in Sources */,
 					B0F000011111111100000004 /* Views/Components/CoachCard.swift in Sources */,
 					B0F000011111111100000002 /* Views/Components/PlantThumbnail.swift in Sources */,
@@ -566,10 +536,8 @@
 				D10000000000000000000082 /* Utils/LoadState.swift in Sources */,
 				D10000000000000000000083 /* Services/OpenAIClient.swift in Sources */,
 				D10000000000000000000084 /* Services/NotificationService.swift in Sources */,
-				D10000000000000000000085 /* Services/AnalyticsService.swift in Sources */,
 				D10000000000000000000086 /* ViewModels/PlantFormViewModel.swift in Sources */,
 				D10000000000000000000087 /* ViewModels/MainTabCoordinator.swift in Sources */,
-				D10000000000000000000088 /* ViewModels/AnalyticsViewModel.swift in Sources */,
 				D20000000000000000000001 /* ViewModels/PlantDetailViewModel.swift in Sources */,
 			);
 				runOnlyForDeploymentPostprocessing = 0;

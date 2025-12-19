@@ -8,16 +8,13 @@ struct AppServices {
     
     let openAI: OpenAIClient
     let notifications: NotificationService
-    let analytics: AnalyticsService
     
     init(
         openAI: OpenAIClient = OpenAIClient(),
-        notifications: NotificationService? = nil,
-        analytics: AnalyticsService = AnalyticsService()
+        notifications: NotificationService? = nil
     ) {
         self.openAI = openAI
         self.notifications = notifications ?? NotificationService(manager: NotificationManager.shared)
-        self.analytics = analytics
     }
 }
 

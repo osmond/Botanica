@@ -3,7 +3,7 @@ import UIKit
 import SwiftData
 
 /// Main tab view container for the Botanica app
-/// Provides navigation between My Plants, Analytics, and Settings sections
+/// Provides navigation between Activity, Plants, AI, and Settings sections
 @MainActor
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
@@ -26,12 +26,6 @@ struct MainTabView: View {
                     }
                     .tag(Tab.plants)
                 
-            AnalyticsView()
-                .tabItem {
-                    Label("Analytics", systemImage: "chart.line.uptrend.xyaxis")
-                }
-                .tag(Tab.analytics)
-
             AIHubView()
                 .tabItem {
                     Label("AI", systemImage: "sparkles")
@@ -150,7 +144,6 @@ struct MainTabView: View {
 
 enum Tab: String, CaseIterable {
     case plants = "My Plants"
-    case analytics = "Analytics"
     case activity = "Activity"
     case ai = "AI"
     case settings = "Settings"
@@ -158,7 +151,6 @@ enum Tab: String, CaseIterable {
     var systemImage: String {
         switch self {
         case .plants: return "leaf.fill"
-        case .analytics: return "chart.line.uptrend.xyaxis"
         case .activity: return "bell.badge"
         case .ai: return "sparkles"
         case .settings: return "gearshape.fill"

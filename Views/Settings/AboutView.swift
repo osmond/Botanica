@@ -143,9 +143,9 @@ struct AboutView: View {
                 )
                 
                 FeatureCard(
-                    icon: "chart.line.uptrend.xyaxis",
-                    title: "Analytics",
-                    description: "Track your plant care progress",
+                    icon: "lightbulb.fill",
+                    title: "Care Insights",
+                    description: "Gentle patterns from your care logs",
                     color: BotanicaTheme.Colors.nutrientOrange
                 )
                 
