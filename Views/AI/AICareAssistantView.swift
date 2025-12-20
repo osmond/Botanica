@@ -491,44 +491,74 @@ struct AICareAssistantView: View {
     }
     
     private func parseIntervalDays(_ text: String) -> Int? {
-        let lower = text.lowercased()
+        let lower = normalizedText(text)
         if lower.contains("every other day") { return 2 }
         if lower.contains("every other week") { return 14 }
-        if lower.contains("daily") { return 1 }
-        if lower.contains("weekly") { return 7 }
+        if lower.contains("every other month") { return 60 }
+        if lower.contains("fortnight") { return 14 }
         if lower.contains("biweekly") { return 14 }
-        if lower.contains("monthly") { return 30 }
         
-        let numbers = extractNumbers(text)
-        guard let first = numbers.first else { return nil }
-        let value = averageIfRange(numbers, in: lower)
+        if let perWeek = parseTimesPerUnit(lower, unit: "week") {
+            return max(1, Int(round(7.0 / perWeek)))
+        }
+        if let perMonth = parseTimesPerUnit(lower, unit: "month") {
+            return max(1, Int(round(30.0 / perMonth)))
+        }
+        if let perDay = parseTimesPerUnit(lower, unit: "day") {
+            return max(1, Int(round(1.0 / perDay)))
+        }
         
-        if lower.contains("week") { return max(1, Int(round(value * 7))) }
-        if lower.contains("month") { return max(1, Int(round(value * 30))) }
-        if lower.contains("year") { return max(1, Int(round(value * 365))) }
-        if lower.contains("day") { return max(1, Int(round(value))) }
+        if lower.contains("daily") || lower.contains("every day") { return 1 }
+        if lower.contains("weekly") || lower.contains("every week") { return 7 }
+        if lower.contains("monthly") || lower.contains("every month") { return 30 }
         
-        return max(1, Int(round(first)))
+        let numbers = extractNumbers(lower)
+        let value = numbers.isEmpty ? nil : averageIfRange(numbers, in: lower)
+        let wordValue = wordNumberValue(in: lower)
+        
+        if let value, lower.contains("week") { return max(1, Int(round(value * 7))) }
+        if let value, lower.contains("month") { return max(1, Int(round(value * 30))) }
+        if let value, lower.contains("year") { return max(1, Int(round(value * 365))) }
+        if let value, lower.contains("day") { return max(1, Int(round(value))) }
+        
+        if let wordValue, lower.contains("day") { return max(1, Int(round(wordValue))) }
+        if let wordValue, lower.contains("week") { return max(1, Int(round(wordValue * 7))) }
+        if let wordValue, lower.contains("month") { return max(1, Int(round(wordValue * 30))) }
+        if let wordValue, lower.contains("year") { return max(1, Int(round(wordValue * 365))) }
+        
+        if let first = numbers.first { return max(1, Int(round(first))) }
+        return nil
     }
     
     private func parseIntervalMonths(_ text: String) -> Int? {
-        let lower = text.lowercased()
+        let lower = normalizedText(text)
         if lower.contains("every other year") { return 24 }
+        if lower.contains("biannual") || lower.contains("semiannual") { return 6 }
+        if lower.contains("quarterly") { return 3 }
+        
+        if let perYear = parseTimesPerUnit(lower, unit: "year") {
+            return max(1, Int(round(12.0 / perYear)))
+        }
+        
         if lower.contains("yearly") || lower.contains("annually") { return 12 }
         
-        let numbers = extractNumbers(text)
-        guard let first = numbers.first else { return nil }
-        let value = averageIfRange(numbers, in: lower)
+        let numbers = extractNumbers(lower)
+        let value = numbers.isEmpty ? nil : averageIfRange(numbers, in: lower)
+        let wordValue = wordNumberValue(in: lower)
         
-        if lower.contains("month") { return max(1, Int(round(value))) }
-        if lower.contains("year") { return max(1, Int(round(value * 12))) }
+        if let value, lower.contains("month") { return max(1, Int(round(value))) }
+        if let value, lower.contains("year") { return max(1, Int(round(value * 12))) }
         
-        return max(1, Int(round(first)))
+        if let wordValue, lower.contains("month") { return max(1, Int(round(wordValue))) }
+        if let wordValue, lower.contains("year") { return max(1, Int(round(wordValue * 12))) }
+        
+        if let first = numbers.first { return max(1, Int(round(first))) }
+        return nil
     }
     
     private func parseHumidityPreference(_ text: String) -> Int? {
-        let lower = text.lowercased()
-        let numbers = extractNumbers(text)
+        let lower = normalizedText(text)
+        let numbers = extractNumbers(lower)
         if !numbers.isEmpty {
             return Int(round(averageIfRange(numbers, in: lower)))
         }
@@ -541,10 +571,10 @@ struct AICareAssistantView: View {
     }
     
     private func parseTemperatureRange(_ text: String) -> TemperatureRange? {
-        let numbers = extractNumbers(text)
+        let lower = normalizedText(text)
+        let numbers = extractNumbers(lower)
         guard !numbers.isEmpty else { return nil }
         
-        let lower = text.lowercased()
         let isCelsius = lower.contains("celsius") || (!lower.contains("f") && numbers.allSatisfy { $0 <= 45 })
         let temps = numbers.map { isCelsius ? ($0 * 9 / 5 + 32) : $0 }
         
@@ -567,7 +597,7 @@ struct AICareAssistantView: View {
     }
     
     private func parseLightLevel(_ text: String) -> LightLevel? {
-        let lower = text.lowercased()
+        let lower = normalizedText(text)
         if lower.contains("direct") { return .direct }
         if lower.contains("bright") { return .bright }
         if lower.contains("indirect") { return .bright }
@@ -597,10 +627,77 @@ struct AICareAssistantView: View {
     
     private func averageIfRange(_ numbers: [Double], in text: String) -> Double {
         guard numbers.count >= 2 else { return numbers.first ?? 0 }
-        if text.contains("-") || text.contains(" to ") {
+        if text.contains("-") || text.contains(" to ") || text.contains(" through ") || text.contains("between") {
             return (numbers[0] + numbers[1]) / 2
         }
         return numbers[0]
+    }
+    
+    private func normalizedText(_ text: String) -> String {
+        var scalars = String.UnicodeScalarView()
+        for scalar in text.unicodeScalars {
+            if scalar.value == 0x2013 || scalar.value == 0x2014 {
+                scalars.append(UnicodeScalar(45)!)
+            } else {
+                scalars.append(scalar)
+            }
+        }
+        return String(scalars).lowercased()
+    }
+    
+    private func parseTimesPerUnit(_ text: String, unit: String) -> Double? {
+        let hasUnit = text.contains("per \(unit)") || text.contains("a \(unit)") || text.contains("\(unit)ly")
+        guard hasUnit else { return nil }
+        
+        if text.contains("once") { return 1 }
+        if text.contains("twice") { return 2 }
+        if text.contains("thrice") { return 3 }
+        
+        let numbers = extractNumbers(text)
+        if !numbers.isEmpty {
+            return max(1, averageIfRange(numbers, in: text))
+        }
+        
+        if let wordValue = wordNumberValue(in: text) {
+            return max(1, wordValue)
+        }
+        
+        if text.contains("\(unit)ly") {
+            return 1
+        }
+        
+        return nil
+    }
+    
+    private func wordNumberValue(in text: String) -> Double? {
+        let words: [(String, Double)] = [
+            ("one", 1),
+            ("two", 2),
+            ("three", 3),
+            ("four", 4),
+            ("five", 5),
+            ("six", 6),
+            ("seven", 7),
+            ("eight", 8),
+            ("nine", 9),
+            ("ten", 10),
+            ("couple", 2),
+            ("few", 3),
+            ("several", 4)
+        ]
+        
+        for (word, value) in words where containsWord(text, word) {
+            return value
+        }
+        
+        return nil
+    }
+    
+    private func containsWord(_ text: String, _ word: String) -> Bool {
+        let pattern = "\\b\(NSRegularExpression.escapedPattern(for: word))\\b"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { return false }
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return regex.firstMatch(in: text, options: [], range: range) != nil
     }
     
     private func askAIQuestion() {
