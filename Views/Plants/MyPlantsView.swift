@@ -32,52 +32,27 @@ struct MyPlantsView: View {
     private var filteredPlants: [Plant] { organizedPlants.flatMap { $0.plants } }
     
     // Modern design computed properties
-    private var urgentCarePlants: [Plant] {
-        plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue || $0.isRepottingOverdue }
-    }
-    
-    private var dueTodayPlants: [Plant] {
-        let cal = Calendar.current
-        return plants.filter { plant in
-            let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
-            let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
-            let dueRepotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
-            // Treat overdue as part of today's urgency
-            let isOverdue = plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue
-            return dueWaterToday || dueFeedToday || dueRepotToday || isOverdue
-        }
-    }
-    
-    private var todaysCareCount: Int {
-        let cal = Calendar.current
-        return plants.filter { plant in
-            let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
-            let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
-            let dueRepotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
-            return plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue || dueWaterToday || dueFeedToday || dueRepotToday
-        }.count
-    }
-    
     private var healthyPlantCount: Int {
         plants.filter { $0.healthStatus == .excellent || $0.healthStatus == .healthy }.count
     }
     
-    private var overdueCount: Int {
-        plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue || $0.isRepottingOverdue }.count
+    private var unhealthyPlantCount: Int {
+        plants.filter { $0.healthStatus == .fair || $0.healthStatus == .poor || $0.healthStatus == .critical }.count
     }
     
-    private var smartChips: [SmartChip] {
-        [
-            SmartChip(title: "Overdue", count: overdueCount, filter: .overdue, isSelected: careNeededFilter == .overdue),
-            SmartChip(title: "Due Today", count: dueTodayPlants.count, filter: .dueToday, isSelected: careNeededFilter == .dueToday),
-            SmartChip(title: "Need Water", count: needsWaterCount, filter: .needsWatering, isSelected: careNeededFilter == .needsWatering),
-            SmartChip(title: "Need Feed", count: plants.filter { $0.isFertilizingOverdue }.count, filter: .needsFertilizing, isSelected: careNeededFilter == .needsFertilizing)
-        ]
+    private var lowLightCount: Int {
+        plants.filter { $0.lightLevel == .low }.count
+    }
+    
+    private var brightLightCount: Int {
+        plants.filter { $0.lightLevel == .bright }.count
     }
     
     private var activeFilterTitle: String? {
-        if let care = careNeededFilter { return care.rawValue }
+        if showUnhealthyOnly { return "Needs attention" }
         if let health = filterBy { return health.displayText }
+        if let light = lightLevelFilter { return light.displayName }
+        if let care = careNeededFilter { return care.rawValue }
         return nil
     }
     
@@ -85,17 +60,70 @@ struct MyPlantsView: View {
         plants.isEmpty ? 100 : Int((Double(healthyPlantCount) / Double(plants.count)) * 100)
     }
     
-    private var needsWaterCount: Int {
-        plants.filter { $0.isWateringOverdue }.count
+    private var collectionFilterChips: [CollectionFilterChip] {
+        let isAllSelected = careNeededFilter == nil && filterBy == nil && lightLevelFilter == nil && !showUnhealthyOnly
+        return [
+            CollectionFilterChip(
+                id: "all",
+                title: "All",
+                count: plants.count,
+                isSelected: isAllSelected,
+                action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        clearCollectionFilters()
+                    }
+                }
+            ),
+            CollectionFilterChip(
+                id: "needs-attention",
+                title: "Needs attention",
+                count: unhealthyPlantCount,
+                isSelected: showUnhealthyOnly,
+                action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showUnhealthyOnly = true
+                        filterBy = nil
+                        careNeededFilter = nil
+                        lightLevelFilter = nil
+                    }
+                }
+            ),
+            CollectionFilterChip(
+                id: "low-light",
+                title: "Low light",
+                count: lowLightCount,
+                isSelected: lightLevelFilter == .low,
+                action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        lightLevelFilter = .low
+                        filterBy = nil
+                        careNeededFilter = nil
+                        showUnhealthyOnly = false
+                    }
+                }
+            ),
+            CollectionFilterChip(
+                id: "bright-light",
+                title: "Bright light",
+                count: brightLightCount,
+                isSelected: lightLevelFilter == .bright,
+                action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        lightLevelFilter = .bright
+                        filterBy = nil
+                        careNeededFilter = nil
+                        showUnhealthyOnly = false
+                    }
+                }
+            )
+        ]
     }
     
-    private func handleChip(_ chip: SmartChip) {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            careNeededFilter = chip.filter
-            filterBy = nil
-            lightLevelFilter = nil
-            showUnhealthyOnly = false
-        }
+    private func clearCollectionFilters() {
+        careNeededFilter = nil
+        filterBy = nil
+        lightLevelFilter = nil
+        showUnhealthyOnly = false
     }
     
     private func sortPlants(_ plants: [Plant], by option: SortOption) -> [Plant] {
@@ -190,9 +218,18 @@ struct MyPlantsView: View {
         }
         .onChange(of: plants) { _, _ in updateVM() }
         .onChange(of: searchText) { _, _ in updateVM() }
-        .onChange(of: filterBy) { _, _ in updateVM() }
-        .onChange(of: lightLevelFilter) { _, _ in updateVM() }
-        .onChange(of: careNeededFilter) { _, _ in updateVM() }
+        .onChange(of: filterBy) { _, newValue in
+            if newValue != nil { showUnhealthyOnly = false }
+            updateVM()
+        }
+        .onChange(of: lightLevelFilter) { _, newValue in
+            if newValue != nil { showUnhealthyOnly = false }
+            updateVM()
+        }
+        .onChange(of: careNeededFilter) { _, newValue in
+            if newValue != nil { showUnhealthyOnly = false }
+            updateVM()
+        }
         .onChange(of: sortBy) { _, _ in updateVM() }
         .onChange(of: groupBy) { _, _ in updateVM() }
         .onChange(of: showUnhealthyOnly) { _, _ in updateVM() }
@@ -217,8 +254,9 @@ struct MyPlantsView: View {
         vm.update(
             sourcePlants: plants,
             searchText: searchText,
-            filterBy: showUnhealthyOnly ? nil : filterBy,
+            filterBy: filterBy,
             lightLevelFilter: lightLevelFilter,
+            showUnhealthyOnly: showUnhealthyOnly,
             careNeededFilter: careNeededFilter,
             sortBy: sortBy,
             groupBy: groupBy
@@ -236,8 +274,19 @@ struct MyPlantsView: View {
             storedViewModeRaw = viewMode.rawValue
         }
         sortBy = SortOption(rawValue: storedSortRaw) ?? .dateAdded
+        if sortBy == .careNeeded || sortBy == .wateringFrequency {
+            sortBy = .dateAdded
+            storedSortRaw = sortBy.rawValue
+        }
         groupBy = GroupOption(rawValue: storedGroupRaw) ?? .none
-        careNeededFilter = CareNeededFilter(rawValue: storedCareFilterRaw)
+        if groupBy == .careNeeded {
+            groupBy = .none
+            storedGroupRaw = groupBy.rawValue
+        }
+        careNeededFilter = nil
+        if !storedCareFilterRaw.isEmpty {
+            storedCareFilterRaw = ""
+        }
         filterBy = HealthStatus(rawValue: storedHealthFilterRaw)
         showUnhealthyOnly = false
     }
@@ -252,20 +301,32 @@ struct MyPlantsView: View {
     
     // Collection insight computed properties
     private var collectionInsightMessage: String {
-        if urgentCarePlants.count > plants.count / 2 {
-            return "Many plants need attention - consider setting up care reminders"
+        if collectionHealthPercentage < 60 {
+            return "Several plants look stressed. Consider reviewing notes and photos."
         } else if collectionHealthPercentage > 85 {
-            return "Your plants are thriving! Excellent care routine"
+            return "Your plants are thriving. Keep the routine steady."
+        } else if weeklyAddedCount > 0 {
+            return "New additions this week. Good time to confirm care settings."
         } else if plants.count >= 10 {
-            return "Impressive collection! Consider grouping by care needs"
+            return "Impressive collection. Group by light or location to stay organized."
         } else {
-            return "Your garden is growing beautifully"
+            return "Your garden is growing beautifully."
         }
+    }
+    
+    private var collectionSummary: String {
+        let addedText = weeklyAddedCount == 0 ? "No new plants this week" : "\(weeklyAddedCount) added this week"
+        return "\(plants.count) plants • \(collectionHealthPercentage)% healthy • \(addedText)"
     }
     
     private var weeklyAddedCount: Int {
         let oneWeekAgo = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: Date()) ?? Date()
         return plants.filter { $0.dateAdded >= oneWeekAgo }.count
+    }
+
+    private var monthlyAddedCount: Int {
+        let oneMonthAgo = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
+        return plants.filter { $0.dateAdded >= oneMonthAgo }.count
     }
     
     var body: some View {
@@ -289,26 +350,14 @@ struct MyPlantsView: View {
                         CollectionInsightsHeaderView(
                             plantsCount: plants.count,
                             collectionHealthPercentage: collectionHealthPercentage,
-                            todaysCareCount: todaysCareCount,
+                            weeklyAddedCount: weeklyAddedCount,
+                            monthlyAddedCount: monthlyAddedCount,
                             insight: collectionInsightMessage,
-                            summary: "\(plants.count) plants • \(todaysCareCount) due today • \(overdueCount) overdue",
-                            chips: smartChips,
-                            onChipTap: handleChip,
-                            setHealthyFilter: {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    // Surface unhealthy plants when tapping the healthy stat
-                                    showUnhealthyOnly = true
-                                    filterBy = nil
-                                    careNeededFilter = nil
-                                    lightLevelFilter = nil
-                                }
-                            },
+                            summary: collectionSummary,
+                            chips: collectionFilterChips,
                             onClearFilter: {
                                 withAnimation(.easeInOut(duration: 0.2)) {
-                                    careNeededFilter = nil
-                                    filterBy = nil
-                                    lightLevelFilter = nil
-                                    showUnhealthyOnly = false
+                                    clearCollectionFilters()
                                 }
                             },
                             activeFilterTitle: activeFilterTitle
@@ -359,7 +408,7 @@ struct MyPlantsView: View {
                         
                         // Enhanced sorting options
                         Section("Sort Plants") {
-                            ForEach(SortOption.allCases, id: \.self) { option in
+                            ForEach(SortOption.allCases.filter { $0 != .careNeeded && $0 != .wateringFrequency }, id: \.self) { option in
                                 Button {
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         sortBy = option
@@ -376,7 +425,7 @@ struct MyPlantsView: View {
                         
                         // Grouping options
                         Section("Group Plants") {
-                            ForEach(GroupOption.allCases, id: \.self) { option in
+                            ForEach(GroupOption.allCases.filter { $0 != .careNeeded }, id: \.self) { option in
                                 Button {
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         groupBy = option
@@ -395,30 +444,13 @@ struct MyPlantsView: View {
                         Section("Quick Filters") {
                             Button {
                                 withAnimation(.easeInOut(duration: 0.2)) {
-                                    filterBy = nil
-                                    lightLevelFilter = nil
-                                    careNeededFilter = nil
+                                    clearCollectionFilters()
                                 }
                                 HapticManager.shared.light()
                             } label: {
                                 Label(
                                     "All Plants (\(plants.count))", 
-                                    systemImage: (filterBy == nil && lightLevelFilter == nil && careNeededFilter == nil) ? "leaf.fill" : "leaf"
-                                )
-                            }
-                            
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    careNeededFilter = .needsAnyCare
-                                    filterBy = nil
-                                    lightLevelFilter = nil
-                                }
-                                HapticManager.shared.light()
-                            } label: {
-                                let needsCareCount = plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue }.count
-                                Label(
-                                    "Needs Care (\(needsCareCount))", 
-                                    systemImage: careNeededFilter == .needsAnyCare ? "exclamationmark.triangle.fill" : "exclamationmark.triangle"
+                                    systemImage: (filterBy == nil && lightLevelFilter == nil && careNeededFilter == nil && !showUnhealthyOnly) ? "leaf.fill" : "leaf"
                                 )
                             }
                             
@@ -443,7 +475,6 @@ struct MyPlantsView: View {
                 AdvancedFiltersView(
                     healthFilter: $filterBy,
                     lightLevelFilter: $lightLevelFilter,
-                    careNeededFilter: $careNeededFilter,
                     plantCount: plants.count
                 )
             }
@@ -462,6 +493,7 @@ final class MyPlantsViewModel: ObservableObject {
         searchText: String,
         filterBy: HealthStatus?,
         lightLevelFilter: LightLevel?,
+        showUnhealthyOnly: Bool,
         careNeededFilter: CareNeededFilter?,
         sortBy: SortOption,
         groupBy: GroupOption
@@ -477,6 +509,7 @@ final class MyPlantsViewModel: ObservableObject {
                 searchText: searchText,
                 filterBy: filterBy,
                 lightLevelFilter: lightLevelFilter,
+                showUnhealthyOnly: showUnhealthyOnly,
                 careNeededFilter: careNeededFilter,
                 sortBy: sortBy,
                 groupBy: groupBy
@@ -496,6 +529,7 @@ final class MyPlantsViewModel: ObservableObject {
         searchText: String,
         filterBy: HealthStatus?,
         lightLevelFilter: LightLevel?,
+        showUnhealthyOnly: Bool,
         careNeededFilter: CareNeededFilter?,
         sortBy: SortOption,
         groupBy: GroupOption
@@ -512,7 +546,11 @@ final class MyPlantsViewModel: ObservableObject {
                 plant.healthStatus.rawValue.localizedCaseInsensitiveContains(searchText)
             }
         }
-        if let filter = filterBy { filtered = filtered.filter { $0.healthStatus == filter } }
+        if showUnhealthyOnly {
+            filtered = filtered.filter { $0.healthStatus == .fair || $0.healthStatus == .poor || $0.healthStatus == .critical }
+        } else if let filter = filterBy {
+            filtered = filtered.filter { $0.healthStatus == filter }
+        }
         if let level = lightLevelFilter { filtered = filtered.filter { $0.lightLevel == level } }
         if let careFilter = careNeededFilter {
             switch careFilter {
@@ -666,7 +704,6 @@ struct FloatingAddButton: View {
 struct AdvancedFiltersView: View {
     @Binding var healthFilter: HealthStatus?
     @Binding var lightLevelFilter: LightLevel?
-    @Binding var careNeededFilter: CareNeededFilter?
     let plantCount: Int
     @Environment(\.dismiss) private var dismiss
     
@@ -693,21 +730,10 @@ struct AdvancedFiltersView: View {
                     .pickerStyle(.menu)
                 }
                 
-                Section("Care Status") {
-                    Picker("Care Needed", selection: $careNeededFilter) {
-                        Text("All Care Status").tag(CareNeededFilter?.none)
-                        ForEach(CareNeededFilter.allCases, id: \.self) { filter in
-                            Label(filter.rawValue, systemImage: filter.icon).tag(filter as CareNeededFilter?)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
-                
                 Section {
                     Button("Clear All Filters", role: .destructive) {
                         healthFilter = nil
                         lightLevelFilter = nil
-                        careNeededFilter = nil
                         dismiss()
                     }
                 }
@@ -1199,7 +1225,6 @@ struct CareIndicators: View {
 struct ModernAdvancedFiltersView: View {
     @Binding var healthFilter: HealthStatus?
     @Binding var lightLevelFilter: LightLevel?
-    @Binding var careNeededFilter: CareNeededFilter?
     @Binding var sortBy: SortOption
     @Binding var groupBy: GroupOption
     let plantCount: Int
@@ -1210,13 +1235,13 @@ struct ModernAdvancedFiltersView: View {
             Form {
                 Section("Display") {
                     Picker("Sort By", selection: $sortBy) {
-                        ForEach(SortOption.allCases, id: \.self) { option in
+                        ForEach(SortOption.allCases.filter { $0 != .careNeeded && $0 != .wateringFrequency }, id: \.self) { option in
                             Label(option.displayName, systemImage: option.icon).tag(option)
                         }
                     }
                     
                     Picker("Group By", selection: $groupBy) {
-                        ForEach(GroupOption.allCases, id: \.self) { option in
+                        ForEach(GroupOption.allCases.filter { $0 != .careNeeded }, id: \.self) { option in
                             Label(option.displayName, systemImage: option.icon).tag(option)
                         }
                     }
@@ -1236,20 +1261,12 @@ struct ModernAdvancedFiltersView: View {
                             Text(level.displayName).tag(level as LightLevel?)
                         }
                     }
-                    
-                    Picker("Care Status", selection: $careNeededFilter) {
-                        Text("All Care Status").tag(CareNeededFilter?.none)
-                        ForEach(CareNeededFilter.allCases, id: \.self) { filter in
-                            Label(filter.rawValue, systemImage: filter.icon).tag(filter as CareNeededFilter?)
-                        }
-                    }
                 }
                 
                 Section {
                     Button("Clear All Filters", role: .destructive) {
                         healthFilter = nil
                         lightLevelFilter = nil
-                        careNeededFilter = nil
                         groupBy = .none
                         dismiss()
                     }

@@ -14,11 +14,11 @@ struct MainTabView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $coordinator.selectedTab) {
-                ActivityView()
+                TodayView()
                     .tabItem {
-                        Label("Activity", systemImage: "bell.badge")
+                        Label("Today", systemImage: "sun.max")
                     }
-                    .tag(Tab.activity)
+                    .tag(Tab.today)
                 
                 MyPlantsView()
                     .tabItem {
@@ -144,33 +144,304 @@ struct MainTabView: View {
 
 enum Tab: String, CaseIterable {
     case plants = "My Plants"
-    case activity = "Activity"
+    case today = "Today"
     case ai = "AI"
     case settings = "Settings"
     
     var systemImage: String {
         switch self {
         case .plants: return "leaf.fill"
-        case .activity: return "bell.badge"
+        case .today: return "sun.max"
         case .ai: return "sparkles"
         case .settings: return "gearshape.fill"
         }
     }
 }
 
-// MARK: - Activity Feed
+// MARK: - Today
 
-struct ActivityView: View {
+struct TodayView: View {
+    @Query(sort: \CareEvent.date, order: .reverse) private var careEvents: [CareEvent]
+    @Query private var plants: [Plant]
+    @Query(sort: \Reminder.nextNotification, order: .forward) private var reminders: [Reminder]
+    @Environment(\.modelContext) private var modelContext
+    @State private var showingMultiCareLog = false
+    @State private var reminderToSnooze: Reminder?
+    @State private var showingSnoozeOptions = false
+    
+    private var upcomingItems: [SyntheticUpcoming] {
+        let base = plants.flatMap { plant -> [SyntheticUpcoming] in
+            var items: [SyntheticUpcoming] = []
+            if let nextWater = plant.nextWateringDate {
+                items.append(SyntheticUpcoming(date: nextWater, plant: plant, type: .watering))
+            }
+            if let nextFert = plant.nextFertilizingDate {
+                items.append(SyntheticUpcoming(date: nextFert, plant: plant, type: .fertilizing))
+            }
+            if let nextRepot = plant.nextRepottingDate {
+                items.append(SyntheticUpcoming(date: nextRepot, plant: plant, type: .repotting))
+            }
+            return items
+        }
+        
+        return base.sorted { lhs, rhs in
+            let lhsOverdue = isOverdue(lhs.plant)
+            let rhsOverdue = isOverdue(rhs.plant)
+            if lhsOverdue == rhsOverdue {
+                return lhs.date < rhs.date
+            }
+            return lhsOverdue && !rhsOverdue
+        }
+    }
+    
+    private var overdueItems: [SyntheticUpcoming] {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: Date())
+        return upcomingItems.filter { item in
+            isOverdue(item) || item.date < start
+        }
+    }
+    
+    private var dueTodayItems: [SyntheticUpcoming] {
+        let cal = Calendar.current
+        return upcomingItems.filter { cal.isDateInToday($0.date) && !isOverdue($0) }
+    }
+    
+    private var upcomingItemsNextWeek: [SyntheticUpcoming] {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: Date())
+        let end = cal.date(byAdding: .day, value: 7, to: start) ?? start
+        return upcomingItems.filter { $0.date > start && $0.date <= end }
+            .filter { !cal.isDateInToday($0.date) }
+    }
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    TodaySummaryCard(
+                        overdue: overdueItems.count,
+                        dueToday: dueTodayItems.count,
+                        upcoming: upcomingItemsNextWeek.count
+                    )
+                }
+                .listRowBackground(Color.clear)
+                
+                Section {
+                    Button {
+                        showingMultiCareLog = true
+                    } label: {
+                        HStack(spacing: BotanicaTheme.Spacing.sm) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(BotanicaTheme.Colors.primary)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Log care")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                                Text("Quickly log care for multiple plants")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
+                        }
+                        .padding(BotanicaTheme.Spacing.md)
+                        .background(
+                            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
+                                .fill(Color(.secondarySystemGroupedBackground))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+                .listRowBackground(Color.clear)
+                
+                if !overdueItems.isEmpty {
+                    Section(header: Text("Overdue").font(BotanicaTheme.Typography.headline)) {
+                        ForEach(overdueItems) { item in
+                            NavigationLink(destination: PlantDetailView(plant: item.plant)) {
+                                ActivityRow(item: .upcoming(item)) { upcoming in
+                                    logUpcoming(upcoming)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                
+                if !dueTodayItems.isEmpty {
+                    Section(header: Text("Due today").font(BotanicaTheme.Typography.headline)) {
+                        ForEach(dueTodayItems) { item in
+                            NavigationLink(destination: PlantDetailView(plant: item.plant)) {
+                                ActivityRow(item: .upcoming(item)) { upcoming in
+                                    logUpcoming(upcoming)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                
+                if overdueItems.isEmpty && dueTodayItems.isEmpty {
+                    Section {
+                        Text("You are all caught up today.")
+                            .font(BotanicaTheme.Typography.body)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                if !upcomingItemsNextWeek.isEmpty {
+                    Section(header: Text("Next 7 days").font(BotanicaTheme.Typography.headline)) {
+                        ForEach(upcomingItemsNextWeek) { item in
+                            NavigationLink(destination: PlantDetailView(plant: item.plant)) {
+                                ActivityRow(item: .upcoming(item)) { upcoming in
+                                    logUpcoming(upcoming)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                
+                reminderSection
+            }
+            .scrollContentBackground(.hidden)
+            .background(BotanicaTheme.Colors.background)
+            .navigationTitle("Today")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: HistoryView()) {
+                        Text("History")
+                    }
+                }
+            }
+            .confirmationDialog("Snooze reminder", isPresented: $showingSnoozeOptions, titleVisibility: .visible) {
+                Button("Snooze 1 day") { applySnooze(days: 1) }
+                Button("Snooze 3 days") { applySnooze(days: 3) }
+                Button("Snooze 7 days") { applySnooze(days: 7) }
+                Button("Cancel", role: .cancel) {}
+            }
+            .sheet(isPresented: $showingMultiCareLog) {
+                MultiCareLogView()
+            }
+        }
+    }
+    
+    private func isOverdue(_ plant: Plant) -> Bool {
+        plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue
+    }
+    
+    private func isOverdue(_ item: SyntheticUpcoming) -> Bool {
+        switch item.type {
+        case .watering: return item.plant.isWateringOverdue
+        case .fertilizing: return item.plant.isFertilizingOverdue
+        case .repotting: return item.plant.isRepottingOverdue
+        case .pruning, .cleaning, .rotating, .misting, .inspection:
+            return false
+        }
+    }
+    
+    private func logUpcoming(_ upcoming: SyntheticUpcoming) {
+        let recAmount: Double
+        let recUnit: String
+        switch upcoming.type {
+        case .watering:
+            let rec = upcoming.plant.recommendedWateringAmount
+            recAmount = Double(rec.amount)
+            recUnit = rec.unit
+        case .fertilizing:
+            let rec = upcoming.plant.recommendedFertilizerAmount
+            recAmount = rec.amount
+            recUnit = rec.unit
+        default:
+            recAmount = 0
+            recUnit = ""
+        }
+        let event = CareEvent(
+            type: upcoming.type,
+            date: Date(),
+            amount: recAmount,
+            unit: recUnit,
+            notes: "Logged from Today"
+        )
+        event.plant = upcoming.plant
+        modelContext.insert(event)
+    }
+    
+    @ViewBuilder
+    private var reminderSection: some View {
+        let upcomingReminders = reminders.filter { $0.isActive && $0.nextNotification >= Date() }
+        if !upcomingReminders.isEmpty {
+            Section(header: Text("Reminders").font(BotanicaTheme.Typography.headline)) {
+                ForEach(upcomingReminders) { reminder in
+                    ReminderListRow(
+                        reminder: reminder,
+                        onTap: {
+                            if let plant = reminder.plant {
+                                logReminder(reminder, for: plant)
+                            }
+                        },
+                        onSnooze: {
+                            reminderToSnooze = reminder
+                            showingSnoozeOptions = true
+                        }
+                    )
+                }
+            }
+        }
+    }
+    
+    private func logReminder(_ reminder: Reminder, for plant: Plant) {
+        let recAmount: Double
+        let recUnit: String
+        switch reminder.taskType {
+        case .watering:
+            let rec = plant.recommendedWateringAmount
+            recAmount = Double(rec.amount)
+            recUnit = rec.unit
+        case .fertilizing:
+            let rec = plant.recommendedFertilizerAmount
+            recAmount = rec.amount
+            recUnit = rec.unit
+        default:
+            recAmount = 0
+            recUnit = ""
+        }
+        let event = CareEvent(
+            type: reminder.taskType,
+            date: Date(),
+            amount: recAmount,
+            unit: recUnit,
+            notes: "Logged from reminder"
+        )
+        event.plant = plant
+        modelContext.insert(event)
+    }
+    
+    private func applySnooze(days: Int) {
+        guard let reminder = reminderToSnooze else { return }
+        let next = Calendar.current.date(byAdding: .day, value: days, to: Date()) ?? Date()
+        reminder.snoozedUntil = next
+        reminder.nextNotification = next
+        reminderToSnooze = nil
+    }
+}
+
+// MARK: - History
+
+struct HistoryView: View {
     @Query(sort: \CareEvent.date, order: .reverse) private var careEvents: [CareEvent]
     @Query private var plants: [Plant]
     @Query(sort: \Reminder.nextNotification, order: .forward) private var reminders: [Reminder]
     @State private var filter: ActivityFilter = .all
-    @State private var mode: ActivityMode = .upcoming
+    @State private var mode: ActivityMode = .recent
     @State private var searchText: String = ""
     @Environment(\.modelContext) private var modelContext
     @State private var reminderToSnooze: Reminder?
     @State private var showingSnoozeOptions = false
     @State private var showOverdueOnly = false
+    @State private var showingMultiCareLog = false
     
     private var recentEvents: [CareEvent] {
         careEvents
@@ -315,12 +586,24 @@ struct ActivityView: View {
             .scrollContentBackground(.hidden)
             .background(BotanicaTheme.Colors.background)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic))
-            .navigationTitle("Activity")
+            .navigationTitle("History")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingMultiCareLog = true
+                    } label: {
+                        Label("Log Care", systemImage: "checkmark.circle.fill")
+                    }
+                }
+            }
             .confirmationDialog("Snooze reminder", isPresented: $showingSnoozeOptions, titleVisibility: .visible) {
                 Button("Snooze 1 day") { applySnooze(days: 1) }
                 Button("Snooze 3 days") { applySnooze(days: 3) }
                 Button("Snooze 7 days") { applySnooze(days: 7) }
                 Button("Cancel", role: .cancel) {}
+            }
+            .sheet(isPresented: $showingMultiCareLog) {
+                MultiCareLogView()
             }
         }
     }
@@ -328,14 +611,14 @@ struct ActivityView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(mode == .upcoming ? "Upcoming care" : mode == .recent ? "Recent activity" : "Calendar")
-                    .font(BotanicaTheme.Typography.headline)
-                Text(mode == .upcoming ? "Next water/fertilize across all plants" : mode == .recent ? "Last recorded care events" : "Care events by day")
-                    .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-            if mode == .upcoming {
+            Text(mode == .upcoming ? "Upcoming care" : mode == .recent ? "Recent activity" : "Calendar")
+                .font(BotanicaTheme.Typography.headline)
+            Text(mode == .upcoming ? "Next water/fertilize across all plants" : mode == .recent ? "Logged care events" : "Care events by day")
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
+        }
+        Spacer()
+        if mode == .upcoming {
                 Picker("Filter", selection: $filter) {
                     ForEach(ActivityFilter.allCases, id: \.self) { f in
                         Text(f.title).tag(f)
@@ -353,7 +636,7 @@ struct ActivityView: View {
             Image(systemName: "calendar.badge.clock")
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
-            Text(mode == .upcoming ? "No upcoming care" : "No recent activity")
+            Text(mode == .upcoming ? "No upcoming care" : "No history yet")
                 .font(BotanicaTheme.Typography.body)
                 .foregroundColor(.secondary)
         }
@@ -500,10 +783,14 @@ private enum ActivityItem: Identifiable {
     }
 }
 
-private struct SyntheticUpcoming {
+private struct SyntheticUpcoming: Identifiable {
     let date: Date
     let plant: Plant
     let type: CareType
+    
+    var id: String {
+        "\(type.rawValue)-\(plant.id.uuidString)-\(date.timeIntervalSince1970)"
+    }
 }
 
 private struct ActivityRow: View {
@@ -529,22 +816,22 @@ private struct ActivityRow: View {
             }
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                HStack {
-                    Text(title)
-                        .font(BotanicaTheme.Typography.callout)
-                        .fontWeight(.semibold)
-                    Spacer()
-                    Text(dateText)
-                        .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                Text(typeText)
+            HStack {
+                Text(title)
+                    .font(BotanicaTheme.Typography.callout)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(dateText)
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(color)
-                if let amount = amountText {
-                    Text(amount)
-                        .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                    .foregroundColor(.secondary)
+            }
+            Text(typeText)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(statusColor)
+            if let amount = amountText {
+                Text(amount)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(.secondary)
                 }
                 if let notes = notes, !notes.isEmpty {
                     Text(notes)
@@ -615,7 +902,11 @@ private struct ActivityRow: View {
     private var dateText: String {
         switch item {
         case .event(let e): return formatter.string(from: e.date)
-        case .upcoming(let u): return formatter.string(from: u.date)
+        case .upcoming(let u):
+            if isUpcomingOverdue {
+                return overdueText(since: u.date)
+            }
+            return formatter.string(from: u.date)
         }
     }
     
@@ -624,8 +915,22 @@ private struct ActivityRow: View {
     private var typeText: String {
         switch item {
         case .event(let e): return e.type.rawValue
-        case .upcoming: return "Upcoming"
+        case .upcoming:
+            if isUpcomingOverdue {
+                return "Overdue"
+            }
+            if isUpcomingDueToday {
+                return "Due today"
+            }
+            return "Upcoming"
         }
+    }
+    
+    private var statusColor: Color {
+        if case .upcoming = item, isUpcomingOverdue {
+            return BotanicaTheme.Colors.warning
+        }
+        return color
     }
     
     private var amountText: String? {
@@ -669,7 +974,7 @@ private struct ActivityRow: View {
             return "\(plantName). \(e.type.rawValue). \(dateText). \(amountString)"
         case .upcoming:
             let amountString = amountText ?? ""
-            return "\(plantName). Upcoming \(careType.rawValue). \(dateText). \(amountString)"
+            return "\(plantName). \(typeText) \(careType.rawValue). \(dateText). \(amountString)"
         }
     }
     
@@ -680,6 +985,28 @@ private struct ActivityRow: View {
         case .upcoming:
             return "Double tap to log now."
         }
+    }
+    
+    private var isUpcomingOverdue: Bool {
+        guard case .upcoming(let upcoming) = item else { return false }
+        let cal = Calendar.current
+        let startToday = cal.startOfDay(for: Date())
+        return upcoming.date < startToday
+    }
+    
+    private var isUpcomingDueToday: Bool {
+        guard case .upcoming(let upcoming) = item else { return false }
+        let cal = Calendar.current
+        return cal.isDateInToday(upcoming.date) && !isUpcomingOverdue
+    }
+    
+    private func overdueText(since date: Date) -> String {
+        let cal = Calendar.current
+        let startDue = cal.startOfDay(for: date)
+        let startToday = cal.startOfDay(for: Date())
+        let days = max(cal.dateComponents([.day], from: startDue, to: startToday).day ?? 0, 0)
+        let value = max(days, 1)
+        return value == 1 ? "1 day late" : "\(value) days late"
     }
 }
 
@@ -698,6 +1025,43 @@ private enum ActivityFilter: CaseIterable {
 private enum ActivityMode {
     case upcoming
     case recent
+}
+
+private struct TodaySummaryCard: View {
+    let overdue: Int
+    let dueToday: Int
+    let upcoming: Int
+    
+    var body: some View {
+        HStack(spacing: BotanicaTheme.Spacing.md) {
+            summaryMetric(title: "Overdue", count: overdue, color: BotanicaTheme.Colors.warning)
+            summarySeparator
+            summaryMetric(title: "Due today", count: dueToday, color: BotanicaTheme.Colors.waterBlue)
+            summarySeparator
+            summaryMetric(title: "Next 7 days", count: upcoming, color: BotanicaTheme.Colors.leafGreen)
+        }
+        .padding(BotanicaTheme.Spacing.md)
+        .background(BotanicaTheme.Colors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large))
+    }
+    
+    private func summaryMetric(title: String, count: Int, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xxs) {
+            Text("\(count)")
+                .font(BotanicaTheme.Typography.title3)
+                .foregroundColor(color)
+            Text(title)
+                .font(BotanicaTheme.Typography.caption2)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private var summarySeparator: some View {
+        Rectangle()
+            .fill(BotanicaTheme.Colors.textSecondary.opacity(0.2))
+            .frame(width: 1, height: 32)
+    }
 }
 
 private struct ReminderListRow: View {

@@ -21,7 +21,10 @@ struct AICareAssistantView: View {
     @State private var questionState: LoadState = .idle
     @State private var diagnosisState: LoadState = .idle
     @State private var applyingCarePlan = false
-    @State private var showingApplySuccess = false
+    @State private var showingApplySheet = false
+    @State private var applyDraft: CarePlanApplyDraft?
+    @State private var undoSnapshot: CarePlanUndoSnapshot?
+    @State private var showingApplyConfirmation = false
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -66,10 +69,30 @@ struct AICareAssistantView: View {
             } message: {
                 Text(errorMessage ?? aiCoach.lastError?.localizedDescription ?? "An error occurred")
             }
-            .alert("Care Plan Applied", isPresented: $showingApplySuccess) {
+            .alert("Care Plan Applied", isPresented: $showingApplyConfirmation) {
+                if undoSnapshot != nil {
+                    Button("Undo") { undoCarePlan() }
+                }
                 Button("OK") { }
             } message: {
                 Text("Your schedule and conditions have been updated.")
+            }
+            .sheet(isPresented: $showingApplySheet, onDismiss: { applyDraft = nil }) {
+                if let _ = applyDraft {
+                    CarePlanApplySheet(
+                        draft: Binding(
+                            get: { applyDraft! },
+                            set: { applyDraft = $0 }
+                        ),
+                        onApply: { draft in
+                            showingApplySheet = false
+                            applyCarePlan(draft)
+                        },
+                        onCancel: {
+                            showingApplySheet = false
+                        }
+                    )
+                }
             }
         }
     }
@@ -359,13 +382,13 @@ struct AICareAssistantView: View {
                 .font(BotanicaTheme.Typography.caption2)
                 .foregroundColor(BotanicaTheme.Colors.textSecondary)
             
-            Button(action: { applyCarePlan(plan) }) {
+            Button(action: { presentApplySheet(for: plan) }) {
                 HStack {
                     if applyingCarePlan {
                         ProgressView()
                             .scaleEffect(0.9)
                     }
-                    Text(applyingCarePlan ? "Applying..." : "Apply Care Plan")
+                    Text(applyingCarePlan ? "Applying..." : "Review & Apply")
                         .font(BotanicaTheme.Typography.button)
                 }
                 .frame(maxWidth: .infinity)
@@ -411,46 +434,50 @@ struct AICareAssistantView: View {
         }
     }
     
-    private func applyCarePlan(_ plan: PlantCareRecommendation) {
+    private func presentApplySheet(for plan: PlantCareRecommendation) {
+        applyDraft = makeApplyDraft(for: plan)
+        showingApplySheet = true
+    }
+    
+    private func applyCarePlan(_ draft: CarePlanApplyDraft) {
         applyingCarePlan = true
         errorMessage = nil
         
-        let wateringDays = parseIntervalDays(plan.wateringSchedule.frequency) ?? plant.wateringFrequency
-        let fertilizingDays = parseIntervalDays(plan.fertilizingSchedule.frequency) ?? plant.fertilizingFrequency
-        let repotMonths = parseIntervalMonths(plan.generalCare.repotting) ?? (plant.repotFrequencyMonths ?? 12)
-        let lightLevel = parseLightLevel(plan.lightRequirements.intensity) ?? plant.lightLevel
-        let humidity = parseHumidityPreference(plan.generalCare.humidity) ?? plant.humidityPreference
-        let temperatureRange = parseTemperatureRange(plan.generalCare.temperature) ?? plant.temperatureRange
+        undoSnapshot = captureUndoSnapshot()
         
-        plant.wateringFrequency = max(1, wateringDays)
-        plant.fertilizingFrequency = max(1, fertilizingDays)
-        plant.repotFrequencyMonths = max(1, repotMonths)
-        plant.lightLevel = lightLevel
-        plant.humidityPreference = min(max(humidity, 20), 90)
-        plant.temperatureRange = temperatureRange
+        if draft.applySchedule {
+            plant.wateringFrequency = max(1, draft.proposed.wateringFrequency)
+            plant.fertilizingFrequency = max(1, draft.proposed.fertilizingFrequency)
+            plant.repotFrequencyMonths = max(1, draft.proposed.repotFrequencyMonths)
+        }
         
-        let recommendation = CareCalculator.recommendedWateringAmount(
-            potSize: plant.potSize,
-            plantType: PlantWateringType.from(
-                commonNames: plant.commonNames,
-                family: plant.family,
-                scientificName: plant.scientificName
-            ),
-            season: .current,
-            environment: .indoor,
-            potMaterial: plant.potMaterial ?? .unknown,
-            lightLevel: plant.lightLevel,
-            potHeight: plant.potHeight
+        if draft.applyLight {
+            plant.lightLevel = draft.proposed.lightLevel
+        }
+        
+        if draft.applyHumidity {
+            plant.humidityPreference = min(max(draft.proposed.humidityPreference, 20), 90)
+        }
+        
+        if draft.applyTemperature {
+            plant.temperatureRange = draft.proposed.temperatureRange
+        }
+        
+        if draft.applyWaterAmount {
+            plant.recommendedWaterAmount = draft.proposed.recommendedWaterAmount
+            plant.waterUnit = draft.proposed.waterUnit
+        }
+        
+        upsertCarePlan(
+            draft.plan,
+            wateringDays: plant.wateringFrequency,
+            fertilizingDays: plant.fertilizingFrequency
         )
-        plant.recommendedWaterAmount = Double(recommendation.amount)
-        plant.waterUnit = waterUnit(for: recommendation.unit)
-        
-        upsertCarePlan(plan, wateringDays: plant.wateringFrequency, fertilizingDays: plant.fertilizingFrequency)
         
         do {
             try modelContext.save()
             HapticManager.shared.success()
-            showingApplySuccess = true
+            showingApplyConfirmation = true
         } catch {
             let message = ErrorMessageFormatter.userFriendlyMessage(for: error)
             errorMessage = message
@@ -485,7 +512,7 @@ struct AICareAssistantView: View {
         planModel.seasonalNotes = seasonalPieces
             .filter { !$0.isEmpty }
             .joined(separator: " | ")
-        planModel.aiExplanation = "Applied from AI Care Assistant."
+        planModel.aiExplanation = "Applied with custom selections from AI Care Assistant."
         planModel.userApproved = true
         planModel.lastUpdated = Date()
     }
@@ -699,6 +726,155 @@ struct AICareAssistantView: View {
         let range = NSRange(text.startIndex..<text.endIndex, in: text)
         return regex.firstMatch(in: text, options: [], range: range) != nil
     }
+
+    private func makeApplyDraft(for plan: PlantCareRecommendation) -> CarePlanApplyDraft {
+        let current = currentCarePlanValues()
+        let proposed = proposedCarePlanValues(for: plan, current: current)
+        return CarePlanApplyDraft(
+            plan: plan,
+            current: current,
+            proposed: proposed,
+            applySchedule: true,
+            applyLight: true,
+            applyHumidity: true,
+            applyTemperature: true,
+            applyWaterAmount: true
+        )
+    }
+    
+    private func currentCarePlanValues() -> CarePlanValues {
+        let rec = CareCalculator.recommendedWateringAmount(
+            potSize: plant.potSize,
+            plantType: PlantWateringType.from(
+                commonNames: plant.commonNames,
+                family: plant.family,
+                scientificName: plant.scientificName
+            ),
+            season: .current,
+            environment: .indoor,
+            potMaterial: plant.potMaterial ?? .unknown,
+            lightLevel: plant.lightLevel,
+            potHeight: plant.potHeight
+        )
+        
+        return CarePlanValues(
+            wateringFrequency: plant.wateringFrequency,
+            fertilizingFrequency: plant.fertilizingFrequency,
+            repotFrequencyMonths: plant.repotFrequencyMonths ?? 12,
+            lightLevel: plant.lightLevel,
+            humidityPreference: plant.humidityPreference,
+            temperatureRange: plant.temperatureRange,
+            recommendedWaterAmount: Double(rec.amount),
+            waterUnit: waterUnit(for: rec.unit)
+        )
+    }
+    
+    private func proposedCarePlanValues(for plan: PlantCareRecommendation, current: CarePlanValues) -> CarePlanValues {
+        let wateringDays = parseIntervalDays(plan.wateringSchedule.frequency) ?? current.wateringFrequency
+        let fertilizingDays = parseIntervalDays(plan.fertilizingSchedule.frequency) ?? current.fertilizingFrequency
+        let repotMonths = parseIntervalMonths(plan.generalCare.repotting) ?? current.repotFrequencyMonths
+        let lightLevel = parseLightLevel(plan.lightRequirements.intensity) ?? current.lightLevel
+        let humidity = parseHumidityPreference(plan.generalCare.humidity) ?? current.humidityPreference
+        let temperatureRange = parseTemperatureRange(plan.generalCare.temperature) ?? current.temperatureRange
+        
+        let rec = CareCalculator.recommendedWateringAmount(
+            potSize: plant.potSize,
+            plantType: PlantWateringType.from(
+                commonNames: plant.commonNames,
+                family: plant.family,
+                scientificName: plant.scientificName
+            ),
+            season: .current,
+            environment: .indoor,
+            potMaterial: plant.potMaterial ?? .unknown,
+            lightLevel: lightLevel,
+            potHeight: plant.potHeight
+        )
+        
+        return CarePlanValues(
+            wateringFrequency: max(1, wateringDays),
+            fertilizingFrequency: max(1, fertilizingDays),
+            repotFrequencyMonths: max(1, repotMonths),
+            lightLevel: lightLevel,
+            humidityPreference: humidity,
+            temperatureRange: temperatureRange,
+            recommendedWaterAmount: Double(rec.amount),
+            waterUnit: waterUnit(for: rec.unit)
+        )
+    }
+    
+    private func captureUndoSnapshot() -> CarePlanUndoSnapshot {
+        let carePlan = plant.carePlan
+        let planSnapshot = carePlan.map { plan in
+            CarePlanSnapshot(
+                source: plan.source,
+                wateringInterval: plan.wateringInterval,
+                fertilizingInterval: plan.fertilizingInterval,
+                lightRequirements: plan.lightRequirements,
+                humidityRequirements: plan.humidityRequirements,
+                temperatureRequirements: plan.temperatureRequirements,
+                seasonalNotes: plan.seasonalNotes,
+                aiExplanation: plan.aiExplanation,
+                lastUpdated: plan.lastUpdated,
+                userApproved: plan.userApproved
+            )
+        }
+        
+        return CarePlanUndoSnapshot(
+            wateringFrequency: plant.wateringFrequency,
+            fertilizingFrequency: plant.fertilizingFrequency,
+            repotFrequencyMonths: plant.repotFrequencyMonths,
+            lightLevel: plant.lightLevel,
+            humidityPreference: plant.humidityPreference,
+            temperatureRange: plant.temperatureRange,
+            recommendedWaterAmount: plant.recommendedWaterAmount,
+            waterUnit: plant.waterUnit,
+            hadCarePlan: carePlan != nil,
+            carePlanSnapshot: planSnapshot
+        )
+    }
+    
+    private func undoCarePlan() {
+        guard let snapshot = undoSnapshot else { return }
+        plant.wateringFrequency = snapshot.wateringFrequency
+        plant.fertilizingFrequency = snapshot.fertilizingFrequency
+        plant.repotFrequencyMonths = snapshot.repotFrequencyMonths
+        plant.lightLevel = snapshot.lightLevel
+        plant.humidityPreference = snapshot.humidityPreference
+        plant.temperatureRange = snapshot.temperatureRange
+        plant.recommendedWaterAmount = snapshot.recommendedWaterAmount
+        plant.waterUnit = snapshot.waterUnit
+        
+        if snapshot.hadCarePlan {
+            if let plan = plant.carePlan, let planSnapshot = snapshot.carePlanSnapshot {
+                plan.source = planSnapshot.source
+                plan.wateringInterval = planSnapshot.wateringInterval
+                plan.fertilizingInterval = planSnapshot.fertilizingInterval
+                plan.lightRequirements = planSnapshot.lightRequirements
+                plan.humidityRequirements = planSnapshot.humidityRequirements
+                plan.temperatureRequirements = planSnapshot.temperatureRequirements
+                plan.seasonalNotes = planSnapshot.seasonalNotes
+                plan.aiExplanation = planSnapshot.aiExplanation
+                plan.lastUpdated = planSnapshot.lastUpdated
+                plan.userApproved = planSnapshot.userApproved
+            }
+        } else if let plan = plant.carePlan {
+            modelContext.delete(plan)
+            plant.carePlan = nil
+        }
+        
+        do {
+            try modelContext.save()
+            HapticManager.shared.success()
+        } catch {
+            let message = ErrorMessageFormatter.userFriendlyMessage(for: error)
+            errorMessage = message
+            showingError = true
+            HapticManager.shared.error()
+        }
+        
+        undoSnapshot = nil
+    }
     
     private func askAIQuestion() {
         Task {
@@ -788,5 +964,178 @@ struct AICareAssistantView: View {
                 .font(BotanicaTheme.Typography.body)
                 .foregroundColor(BotanicaTheme.Colors.textPrimary)
         }
+    }
+}
+
+private struct CarePlanValues {
+    let wateringFrequency: Int
+    let fertilizingFrequency: Int
+    let repotFrequencyMonths: Int
+    let lightLevel: LightLevel
+    let humidityPreference: Int
+    let temperatureRange: TemperatureRange
+    let recommendedWaterAmount: Double
+    let waterUnit: WaterUnit
+}
+
+private struct CarePlanApplyDraft: Identifiable {
+    let id = UUID()
+    let plan: PlantCareRecommendation
+    let current: CarePlanValues
+    let proposed: CarePlanValues
+    var applySchedule: Bool
+    var applyLight: Bool
+    var applyHumidity: Bool
+    var applyTemperature: Bool
+    var applyWaterAmount: Bool
+    
+    var hasSelection: Bool {
+        applySchedule || applyLight || applyHumidity || applyTemperature || applyWaterAmount
+    }
+}
+
+private struct CarePlanSnapshot {
+    let source: CarePlanSource
+    let wateringInterval: Int
+    let fertilizingInterval: Int
+    let lightRequirements: String
+    let humidityRequirements: String
+    let temperatureRequirements: String
+    let seasonalNotes: String
+    let aiExplanation: String
+    let lastUpdated: Date
+    let userApproved: Bool
+}
+
+private struct CarePlanUndoSnapshot {
+    let wateringFrequency: Int
+    let fertilizingFrequency: Int
+    let repotFrequencyMonths: Int?
+    let lightLevel: LightLevel
+    let humidityPreference: Int
+    let temperatureRange: TemperatureRange
+    let recommendedWaterAmount: Double
+    let waterUnit: WaterUnit
+    let hadCarePlan: Bool
+    let carePlanSnapshot: CarePlanSnapshot?
+}
+
+private struct CarePlanApplySheet: View {
+    @Binding var draft: CarePlanApplyDraft
+    let onApply: (CarePlanApplyDraft) -> Void
+    let onCancel: () -> Void
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text("Choose what to update on this plant.")
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Section("Schedule") {
+                    Toggle("Apply schedule updates", isOn: $draft.applySchedule)
+                    if draft.applySchedule {
+                        comparisonRow(
+                            title: "Watering",
+                            current: "Every \(draft.current.wateringFrequency) days",
+                            proposed: "Every \(draft.proposed.wateringFrequency) days"
+                        )
+                        comparisonRow(
+                            title: "Fertilizing",
+                            current: "Every \(draft.current.fertilizingFrequency) days",
+                            proposed: "Every \(draft.proposed.fertilizingFrequency) days"
+                        )
+                        comparisonRow(
+                            title: "Repotting",
+                            current: repotText(draft.current.repotFrequencyMonths),
+                            proposed: repotText(draft.proposed.repotFrequencyMonths)
+                        )
+                    }
+                }
+                
+                Section("Conditions") {
+                    Toggle("Apply light recommendations", isOn: $draft.applyLight)
+                    if draft.applyLight {
+                        comparisonRow(
+                            title: "Light",
+                            current: draft.current.lightLevel.rawValue,
+                            proposed: draft.proposed.lightLevel.rawValue
+                        )
+                    }
+                    
+                    Toggle("Apply humidity recommendations", isOn: $draft.applyHumidity)
+                    if draft.applyHumidity {
+                        comparisonRow(
+                            title: "Humidity",
+                            current: "\(draft.current.humidityPreference)%",
+                            proposed: "\(draft.proposed.humidityPreference)%"
+                        )
+                    }
+                    
+                    Toggle("Apply temperature recommendations", isOn: $draft.applyTemperature)
+                    if draft.applyTemperature {
+                        comparisonRow(
+                            title: "Temperature",
+                            current: draft.current.temperatureRange.description,
+                            proposed: draft.proposed.temperatureRange.description
+                        )
+                    }
+                }
+                
+                Section("Water Amount") {
+                    Toggle("Update recommended amount", isOn: $draft.applyWaterAmount)
+                    if draft.applyWaterAmount {
+                        comparisonRow(
+                            title: "Amount",
+                            current: waterAmountText(draft.current),
+                            proposed: waterAmountText(draft.proposed)
+                        )
+                    }
+                }
+            }
+            .navigationTitle("Apply Care Plan")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") { onCancel() }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Apply") { onApply(draft) }
+                        .disabled(!draft.hasSelection)
+                }
+            }
+        }
+    }
+    
+    private func comparisonRow(title: String, current: String, proposed: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(.secondary)
+            HStack {
+                Text(current)
+                    .font(BotanicaTheme.Typography.body)
+                    .foregroundColor(.primary)
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text(proposed)
+                    .font(BotanicaTheme.Typography.body)
+                    .foregroundColor(BotanicaTheme.Colors.primary)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+    
+    private func repotText(_ months: Int) -> String {
+        months >= 12 ? "Every \(months / 12) yr" : "Every \(months) mo"
+    }
+    
+    private func waterAmountText(_ values: CarePlanValues) -> String {
+        let amount = Int(values.recommendedWaterAmount)
+        return "\(amount) \(values.waterUnit.description)"
     }
 }

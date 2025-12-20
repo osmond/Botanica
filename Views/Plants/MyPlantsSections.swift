@@ -4,53 +4,37 @@ import SwiftUI
 struct CollectionInsightsHeaderView: View {
     let plantsCount: Int
     let collectionHealthPercentage: Int
-    let todaysCareCount: Int
+    let weeklyAddedCount: Int
+    let monthlyAddedCount: Int
     let insight: String
     let summary: String
-    let chips: [SmartChip]
-    let onChipTap: (SmartChip) -> Void
-    let setHealthyFilter: () -> Void
+    let chips: [CollectionFilterChip]
     let onClearFilter: () -> Void
     let activeFilterTitle: String?
     
     var body: some View {
         VStack(spacing: BotanicaTheme.Spacing.lg) {
             HStack(spacing: BotanicaTheme.Spacing.lg) {
-                Button {
-                    onChipTap(SmartChip(title: "All Plants", count: plantsCount, filter: nil, isSelected: false))
-                } label: {
-                    ModernStatCard(
-                        title: "Plants",
-                        value: "\(plantsCount)",
-                        icon: "leaf.fill",
-                        color: BotanicaTheme.Colors.leafGreen
-                    )
-                }
-                .buttonStyle(.plain)
+                ModernStatCard(
+                    title: "Plants",
+                    value: "\(plantsCount)",
+                    icon: "leaf.fill",
+                    color: BotanicaTheme.Colors.leafGreen
+                )
                 
-                Button {
-                    setHealthyFilter()
-                } label: {
-                    ModernStatCard(
-                        title: "Healthy",
-                        value: "\(collectionHealthPercentage)%",
-                        icon: "heart.fill",
-                        color: BotanicaTheme.Colors.success
-                    )
-                }
-                .buttonStyle(.plain)
+                ModernStatCard(
+                    title: "Healthy",
+                    value: "\(collectionHealthPercentage)%",
+                    icon: "heart.fill",
+                    color: BotanicaTheme.Colors.success
+                )
                 
-                Button {
-                    onChipTap(SmartChip(title: "Due Today", count: todaysCareCount, filter: .dueToday, isSelected: false))
-                } label: {
-                    ModernStatCard(
-                        title: "Care Today",
-                        value: "\(todaysCareCount)",
-                        icon: "drop.fill",
-                        color: todaysCareCount > 0 ? BotanicaTheme.Colors.waterBlue : BotanicaTheme.Colors.textTertiary
-                    )
-                }
-                .buttonStyle(.plain)
+                ModernStatCard(
+                    title: addedTitle,
+                    value: "\(addedValue)",
+                    icon: addedIcon,
+                    color: addedValue > 0 ? BotanicaTheme.Colors.terracotta : BotanicaTheme.Colors.textTertiary
+                )
             }
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
@@ -75,12 +59,12 @@ struct CollectionInsightsHeaderView: View {
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: BotanicaTheme.Spacing.md) {
-                        ForEach(chips, id: \.title) { chip in
+                        ForEach(visibleChips, id: \.id) { chip in
                             QuickFilterPill(
                                 title: chip.title,
                                 count: chip.count,
                                 isSelected: chip.isSelected,
-                                action: { onChipTap(chip) }
+                                action: chip.action
                             )
                         }
                     }
@@ -95,15 +79,31 @@ struct CollectionInsightsHeaderView: View {
         }
         .padding(.horizontal, BotanicaTheme.Spacing.lg)
     }
+    
+    private var addedTitle: String {
+        weeklyAddedCount > 0 ? "Added" : "New this month"
+    }
+    
+    private var addedValue: Int {
+        weeklyAddedCount > 0 ? weeklyAddedCount : monthlyAddedCount
+    }
+    
+    private var addedIcon: String {
+        weeklyAddedCount > 0 ? "calendar.badge.plus" : "calendar"
+    }
+    
+    private var visibleChips: [CollectionFilterChip] {
+        guard activeFilterTitle != nil else { return chips }
+        return chips.filter { $0.id == "all" || $0.isSelected }
+    }
 }
 
-struct SmartChip {
+struct CollectionFilterChip {
+    let id: String
     let title: String
     let count: Int
-    let filter: CareNeededFilter?
     let isSelected: Bool
-    
-    var chipTitle: String { title }
+    let action: () -> Void
 }
 
 struct CareRemindersSectionView: View {

@@ -167,7 +167,7 @@ struct AIHubView: View {
             items.append(InsightItem(
                 title: "Care due now",
                 subtitle: "\(dueCount) plants are due today or overdue.",
-                evidence: "Based on schedules and last logged care.",
+                evidence: "Based on schedules and \(careEventsInRange.count) logs in the last 30 days.",
                 icon: "calendar.badge.clock",
                 color: BotanicaTheme.Colors.warning,
                 destination: .careFocus
@@ -179,7 +179,7 @@ struct AIHubView: View {
             items.append(InsightItem(
                 title: "Health check needed",
                 subtitle: "\(attentionCount) plants are marked as needing attention.",
-                evidence: "Based on your health status entries.",
+                evidence: "Based on \(attentionCount) health status updates.",
                 icon: "exclamationmark.triangle.fill",
                 color: BotanicaTheme.Colors.warning,
                 destination: .attention
@@ -190,7 +190,7 @@ struct AIHubView: View {
             items.append(InsightItem(
                 title: "No care logged recently",
                 subtitle: "There are no care logs in the last 30 days.",
-                evidence: "Based on your care history.",
+                evidence: "0 logs across \(plants.count) plants in 30 days.",
                 icon: "clock.arrow.circlepath",
                 color: BotanicaTheme.Colors.waterBlue,
                 destination: .logCare
@@ -201,7 +201,7 @@ struct AIHubView: View {
             items.append(InsightItem(
                 title: "\(BotanicalSeason.current.rawValue) guidance",
                 subtitle: BotanicalSeason.current.careModifications,
-                evidence: "General seasonal guidance. Review each plant before changing schedules.",
+                evidence: "Seasonal guidance, not plant-specific. Review before applying.",
                 icon: seasonalIcon,
                 color: BotanicalSeason.current.primaryColor,
                 destination: .seasonal

@@ -118,6 +118,27 @@ struct AddCareEventView: View {
                                 .foregroundColor(.secondary)
                         }
                         
+                        if !recentAmounts.isEmpty {
+                            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+                                Text("Recent presets")
+                                    .font(BotanicaTheme.Typography.caption)
+                                    .foregroundColor(.secondary)
+                                LazyVGrid(
+                                    columns: [GridItem(.adaptive(minimum: 100), spacing: 8)],
+                                    alignment: .leading,
+                                    spacing: 8
+                                ) {
+                                    ForEach(recentAmounts, id: \.self) { value in
+                                        Button("\(Int(round(value))) \(amountUnit)") {
+                                            amount = value
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .tint(BotanicaTheme.Colors.primary)
+                                    }
+                                }
+                            }
+                        }
+                        
                         if selectedType == .watering || selectedType == .fertilizing {
                             Button("Use Recommended Amount") {
                                 useRecommendedAmount()
@@ -237,6 +258,23 @@ struct AddCareEventView: View {
         case .repotting, .pruning, .inspection, .cleaning, .rotating, .misting:
             break
         }
+    }
+    
+    private var recentAmounts: [Double] {
+        guard selectedType == .watering || selectedType == .fertilizing else { return [] }
+        let values = plant.careEvents
+            .filter { $0.type == selectedType }
+            .sorted { $0.date > $1.date }
+            .compactMap { $0.amount }
+        var seen: Set<Double> = []
+        var results: [Double] = []
+        for value in values {
+            guard !seen.contains(value) else { continue }
+            seen.insert(value)
+            results.append(value)
+            if results.count == 3 { break }
+        }
+        return results
     }
     
     private var amountUnit: String {

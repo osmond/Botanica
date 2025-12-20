@@ -27,6 +27,7 @@ struct PlantDetailView: View {
     @State private var showingDeletePlantConfirmation = false
     @State private var scheduleExpanded = false
     @State private var conditionsExpanded = false
+    @State private var showingCarePlanAssistant = false
 
     private let sectionGap: CGFloat = 24
     private let rowGap: CGFloat = 10
@@ -363,6 +364,7 @@ struct PlantDetailView: View {
             logCareSection
             careHistorySection
             careScheduleSection
+            carePlanSection
             growingConditionsSection
         }
     }
@@ -634,6 +636,50 @@ extension PlantDetailView {
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
+        }
+    }
+    
+    private var carePlanSection: some View {
+        VStack(alignment: .leading, spacing: sectionHeaderGap) {
+            sectionHeaderRow("Care Plan")
+            
+            if let plan = plant.carePlan {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+                    HStack(spacing: BotanicaTheme.Spacing.sm) {
+                        Image(systemName: plan.source.icon)
+                            .foregroundStyle(BotanicaTheme.Colors.primary)
+                        Text(plan.source.rawValue)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                        Spacer()
+                        Text(shortDateFormatter.string(from: plan.lastUpdated))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    }
+                    
+                    Text("Water every \(plan.wateringInterval) days · Fertilize every \(plan.fertilizingInterval) days")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                }
+                .padding(BotanicaTheme.Spacing.md)
+                .background(
+                    RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                )
+            } else {
+                Text("No care plan applied yet.")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            }
+            
+            Button(plant.carePlan == nil ? "Create AI Care Plan" : "Review in AI") {
+                showingCarePlanAssistant = true
+            }
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(BotanicaTheme.Colors.primary)
+        }
+        .sheet(isPresented: $showingCarePlanAssistant) {
+            AICareAssistantView(plant: plant)
         }
     }
     
