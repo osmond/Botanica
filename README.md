@@ -45,17 +45,6 @@ The app runs fully without an OpenAI key.
 - Notification controls and scheduling.
 - Theme and app settings.
 
-## Screenshots
-### Core App Views
-| My Plants | Plant Detail | Today |
-| --- | --- | --- |
-| <img src="screenshots/Simulator Screenshot - iPhone 16e - 2025-12-21 at 07.35.48.png" width="240" alt="My Plants" /><br><sub>My Plants overview</sub> | <img src="screenshots/Simulator Screenshot - iPhone 16e - 2025-12-21 at 07.36.21.png" width="240" alt="Plant Detail" /><br><sub>Plant detail and schedule</sub> | <img src="screenshots/Simulator Screenshot - iPhone 16e - 2025-12-21 at 07.37.42.png" width="240" alt="Today" /><br><sub>Today summary</sub> |
-
-### AI and Insights
-| AI Hub | Plant Identification | Health Analysis |
-| --- | --- | --- |
-| <img src="screenshots/Simulator Screenshot - iPhone 16e - 2025-12-21 at 07.36.46.png" width="240" alt="AI Hub" /><br><sub>AI hub and insights</sub> | <img src="screenshots/Simulator Screenshot - iPhone 16e - 2025-12-21 at 07.38.08.png" width="240" alt="Plant Identification" /><br><sub>AI plant identification</sub> | <img src="screenshots/Simulator Screenshot - iPhone 16e - 2025-12-21 at 07.38.58.png" width="240" alt="Health Analysis" /><br><sub>Health analysis entry</sub> |
-
 ## Design Philosophy
 Botanica aims to be calm, non-gamified, and easy to stick with. Clarity over density, with gentle prompts instead of pressure.
 
