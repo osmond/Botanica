@@ -66,6 +66,33 @@ enum DataMigrationService {
         print("🔁 Repot defaults migration complete. Updated: \(updated)")
     }
 
+    /// Ensures watering/fertilizing frequencies are at least 1 day.
+    static func migrateCareFrequencyMinimumsIfNeeded(context: ModelContext) async {
+        let flagKey = "migrated_care_frequency_minimums_v1"
+        if UserDefaults.standard.bool(forKey: flagKey) { return }
+
+        let descriptor = FetchDescriptor<Plant>()
+        guard let plants = try? context.fetch(descriptor) else { return }
+
+        var updated = 0
+        for plant in plants {
+            var touched = false
+            if plant.wateringFrequency < 1 {
+                plant.wateringFrequency = 1
+                touched = true
+            }
+            if plant.fertilizingFrequency < 1 {
+                plant.fertilizingFrequency = 1
+                touched = true
+            }
+            if touched { updated += 1 }
+        }
+
+        do { try context.save() } catch { }
+        UserDefaults.standard.set(true, forKey: flagKey)
+        print("🔁 Care frequency migration complete. Updated: \(updated)")
+    }
+
     /// Extracts pot diameter and height from notes; returns (diameterInches, heightInches, cleanedNotes)
     private static func extractPotDimensionsAndCleanNotes(from notes: String) -> (Int?, Int?, String) {
         // Example fragments to catch:

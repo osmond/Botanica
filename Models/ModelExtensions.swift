@@ -149,8 +149,10 @@ extension Plant {
         let recentEvents = careEvents.filter { $0.date >= thirtyDaysAgo }
         
         // Calculate expected events (simplified calculation)
-        let expectedWaterings = 30 / wateringFrequency
-        let expectedFertilizings = max(1, 30 / fertilizingFrequency)
+        let safeWateringFrequency = max(1, wateringFrequency)
+        let safeFertilizingFrequency = max(1, fertilizingFrequency)
+        let expectedWaterings = 30 / safeWateringFrequency
+        let expectedFertilizings = max(1, 30 / safeFertilizingFrequency)
         let totalExpected = expectedWaterings + expectedFertilizings
         
         guard totalExpected > 0 else { return 0.0 }

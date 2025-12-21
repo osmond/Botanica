@@ -31,10 +31,12 @@ struct RootBootstrapView: View {
             loadState = .loading
             lastError = nil
         }
-        
+#if DEBUG
         await DevBlossomSeeder.seedIfNeeded(context: modelContext)
+#endif
         await DataMigrationService.migratePotSizeFromNotesIfNeeded(context: modelContext)
         await DataMigrationService.migrateRepotDefaultsIfNeeded(context: modelContext)
+        await DataMigrationService.migrateCareFrequencyMinimumsIfNeeded(context: modelContext)
         await MainActor.run {
             loadState = .loaded
         }
