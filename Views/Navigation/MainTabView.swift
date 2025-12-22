@@ -39,13 +39,15 @@ struct MainTabView: View {
                     .tag(Tab.settings)
             }
             
-            FloatingActionButton(icon: "plus") {
-                coordinator.handleAddButtonTap()
+            if coordinator.selectedTab == .plants {
+                FloatingActionButton(icon: "plus") {
+                    coordinator.handleAddButtonTap()
+                }
+                .padding(.trailing, BotanicaTheme.Spacing.lg)
+                .padding(.bottom, BotanicaTheme.Spacing.xl)
+                .accessibilityLabel("Add new plant")
+                .accessibilityHint("Choose AI identification or add manually")
             }
-            .padding(.trailing, BotanicaTheme.Spacing.lg)
-            .padding(.bottom, BotanicaTheme.Spacing.xl)
-            .accessibilityLabel("Add new plant")
-            .accessibilityHint("Choose AI identification or add manually")
         }
         .environmentObject(coordinator)
         .tint(BotanicaTheme.Colors.primary)
@@ -206,13 +208,18 @@ struct TodayView: View {
         let cal = Calendar.current
         return upcomingItems.filter { cal.isDateInToday($0.date) && !isOverdue($0) }
     }
+
+    private var tomorrowItems: [SyntheticUpcoming] {
+        let cal = Calendar.current
+        return upcomingItems.filter { cal.isDateInTomorrow($0.date) && !isOverdue($0) }
+    }
     
     private var upcomingItemsNextWeek: [SyntheticUpcoming] {
         let cal = Calendar.current
         let start = cal.startOfDay(for: Date())
         let end = cal.date(byAdding: .day, value: 7, to: start) ?? start
         return upcomingItems.filter { $0.date > start && $0.date <= end }
-            .filter { !cal.isDateInToday($0.date) }
+            .filter { !cal.isDateInToday($0.date) && !cal.isDateInTomorrow($0.date) }
     }
     
     var body: some View {
@@ -222,7 +229,7 @@ struct TodayView: View {
                     TodaySummaryCard(
                         overdue: overdueItems.count,
                         dueToday: dueTodayItems.count,
-                        upcoming: upcomingItemsNextWeek.count
+                        upcoming: upcomingItemsNextWeek.count + tomorrowItems.count
                     )
                 }
                 .listRowBackground(Color.clear)
@@ -288,6 +295,19 @@ struct TodayView: View {
                         Text("You are all caught up today.")
                             .font(BotanicaTheme.Typography.body)
                             .foregroundColor(.secondary)
+                    }
+                }
+
+                if !tomorrowItems.isEmpty {
+                    Section(header: Text("Tomorrow").font(BotanicaTheme.Typography.headline)) {
+                        ForEach(tomorrowItems) { item in
+                            NavigationLink(destination: PlantDetailView(plant: item.plant)) {
+                                ActivityRow(item: .upcoming(item)) { upcoming in
+                                    logUpcoming(upcoming)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
                 
