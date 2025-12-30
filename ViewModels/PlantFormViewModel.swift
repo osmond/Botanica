@@ -98,12 +98,10 @@ final class PlantFormViewModel: ViewModel {
         context.insert(plant)
         
         for (index, data) in data.photosData.enumerated() {
-            let photo = Photo(
-                imageData: data,
-                caption: index == 0 ? "Main photo" : "",
-                isPrimary: index == 0
+            let photo = plant.addPhoto(
+                from: data,
+                caption: index == 0 ? "Main photo" : ""
             )
-            photo.plant = plant
             context.insert(photo)
         }
         
@@ -145,13 +143,17 @@ final class PlantFormViewModel: ViewModel {
         plant.lastRepotted = data.lastRepotted
         
         if !data.photosData.isEmpty {
+            var needsPrimary = plant.photos.first(where: { $0.isPrimary }) == nil
             for (index, data) in data.photosData.enumerated() {
-                let photo = Photo(
-                    imageData: data,
+                let shouldBePrimary = needsPrimary && index == 0
+                let photo = plant.addPhoto(
+                    from: data,
                     caption: index == 0 ? "Main photo" : "",
-                    isPrimary: index == 0
+                    isPrimary: shouldBePrimary ? true : nil
                 )
-                photo.plant = plant
+                if shouldBePrimary {
+                    needsPrimary = false
+                }
                 context.insert(photo)
             }
         }

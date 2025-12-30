@@ -93,13 +93,30 @@ final class NotificationManager: ObservableObject {
     // MARK: - Private Scheduling Methods
     
     private func scheduleWateringNotifications(for plant: Plant) async {
-        let lastWatering = plant.lastCareEvent(of: .watering)?.date ?? plant.dateAdded
+        let lastWatering = plant.lastCareEvent(of: .watering)?.date
+            ?? plant.lastWatered
+            ?? plant.dateAdded
         let nextWateringDate = Calendar.current.date(byAdding: .day, value: plant.wateringFrequency, to: lastWatering) ?? Date()
         let wateringRec = plant.recommendedWateringAmount
+        let now = Date()
+        
+        if nextWateringDate <= now {
+            let overdueDate = Calendar.current.date(byAdding: .minute, value: 1, to: now) ?? now.addingTimeInterval(60)
+            await scheduleNotification(
+                identifier: "watering_overdue_\(plant.id.uuidString)",
+                title: "🚨 \(plant.displayName) needs water now!",
+                body: "Your \(plant.displayName) is overdue for watering. Give it \(wateringRec.amount)\(wateringRec.unit) now!",
+                date: overdueDate,
+                plant: plant,
+                careType: .watering,
+                isOverdue: true
+            )
+            return
+        }
         
         // Schedule reminder notification (day before due)
         if let reminderDate = Calendar.current.date(byAdding: .day, value: -1, to: nextWateringDate),
-           reminderDate > Date() {
+           reminderDate > now {
             await scheduleNotification(
                 identifier: "watering_\(plant.id.uuidString)",
                 title: "💧 \(plant.displayName) needs water soon",
@@ -110,28 +127,43 @@ final class NotificationManager: ObservableObject {
             )
         }
         
-        // Schedule overdue notification
-        if nextWateringDate > Date() {
-            await scheduleNotification(
-                identifier: "watering_overdue_\(plant.id.uuidString)",
-                title: "🚨 \(plant.displayName) needs water now!",
-                body: "Your \(plant.displayName) is overdue for watering. Give it \(wateringRec.amount)\(wateringRec.unit) now!",
-                date: nextWateringDate,
-                plant: plant,
-                careType: .watering,
-                isOverdue: true
-            )
-        }
+        // Schedule due notification
+        await scheduleNotification(
+            identifier: "watering_overdue_\(plant.id.uuidString)",
+            title: "🚨 \(plant.displayName) needs water now!",
+            body: "Your \(plant.displayName) is overdue for watering. Give it \(wateringRec.amount)\(wateringRec.unit) now!",
+            date: nextWateringDate,
+            plant: plant,
+            careType: .watering,
+            isOverdue: true
+        )
     }
     
     private func scheduleFertilizingNotifications(for plant: Plant) async {
-        let lastFertilizing = plant.lastCareEvent(of: .fertilizing)?.date ?? plant.dateAdded
+        let lastFertilizing = plant.lastCareEvent(of: .fertilizing)?.date
+            ?? plant.lastFertilized
+            ?? plant.dateAdded
         let nextFertilizingDate = Calendar.current.date(byAdding: .day, value: plant.fertilizingFrequency, to: lastFertilizing) ?? Date()
         let fertilizerRec = plant.recommendedFertilizerAmount
+        let now = Date()
+        
+        if nextFertilizingDate <= now {
+            let overdueDate = Calendar.current.date(byAdding: .minute, value: 1, to: now) ?? now.addingTimeInterval(60)
+            await scheduleNotification(
+                identifier: "fertilizing_overdue_\(plant.id.uuidString)",
+                title: "🍃 \(plant.displayName) needs fertilizer",
+                body: "Your \(plant.displayName) is ready for its next feeding. Use \(fertilizerRec.amount)\(fertilizerRec.unit) diluted fertilizer.",
+                date: overdueDate,
+                plant: plant,
+                careType: .fertilizing,
+                isOverdue: true
+            )
+            return
+        }
         
         // Schedule reminder notification (3 days before due)
         if let reminderDate = Calendar.current.date(byAdding: .day, value: -3, to: nextFertilizingDate),
-           reminderDate > Date() {
+           reminderDate > now {
             await scheduleNotification(
                 identifier: "fertilizing_\(plant.id.uuidString)",
                 title: "🌱 \(plant.displayName) needs fertilizer soon",
@@ -142,18 +174,16 @@ final class NotificationManager: ObservableObject {
             )
         }
         
-        // Schedule overdue notification
-        if nextFertilizingDate > Date() {
-            await scheduleNotification(
-                identifier: "fertilizing_overdue_\(plant.id.uuidString)",
-                title: "🍃 \(plant.displayName) needs fertilizer",
-                body: "Your \(plant.displayName) is ready for its next feeding. Use \(fertilizerRec.amount)\(fertilizerRec.unit) diluted fertilizer.",
-                date: nextFertilizingDate,
-                plant: plant,
-                careType: .fertilizing,
-                isOverdue: true
-            )
-        }
+        // Schedule due notification
+        await scheduleNotification(
+            identifier: "fertilizing_overdue_\(plant.id.uuidString)",
+            title: "🍃 \(plant.displayName) needs fertilizer",
+            body: "Your \(plant.displayName) is ready for its next feeding. Use \(fertilizerRec.amount)\(fertilizerRec.unit) diluted fertilizer.",
+            date: nextFertilizingDate,
+            plant: plant,
+            careType: .fertilizing,
+            isOverdue: true
+        )
     }
     
     private func scheduleHealthCheckNotification(for plant: Plant) async {

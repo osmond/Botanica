@@ -104,8 +104,12 @@ struct AISettingsView: View {
                             .textFieldStyle(.roundedBorder)
                             .onChange(of: apiKey) { _, newValue in
                                 // Save to secure storage when changed
-                                if !newValue.isEmpty {
-                                    _ = SecureStorageHelper.set(newValue)
+                                let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if trimmed.isEmpty {
+                                    SecureStorageHelper.delete()
+                                    testResult = nil
+                                } else {
+                                    _ = SecureStorageHelper.set(trimmed)
                                 }
                             }
                         
@@ -266,18 +270,29 @@ struct AISettingsView: View {
         testingConnection = true
         testResult = nil
         
-        // Simulate API key validation with async/await
+        let trimmed = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            testingConnection = false
+            testResult = .failure("API key is empty")
+            HapticManager.shared.error()
+            return
+        }
+        
+        let client = OpenAIClient()
+        let messages = [OpenAIClient.ChatMessage(role: "user", content: "Ping")]
+
         Task {
-            try? await Task.sleep(for: .seconds(1))
-            
-            await MainActor.run {
-                testingConnection = false
-                
-                if apiKey.hasPrefix("sk-") && apiKey.count > 20 {
+            do {
+                _ = try await client.sendChat(messages: messages, temperature: 0, maxTokens: 5)
+                await MainActor.run {
+                    testingConnection = false
                     testResult = .success
                     HapticManager.shared.success()
-                } else {
-                    testResult = .failure("Invalid API key format")
+                }
+            } catch {
+                await MainActor.run {
+                    testingConnection = false
+                    testResult = .failure(error.localizedDescription)
                     HapticManager.shared.error()
                 }
             }

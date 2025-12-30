@@ -188,15 +188,15 @@ extension Plant {
     
     /// Returns days until next watering is due (negative if overdue)
     var wateringDueInDays: Int {
-        guard lastCareEvent(of: .watering) != nil else { return 0 }
         let daysSince = daysSinceLastWatering
+        guard daysSince >= 0 else { return 0 }
         return wateringFrequency - daysSince
     }
     
     /// Returns days until next fertilizing is due (negative if overdue)
     var fertilizingDueInDays: Int {
-        guard lastCareEvent(of: .fertilizing) != nil else { return 0 }
         let daysSince = daysSinceLastFertilizing
+        guard daysSince >= 0 else { return 0 }
         return fertilizingFrequency - daysSince
     }
     
