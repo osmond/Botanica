@@ -34,13 +34,17 @@ final class PlantDetailViewModel: ObservableObject {
     func quickWaterPlant(_ plant: Plant, context: ModelContext) {
         guard !isPerformingAction else { return }
         isPerformingAction = true
+        defer { isPerformingAction = false }
+        let recommendation = plant.recommendedWateringAmount
         let wateringEvent = CareEvent(
             type: .watering,
             date: Date(),
-            amount: Double(plant.recommendedWateringAmount.amount),
-            notes: "Quick watering - \(plant.recommendedWateringAmount.amount)\(plant.recommendedWateringAmount.unit)"
+            amount: Double(recommendation.amount),
+            unit: recommendation.unit,
+            notes: "Quick watering - \(recommendation.amount)\(recommendation.unit)"
         )
         wateringEvent.plant = plant
+        plant.lastWatered = wateringEvent.date
         context.insert(wateringEvent)
         do {
             try context.save()
@@ -50,18 +54,22 @@ final class PlantDetailViewModel: ObservableObject {
             actionError = error.localizedDescription
             HapticManager.shared.error()
         }
-        isPerformingAction = false
     }
     
     func quickFertilizePlant(_ plant: Plant, context: ModelContext) {
         guard !isPerformingAction else { return }
         isPerformingAction = true
+        defer { isPerformingAction = false }
+        let recommendation = plant.recommendedFertilizerAmount
         let fertilizingEvent = CareEvent(
             type: .fertilizing,
             date: Date(),
-            notes: "Quick fertilizing"
+            amount: recommendation.amount,
+            unit: recommendation.unit,
+            notes: "Quick fertilizing - \(String(format: "%.1f", recommendation.amount))\(recommendation.unit)"
         )
         fertilizingEvent.plant = plant
+        plant.lastFertilized = fertilizingEvent.date
         context.insert(fertilizingEvent)
         do {
             try context.save()
@@ -71,7 +79,6 @@ final class PlantDetailViewModel: ObservableObject {
             actionError = error.localizedDescription
             HapticManager.shared.error()
         }
-        isPerformingAction = false
     }
 
     func careState(
