@@ -24,7 +24,7 @@ struct MultiCareLogView: View {
                     if plants.isEmpty {
                         Text("Add plants to log care.")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     } else {
                         ForEach(plants) { plant in
                             Button {
@@ -36,11 +36,11 @@ struct MultiCareLogView: View {
                                             .font(BotanicaTheme.Typography.bodyEmphasized)
                                         Text(plant.scientificName)
                                             .font(BotanicaTheme.Typography.caption)
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                     }
                                     Spacer()
                                     Image(systemName: selectedPlantIDs.contains(plant.id) ? "checkmark.circle.fill" : "circle")
-                                        .foregroundColor(selectedPlantIDs.contains(plant.id) ? BotanicaTheme.Colors.primary : .secondary)
+                                        .foregroundColor(selectedPlantIDs.contains(plant.id) ? BotanicaTheme.Colors.primary : BotanicaTheme.Colors.textSecondary)
                                 }
                             }
                             .buttonStyle(.plain)
@@ -71,7 +71,7 @@ struct MultiCareLogView: View {
                         if useRecommended {
                             Text("Each plant will use its recommended amount.")
                                 .font(BotanicaTheme.Typography.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         } else {
                             HStack {
                                 Text("Amount")
@@ -92,11 +92,11 @@ struct MultiCareLogView: View {
                                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                                     Text("Recent presets")
                                         .font(BotanicaTheme.Typography.caption)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                     LazyVGrid(
-                                        columns: [GridItem(.adaptive(minimum: 100), spacing: 8)],
+                                        columns: [GridItem(.adaptive(minimum: 100), spacing: BotanicaTheme.Spacing.sm)],
                                         alignment: .leading,
-                                        spacing: 8
+                                        spacing: BotanicaTheme.Spacing.sm
                                     ) {
                                         ForEach(recentPresets, id: \.label) { preset in
                                             Button(preset.label) {
@@ -157,7 +157,7 @@ struct MultiCareLogView: View {
                 Button(selectedPlantIDs.count == plants.count ? "Clear" : "Select All") {
                     toggleSelectAll()
                 }
-                .font(.caption)
+                .font(BotanicaTheme.Typography.caption)
             }
         }
     }

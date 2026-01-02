@@ -12,7 +12,7 @@ struct PlantHealthSelectionView: View {
                 if plants.isEmpty {
                     VStack(spacing: BotanicaTheme.Spacing.md) {
                         Image(systemName: "leaf.fill")
-                            .font(.system(size: 60))
+                            .font(.system(size: BotanicaTheme.Sizing.iconJumbo))
                             .foregroundColor(BotanicaTheme.Colors.leafGreen)
                         
                         Text("No Plants Yet")
@@ -21,7 +21,7 @@ struct PlantHealthSelectionView: View {
                         
                         Text("Add your first plant to get started with AI health analysis")
                             .font(BotanicaTheme.Typography.body)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding()
@@ -61,49 +61,49 @@ struct PlantHealthCard: View {
             ZStack {
                 Circle()
                     .fill(BotanicaTheme.Colors.leafGreen.opacity(0.1))
-                    .frame(width: 60, height: 60)
+                    .frame(width: BotanicaTheme.Sizing.iconJumbo, height: BotanicaTheme.Sizing.iconJumbo)
                 
                 if let photoData = plant.photos.first?.imageData,
                    let uiImage = UIImage(data: photoData) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 60, height: 60)
+                        .frame(width: BotanicaTheme.Sizing.iconJumbo, height: BotanicaTheme.Sizing.iconJumbo)
                         .clipShape(Circle())
                 } else {
                     Image(systemName: "leaf.fill")
-                        .font(.title2)
+                        .font(BotanicaTheme.Typography.title2)
                         .foregroundColor(BotanicaTheme.Colors.leafGreen)
                 }
             }
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text(plant.displayName)
                     .font(BotanicaTheme.Typography.headline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 Text(plant.scientificName)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 
                 // Health status indicator
-                HStack(spacing: 8) {
+                HStack(spacing: BotanicaTheme.Spacing.sm) {
                     Circle()
                         .fill(plant.healthStatusColor)
                         .frame(width: 8, height: 8)
                     
                     Text(plant.healthStatus.rawValue)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
         .padding(BotanicaTheme.Spacing.md)
         .cardStyle()

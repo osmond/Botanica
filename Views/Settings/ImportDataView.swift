@@ -71,29 +71,25 @@ struct ImportDataView: View {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
                     HStack(alignment: .top, spacing: BotanicaTheme.Spacing.md) {
                         Image(systemName: "arrow.down.doc.fill")
-                            .font(.largeTitle)
+                            .font(BotanicaTheme.Typography.largeTitle)
                             .foregroundColor(BotanicaTheme.Colors.primary)
-                        VStack(alignment: .leading, spacing: 6) {
+                        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                             Text("Import from JSON")
                                 .font(BotanicaTheme.Typography.title2)
                                 .fontWeight(.semibold)
                             Text("Provide a JSON file with your plants, care history, reminders, and optional base64 photos.")
                                 .font(BotanicaTheme.Typography.body)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         }
                     }
                     Button("Choose JSON File") { showPicker() }
-                        .font(BotanicaTheme.Typography.headline)
-                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(BotanicaTheme.Spacing.md)
-                        .background(BotanicaTheme.Colors.primary)
-                        .cornerRadius(BotanicaTheme.CornerRadius.medium)
+                        .primaryButtonStyle()
                 }
                 .padding(.vertical, BotanicaTheme.Spacing.sm)
             }
             Section("Format") {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Requirements")
                         .font(BotanicaTheme.Typography.subheadline)
                     Text("• ISO 8601 dates (e.g., 2024-11-14T10:00:00Z)")
@@ -101,7 +97,7 @@ struct ImportDataView: View {
                     Text("• Photos as base64 data optional; large imports may be slow")
                 }
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
         }
     }
@@ -113,6 +109,7 @@ struct ImportDataView: View {
                 .scaleEffect(1.5)
             Text("Importing…")
                 .font(BotanicaTheme.Typography.title2)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             Spacer()
         }
         .padding(BotanicaTheme.Spacing.xl)
@@ -123,28 +120,30 @@ struct ImportDataView: View {
             Spacer()
             if let importError = importError {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 56))
-                    .foregroundColor(.red)
+                    .font(.system(size: BotanicaTheme.Sizing.iconStatus))
+                    .foregroundColor(BotanicaTheme.Colors.error)
                 Text("Import Failed")
                     .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.semibold)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 Text(importError)
                     .font(BotanicaTheme.Typography.body)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             } else if let result = result {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 56))
+                    .font(.system(size: BotanicaTheme.Sizing.iconStatus))
                     .foregroundColor(BotanicaTheme.Colors.leafGreen)
                 Text("Import Complete")
                     .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.semibold)
-                VStack(spacing: 4) {
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
+                VStack(spacing: BotanicaTheme.Spacing.xs) {
                     Text("\(result.plantsCreated) plants • \(result.careEventsCreated) care events")
                     Text("\(result.remindersCreated) reminders • \(result.photosCreated) photos")
                 }
                 .font(BotanicaTheme.Typography.body)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 if !result.notes.isEmpty {
                     List {
                         Section("Notes") {
@@ -155,8 +154,8 @@ struct ImportDataView: View {
                 }
             }
             Button("Done") { dismiss() }
-                .font(BotanicaTheme.Typography.subheadline)
-                .foregroundColor(BotanicaTheme.Colors.primary)
+                .frame(maxWidth: .infinity)
+                .secondaryButtonStyle()
             Spacer()
         }
         .padding(BotanicaTheme.Spacing.xl)

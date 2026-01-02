@@ -121,10 +121,10 @@ struct PhotoDetailView: View {
                     VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Taken")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         Text(photo.timestamp.formatted(.dateTime.month().day().year().hour().minute()))
                             .font(BotanicaTheme.Typography.body)
-                            .foregroundColor(.primary)
+                            .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     }
                     
                     Spacer()
@@ -132,21 +132,21 @@ struct PhotoDetailView: View {
                     VStack(alignment: .trailing, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Category")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
-                        HStack(spacing: 4) {
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
+                        HStack(spacing: BotanicaTheme.Spacing.xs) {
                             Image(systemName: photo.category.icon)
-                                .font(.caption)
+                                .font(BotanicaTheme.Typography.caption)
                             Text(photo.category.rawValue)
                                 .font(BotanicaTheme.Typography.body)
                         }
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     }
                 }
                 
                 if photo.isPrimary {
                     HStack {
                         Image(systemName: "star.fill")
-                            .font(.caption)
+                            .font(BotanicaTheme.Typography.caption)
                             .foregroundColor(BotanicaTheme.Colors.nutrientOrange)
                         Text("Primary Photo")
                             .font(BotanicaTheme.Typography.caption)
@@ -163,11 +163,11 @@ struct PhotoDetailView: View {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Caption")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     
                     Text(photo.caption)
                         .font(BotanicaTheme.Typography.body)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 }
                 .padding(BotanicaTheme.Spacing.md)
                 .background(BotanicaTheme.Colors.surface)
@@ -178,23 +178,23 @@ struct PhotoDetailView: View {
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                 Text("Plant")
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 
                 HStack {
                     Image(systemName: "leaf.fill")
-                        .font(.title2)
+                        .font(BotanicaTheme.Typography.title2)
                         .foregroundColor(BotanicaTheme.Colors.leafGreen)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(plant.displayName)
                             .font(BotanicaTheme.Typography.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(.primary)
+                            .foregroundColor(BotanicaTheme.Colors.textPrimary)
                         
                         if !plant.scientificName.isEmpty {
                             Text(plant.scientificName)
                                 .font(BotanicaTheme.Typography.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                 .italic()
                         }
                     }

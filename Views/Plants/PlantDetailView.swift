@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import UIKit
 
 struct PlantDetailView: View {
     let plant: Plant
@@ -20,7 +19,6 @@ struct PlantDetailView: View {
     @State private var showingAddCareEvent = false
     @State private var selectedTab = 0
     @State private var showingPhotoManager = false
-    @State private var referenceImage: UIImage?
     @State private var showingAddNote = false
     @State private var noteText: String = ""
     @State private var showAllHistory: Bool = false
@@ -29,7 +27,7 @@ struct PlantDetailView: View {
     @State private var conditionsExpanded = false
     @State private var showingCarePlanAssistant = false
 
-    private let sectionGap: CGFloat = 24
+    private let sectionGap: CGFloat = 20
     private let rowGap: CGFloat = 10
     private let sectionHeaderGap: CGFloat = 8
     
@@ -121,21 +119,15 @@ struct PlantDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: BotanicaTheme.Spacing.lg) {
-                    // Hero section with photo or gradient
-                    heroSection
-                        .padding(.bottom, -BotanicaTheme.CornerRadius.large)
+                VStack(spacing: BotanicaTheme.Spacing.section) {
+                    headerSection
                     
-                    // Today / primary actions
                     careStateCard
-                        .padding(.top, -BotanicaTheme.CornerRadius.large)
-                        .padding(.bottom, BotanicaTheme.Spacing.md)
+                        .padding(.bottom, BotanicaTheme.Spacing.sm)
                     
                     belowHeroSections
-                        .padding(.top, BotanicaTheme.Spacing.sm)
-                    
                 }
-                .padding(.horizontal, BotanicaTheme.Spacing.lg)
+                .padding(.horizontal, BotanicaTheme.Spacing.screenPadding)
                 .padding(.top, BotanicaTheme.Spacing.md)
                 .padding(.bottom, BotanicaTheme.Spacing.jumbo)
             }
@@ -164,7 +156,7 @@ struct PlantDetailView: View {
                         }
                     } label: {
                         Image(systemName: "ellipsis")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(BotanicaTheme.Typography.headlineLarge)
                             .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                     }
                 }
@@ -191,7 +183,7 @@ struct PlantDetailView: View {
                         .padding(.horizontal, BotanicaTheme.Spacing.sm)
                         .overlay(
                             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                                .stroke(Color.secondary.opacity(0.2))
+                                .stroke(BotanicaTheme.Colors.border.opacity(0.6))
                         )
                     
                     Spacer()
@@ -230,140 +222,90 @@ struct PlantDetailView: View {
     
     // MARK: - View Components
     
-    private var heroSection: some View {
-        let heroHeight: CGFloat = 210
-        let gradientHeight: CGFloat = 150
-        return ZStack(alignment: .topLeading) {
-            if let primaryPhoto = plant.primaryPhoto {
-                AsyncPlantImageFill(
-                    photo: primaryPhoto,
-                    cornerRadius: BotanicaTheme.CornerRadius.large
-                )
-                .frame(height: heroHeight)
-                .overlay(alignment: .bottom) {
-                    heroBottomGradient
-                        .frame(height: gradientHeight)
-                        .frame(maxWidth: .infinity, alignment: .bottom)
-                        .allowsHitTesting(false)
-                        .padding(.bottom, -1)
-                        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 6)
-                }
-            } else if let referenceImage {
-                Image(uiImage: referenceImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(height: heroHeight)
-                    .overlay(alignment: .bottom) {
-                        heroBottomGradient
-                            .frame(height: gradientHeight)
-                            .frame(maxWidth: .infinity, alignment: .bottom)
-                            .allowsHitTesting(false)
-                            .padding(.bottom, -1)
-                            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 6)
-                    }
-            } else {
-                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                    .fill(BotanicaTheme.Gradients.primary)
-                    .frame(height: heroHeight)
-                    .overlay {
-                        VStack(spacing: BotanicaTheme.Spacing.md) {
-                            Image(systemName: "camera.fill")
-                                .font(.system(size: 32, weight: .light))
-                                .foregroundStyle(.white.opacity(0.85))
-                            
-                            Text("Add Plant Photo")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.white)
-                        }
-                    }
-            }
-        }
-        .frame(height: heroHeight)
-        .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large))
-        .overlay(alignment: .topTrailing) {
-            if plant.primaryPhoto == nil, referenceImage != nil {
-                HStack(spacing: 4) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 10, weight: .medium))
-                    Text("AI")
-                        .font(.system(size: 10, weight: .bold))
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    BotanicaTheme.Colors.primary,
-                                    BotanicaTheme.Colors.leafGreen
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-                .foregroundColor(.white)
-                .padding(.top, BotanicaTheme.Spacing.sm)
-                .padding(.trailing, BotanicaTheme.Spacing.sm)
-            }
-        }
-        .overlay(alignment: .topLeading) {
-            statusChip
-                .padding(.top, BotanicaTheme.Spacing.sm)
-                .padding(.leading, BotanicaTheme.Spacing.sm)
-        }
-        .overlay(alignment: .bottomLeading) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(plant.displayName)
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
-                
-                Text("In your collection · \(plantAge)")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.9))
-                    .lineLimit(1)
-                
-                if let statusLine = primaryStatusLine {
-                    Text(statusLine)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.85))
-                        .lineLimit(1)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, BotanicaTheme.Spacing.lg)
-            .padding(.bottom, BotanicaTheme.Spacing.md)
-        }
-        .onTapGesture {
+    private var headerSection: some View {
+        Button {
             HapticManager.shared.light()
             showingPhotoManager = true
-        }
-        .task(id: plant.id) {
-            // Only try to fetch a reference image if the user hasn't added one.
-            if plant.primaryPhoto == nil, referenceImage == nil {
-                let descriptor = PlantImageDescriptor(
-                    id: plant.id,
-                    displayName: plant.displayName,
-                    scientificName: plant.scientificName,
-                    commonNames: plant.commonNames
+        } label: {
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                AsyncPlantThumbnail(
+                    photo: plant.primaryPhoto,
+                    plant: plant,
+                    size: 72,
+                    cornerRadius: BotanicaTheme.CornerRadius.medium
                 )
-                if let image = await PlantImageService.shared.referenceImage(for: descriptor) {
-                    await MainActor.run {
-                        referenceImage = image
+                
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+                    Text(plant.displayName)
+                        .font(BotanicaTheme.Typography.title2)
+                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                        .lineLimit(2)
+                    
+                    if !plant.location.isEmpty {
+                        Text(plant.location)
+                            .font(BotanicaTheme.Typography.callout)
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                            .lineLimit(1)
+                    }
+                    
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                        healthBadge
+                        Text("In your collection · \(plantAge)")
+                            .font(BotanicaTheme.Typography.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     }
                 }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(BotanicaTheme.Typography.captionEmphasized)
+                    .foregroundStyle(BotanicaTheme.Colors.textTertiary)
             }
+            .padding(BotanicaTheme.Spacing.cardPadding)
+            .background(
+                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
+                    .fill(BotanicaTheme.Colors.surfaceAlt)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var healthBadge: some View {
+        let color = healthStatusColor(for: plant.healthStatus)
+        return HStack(spacing: BotanicaTheme.Spacing.sm) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Text(plant.healthStatus.rawValue)
+                .font(BotanicaTheme.Typography.caption2Emphasized)
+                .foregroundStyle(color)
+        }
+        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+        .background(
+            Capsule()
+                .fill(color.opacity(0.12))
+        )
+    }
+
+    private func healthStatusColor(for status: HealthStatus) -> Color {
+        switch status {
+        case .excellent, .healthy:
+            return BotanicaTheme.Colors.success
+        case .fair:
+            return BotanicaTheme.Colors.warning
+        case .poor, .critical:
+            return BotanicaTheme.Colors.error
         }
     }
     
     private var belowHeroSections: some View {
         VStack(alignment: .leading, spacing: sectionGap) {
-            upNextSection
+            careOverviewSection
             logCareSection
             careHistorySection
-            careScheduleSection
             carePlanSection
             growingConditionsSection
         }
@@ -388,9 +330,16 @@ struct PlantDetailView: View {
             }
 
             if recentEvents.isEmpty {
-                Text("No care logged yet.")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+                    Text("No care logged yet.")
+                        .font(BotanicaTheme.Typography.callout)
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                    Button("Log first care") {
+                        showingAddCareEvent = true
+                    }
+                    .font(BotanicaTheme.Typography.calloutEmphasized)
+                    .foregroundStyle(BotanicaTheme.Colors.primary)
+                }
             } else {
                 VStack(alignment: .leading, spacing: rowGap) {
                     ForEach(recentEvents, id: \.id) { event in
@@ -436,14 +385,6 @@ struct PlantDetailView: View {
 // MARK: - New Card Stack Views
 
 extension PlantDetailView {
-    private var primaryStatusLine: String? {
-        if plant.healthStatus == .excellent || plant.healthStatus == .healthy {
-            return nil
-        }
-        
-        return plant.healthStatus.rawValue
-    }
-    
     private var careStateCard: some View {
         CareStateCard(
             statusType: careState.statusType,
@@ -462,23 +403,24 @@ extension PlantDetailView {
             }
         }
     }
-
-    private var statusChip: some View {
-        let label = careState.statusType == .needsAction ? "Needs care" : "All set"
-        let color = careState.statusType == .needsAction ? BotanicaTheme.Colors.warning : BotanicaTheme.Colors.success
-
-        return Text(label)
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                Capsule()
-                    .fill(color.opacity(0.9))
-            )
-    }
     
-    private var upNextSection: some View {
+    private var careOverviewSection: some View {
+        VStack(alignment: .leading, spacing: sectionHeaderGap) {
+            sectionHeaderRow("Care Overview")
+
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
+                upNextContent
+                careScheduleContent
+            }
+            .padding(BotanicaTheme.Spacing.cardPadding)
+            .background(
+                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
+                    .fill(BotanicaTheme.Colors.surfaceAlt)
+            )
+        }
+    }
+
+    private var upNextContent: some View {
         let upcomingItems: [UpcomingItem] = [
             ("Water", nextWaterDate, nil),
             ("Fertilize", nextFertilizeDate, nil),
@@ -493,29 +435,32 @@ extension PlantDetailView {
         let limited = Array(upcomingItems.prefix(2))
 
         return VStack(alignment: .leading, spacing: sectionHeaderGap) {
-            sectionHeaderRow("Up Next")
+            Text("Up Next")
+                .font(BotanicaTheme.Typography.captionEmphasized)
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
 
             if limited.isEmpty {
                 Text("Nothing else is queued.")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(BotanicaTheme.Typography.callout)
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
             } else {
                 VStack(alignment: .leading, spacing: rowGap) {
                     ForEach(limited) { item in
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                             HStack(spacing: BotanicaTheme.Spacing.sm) {
                                 Text(item.title)
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(BotanicaTheme.Typography.labelEmphasized)
                                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                                 Spacer()
                                 Text(nextDateText(for: item.date))
-                                    .font(.system(size: 13, weight: .medium))
+                                    .font(BotanicaTheme.Typography.callout)
                                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                             }
 
                             if let note = item.note {
                                 Text(note)
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(BotanicaTheme.Typography.caption)
+                                    .fontWeight(.medium)
                                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                             }
                         }
@@ -531,30 +476,32 @@ extension PlantDetailView {
         } label: {
             HStack(spacing: BotanicaTheme.Spacing.sm) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(BotanicaTheme.Colors.primary)
-                VStack(alignment: .leading, spacing: 4) {
+                    .foregroundStyle(.white)
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text("Log care")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                        .font(BotanicaTheme.Typography.button)
+                        .foregroundStyle(.white)
                     Text("Record watering, feeding, or other care")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                        .font(BotanicaTheme.Typography.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.white.opacity(0.85))
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
+                    .font(BotanicaTheme.Typography.captionEmphasized)
+                    .foregroundStyle(.white.opacity(0.85))
             }
-            .padding(BotanicaTheme.Spacing.md)
+            .padding(BotanicaTheme.Spacing.cardPadding)
+            .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                    .fill(Color(.secondarySystemGroupedBackground))
+                    .fill(BotanicaTheme.Gradients.primary)
             )
         }
         .buttonStyle(.plain)
     }
     
-    private var careScheduleSection: some View {
+    private var careScheduleContent: some View {
         let repotMonths = plant.repotFrequencyMonths ?? 12
         let repotText = repotMonths >= 12 ? "Repot yearly" : "Repot every \(repotMonths) months"
         let summary = "Water every \(plant.wateringFrequency) days · Fertilize every \(plant.fertilizingFrequency) days · \(repotText)"
@@ -566,17 +513,19 @@ extension PlantDetailView {
                 }
             } label: {
                 HStack(spacing: BotanicaTheme.Spacing.sm) {
-                    sectionHeader("Care Schedule")
+                    Text("Care Schedule")
+                        .font(BotanicaTheme.Typography.captionEmphasized)
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     Spacer()
                     Image(systemName: scheduleExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(BotanicaTheme.Typography.captionEmphasized)
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
                 }
             }
             .buttonStyle(.plain)
 
             Text(summary)
-                .font(.system(size: 13, weight: .medium))
+                .font(BotanicaTheme.Typography.callout)
                 .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 .lineLimit(1)
 
@@ -589,7 +538,7 @@ extension PlantDetailView {
                     Button("Edit Schedule") {
                         showingEditPlant = true
                     }
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(BotanicaTheme.Typography.labelEmphasized)
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -611,14 +560,14 @@ extension PlantDetailView {
                     sectionHeader("Growing Conditions")
                     Spacer()
                     Image(systemName: conditionsExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(BotanicaTheme.Typography.captionEmphasized)
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
                 }
             }
             .buttonStyle(.plain)
 
             Text(summary)
-                .font(.system(size: 13, weight: .medium))
+                .font(BotanicaTheme.Typography.callout)
                 .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 .lineLimit(1)
 
@@ -631,7 +580,7 @@ extension PlantDetailView {
                     Button("Edit Conditions") {
                         showingEditPlant = true
                     }
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(BotanicaTheme.Typography.labelEmphasized)
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -649,33 +598,34 @@ extension PlantDetailView {
                         Image(systemName: plan.source.icon)
                             .foregroundStyle(BotanicaTheme.Colors.primary)
                         Text(plan.source.rawValue)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(BotanicaTheme.Typography.labelEmphasized)
                             .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                         Spacer()
                         Text(shortDateFormatter.string(from: plan.lastUpdated))
-                            .font(.system(size: 12, weight: .medium))
+                            .font(BotanicaTheme.Typography.caption)
+                            .fontWeight(.medium)
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     }
                     
                     Text("Water every \(plan.wateringInterval) days · Fertilize every \(plan.fertilizingInterval) days")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(BotanicaTheme.Typography.callout)
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 }
-                .padding(BotanicaTheme.Spacing.md)
+                .padding(BotanicaTheme.Spacing.cardPadding)
                 .background(
                     RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                        .fill(Color(.secondarySystemGroupedBackground))
+                        .fill(BotanicaTheme.Colors.surfaceAlt)
                 )
             } else {
                 Text("No care plan applied yet.")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(BotanicaTheme.Typography.callout)
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
             }
             
             Button(plant.carePlan == nil ? "Create AI Care Plan" : "Review in AI") {
                 showingCarePlanAssistant = true
             }
-            .font(.system(size: 14, weight: .semibold))
+            .font(BotanicaTheme.Typography.labelEmphasized)
             .foregroundStyle(BotanicaTheme.Colors.primary)
         }
         .sheet(isPresented: $showingCarePlanAssistant) {
@@ -684,12 +634,13 @@ extension PlantDetailView {
     }
     
     private func infoRow(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
             Text(title)
-                .font(.system(size: 13, weight: .semibold))
+                .font(BotanicaTheme.Typography.calloutEmphasized)
                 .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.7))
             Text(value)
-                .font(.system(size: 14, weight: .medium))
+                .font(BotanicaTheme.Typography.label)
+                .fontWeight(.medium)
                 .foregroundStyle(BotanicaTheme.Colors.textPrimary)
         }
     }
@@ -705,11 +656,11 @@ extension PlantDetailView {
             if let trailingTitle {
                 if let action {
                     Button(trailingTitle, action: action)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(BotanicaTheme.Typography.captionEmphasized)
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 } else {
                     Text(trailingTitle)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(BotanicaTheme.Typography.captionEmphasized)
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 }
             }
@@ -723,10 +674,11 @@ extension PlantDetailView {
             }()
             
             Text(amountText != nil ? "\(event.type.rawValue) · \(amountText!)" : event.type.rawValue)
-                .font(.system(size: 14, weight: .semibold))
+                .font(BotanicaTheme.Typography.labelEmphasized)
                 .foregroundStyle(BotanicaTheme.Colors.textPrimary)
             Text(shortDateFormatter.string(from: event.date))
-                .font(.system(size: 12, weight: .medium))
+                .font(BotanicaTheme.Typography.caption)
+                .fontWeight(.medium)
                 .foregroundStyle(BotanicaTheme.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -735,7 +687,7 @@ extension PlantDetailView {
     
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: 12, weight: .semibold))
+            .font(BotanicaTheme.Typography.captionEmphasized)
             .textCase(.uppercase)
             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
     }
@@ -760,20 +712,6 @@ extension PlantDetailView {
 }
 
 // MARK: - Helper Views
-
-extension PlantDetailView {
-    private var heroBottomGradient: some View {
-        LinearGradient(
-            colors: [
-                .black.opacity(0.75),
-                .black.opacity(0.4),
-                .clear
-            ],
-            startPoint: .bottom,
-            endPoint: .top
-        )
-    }
-}
 
 struct QuickActionButton: View {
     let icon: String
@@ -832,19 +770,20 @@ struct QuickActionButton: View {
                         .frame(width: 40, height: 40)
                     
                     let checkOverlay = Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(BotanicaTheme.Typography.labelEmphasized)
+                        .fontWeight(.bold)
                         .foregroundStyle(.white)
                         .opacity(isConfirming ? 1 : 0)
                     
                     if #available(iOS 18, *) {
                         Image(systemName: icon)
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(BotanicaTheme.Typography.headlineLarge)
                             .foregroundStyle(isConfirming ? .white : color)
                             .symbolEffect(.bounce, options: isConfirming ? .nonRepeating : .default)
                             .overlay(checkOverlay)
                     } else {
                         Image(systemName: icon)
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(BotanicaTheme.Typography.headlineLarge)
                             .foregroundStyle(isConfirming ? .white : color)
                             .overlay(checkOverlay)
                     }
@@ -852,12 +791,13 @@ struct QuickActionButton: View {
                 
                 VStack(spacing: 2) {
                     Text(isConfirming ? "Logged" : title)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(BotanicaTheme.Typography.captionEmphasized)
                         .foregroundStyle(isConfirming ? color : (isUrgent ? color : BotanicaTheme.Colors.textPrimary))
                     
                     if let subtitle {
                         Text(subtitle)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(BotanicaTheme.Typography.caption2)
+                            .fontWeight(.medium)
                             .foregroundStyle(isConfirming ? color.opacity(0.8) : BotanicaTheme.Colors.textSecondary)
                     }
                 }
@@ -866,8 +806,8 @@ struct QuickActionButton: View {
                     Text("Undo")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(color)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                        .padding(.vertical, BotanicaTheme.Spacing.xs)
                         .background(color.opacity(0.12))
                         .clipShape(Capsule())
                         .onTapGesture {
@@ -898,7 +838,7 @@ struct DetailItem: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             HStack {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(BotanicaTheme.Typography.headlineSmall)
                     .foregroundStyle(color)
                 
                 Spacer()
@@ -906,15 +846,17 @@ struct DetailItem: View {
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(BotanicaTheme.Typography.caption)
+                    .fontWeight(.medium)
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 
                 Text(value)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(BotanicaTheme.Typography.labelEmphasized)
+                    .fontWeight(.bold)
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
             }
         }
-        .padding(BotanicaTheme.Spacing.md)
+        .padding(BotanicaTheme.Spacing.cardPadding)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
                 .fill(color.opacity(0.08))

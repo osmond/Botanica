@@ -18,6 +18,7 @@ final class Plant {
     /// Plant family (e.g., "Araceae")
     var family: String
     /// Common names (e.g., "Swiss Cheese Plant, Split-leaf Philodendron")
+    @Attribute(.transformable(by: ModelTransformers.stringArrayName.rawValue))
     var commonNames: [String]
     
     // MARK: Physical Characteristics
@@ -142,6 +143,50 @@ final class Plant {
         self.notes = notes
         self.lastWatered = lastWatered
         self.lastFertilized = lastFertilized
+    }
+}
+
+// MARK: - Model Transformers
+
+enum ModelTransformers {
+    static let stringArrayName = NSValueTransformerName("StringArrayTransformer")
+    private static let registerOnce: Void = {
+        ValueTransformer.setValueTransformer(StringArrayTransformer(), forName: stringArrayName)
+    }()
+    
+    static func register() {
+        _ = registerOnce
+    }
+}
+
+final class StringArrayTransformer: ValueTransformer {
+    override class func allowsReverseTransformation() -> Bool { true }
+    
+    override class func transformedValueClass() -> AnyClass { NSData.self }
+    
+    override func transformedValue(_ value: Any?) -> Any? {
+        guard let value = value as? [String] else { return nil }
+        return try? JSONEncoder().encode(value)
+    }
+    
+    override func reverseTransformedValue(_ value: Any?) -> Any? {
+        guard let data = value as? Data else { return [] }
+        if let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            return decoded
+        }
+        if let string = String(data: data, encoding: .utf8) {
+            let parts = string.split(separator: ",").map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines)
+            }.filter { !$0.isEmpty }
+            return parts
+        }
+        if let array = try? NSKeyedUnarchiver.unarchivedObject(
+            ofClasses: [NSArray.self, NSString.self, NSData.self],
+            from: data
+        ) as? [String] {
+            return array
+        }
+        return []
     }
 }
 

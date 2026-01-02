@@ -10,10 +10,11 @@ final class PlantFormViewModelTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
+        ModelTransformers.register()
         let schema = Schema([Plant.self, CareEvent.self, Photo.self, Reminder.self, CarePlan.self])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         modelContainer = try? ModelContainer(for: schema, configurations: [configuration])
-        modelContext = ModelContext(modelContainer)
+        modelContext = modelContainer.mainContext
         viewModel = PlantFormViewModel()
     }
     

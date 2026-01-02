@@ -3,98 +3,78 @@ import SwiftUI
 /// Compact subviews extracted from MyPlantsView to simplify the main file.
 struct CollectionInsightsHeaderView: View {
     let plantsCount: Int
-    let collectionHealthPercentage: Int
-    let weeklyAddedCount: Int
-    let monthlyAddedCount: Int
     let insight: String
     let summary: String
-    let chips: [CollectionFilterChip]
     let onClearFilter: () -> Void
+    let onFilterTap: () -> Void
     let activeFilterTitle: String?
+    let activeFilterCount: Int?
     
     var body: some View {
-        VStack(spacing: BotanicaTheme.Spacing.lg) {
-            HStack(spacing: BotanicaTheme.Spacing.lg) {
-                ModernStatCard(
-                    title: "Plants",
-                    value: "\(plantsCount)",
-                    icon: "leaf.fill",
-                    color: BotanicaTheme.Colors.leafGreen
-                )
-                
-                ModernStatCard(
-                    title: "Healthy",
-                    value: "\(collectionHealthPercentage)%",
-                    icon: "heart.fill",
-                    color: BotanicaTheme.Colors.success
-                )
-                
-                ModernStatCard(
-                    title: addedTitle,
-                    value: "\(addedValue)",
-                    icon: addedIcon,
-                    color: addedValue > 0 ? BotanicaTheme.Colors.terracotta : BotanicaTheme.Colors.textTertiary
-                )
-            }
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.section) {
+            Text("Track care, health, and schedules for your plants.")
+                .font(BotanicaTheme.Typography.callout)
+                .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                .padding(.horizontal, BotanicaTheme.Spacing.screenPadding)
             
-            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
-                if activeFilterTitle == nil {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(insight)
-                            .font(BotanicaTheme.Typography.subheadline)
-                            .foregroundColor(.secondary)
-                        Text(summary)
-                            .font(BotanicaTheme.Typography.bodyEmphasized)
-                    }
-                } else {
-                    HStack {
-                        Text("Filter: \(activeFilterTitle ?? "")")
-                            .font(BotanicaTheme.Typography.subheadline)
-                        Spacer()
-                        Button("Clear") { onClearFilter() }
-                            .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(BotanicaTheme.Colors.primary)
-                    }
-                }
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: BotanicaTheme.Spacing.md) {
-                        ForEach(visibleChips, id: \.id) { chip in
-                            QuickFilterPill(
-                                title: chip.title,
-                                count: chip.count,
-                                isSelected: chip.isSelected,
-                                action: chip.action
-                            )
-                        }
-                    }
-                    .padding(.vertical, BotanicaTheme.Spacing.xs)
-                }
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                Text(summary)
+                    .font(BotanicaTheme.Typography.bodyEmphasized)
+                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                Text(insight)
+                    .font(BotanicaTheme.Typography.subheadline)
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
             }
-            .padding()
+            .padding(BotanicaTheme.Spacing.cardPadding)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                    .fill(Color(.secondarySystemGroupedBackground))
+                    .fill(BotanicaTheme.Colors.surfaceAlt)
             )
+            .padding(.horizontal, BotanicaTheme.Spacing.screenPadding)
+            
+            HStack(spacing: BotanicaTheme.Spacing.item) {
+                Button(action: onFilterTap) {
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(BotanicaTheme.Typography.captionEmphasized)
+                        Text(filterLabel)
+                            .font(BotanicaTheme.Typography.calloutEmphasized)
+                    }
+                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                    .padding(.horizontal, BotanicaTheme.Spacing.md)
+                    .padding(.vertical, BotanicaTheme.Spacing.sm)
+                    .background(
+                        Capsule()
+                            .fill(BotanicaTheme.Colors.surfaceAlt)
+                            .overlay(
+                                Capsule()
+                                    .stroke(BotanicaTheme.Colors.primary.opacity(0.15), lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+                
+                Spacer()
+                
+                if activeFilterTitle != nil {
+                    Button("Clear") { onClearFilter() }
+                        .font(BotanicaTheme.Typography.captionEmphasized)
+                        .foregroundStyle(BotanicaTheme.Colors.primary)
+                }
+            }
+            .padding(.horizontal, BotanicaTheme.Spacing.screenPadding)
         }
-        .padding(.horizontal, BotanicaTheme.Spacing.lg)
     }
     
-    private var addedTitle: String {
-        weeklyAddedCount > 0 ? "Added" : "New this month"
-    }
-    
-    private var addedValue: Int {
-        weeklyAddedCount > 0 ? weeklyAddedCount : monthlyAddedCount
-    }
-    
-    private var addedIcon: String {
-        weeklyAddedCount > 0 ? "calendar.badge.plus" : "calendar"
-    }
-    
-    private var visibleChips: [CollectionFilterChip] {
-        guard activeFilterTitle != nil else { return chips }
-        return chips.filter { $0.id == "all" || $0.isSelected }
+    private var filterLabel: String {
+        if let activeFilterTitle {
+            if let count = activeFilterCount {
+                return "Filter: \(activeFilterTitle) (\(count))"
+            }
+            return "Filter: \(activeFilterTitle)"
+        }
+        return "Filter: All (\(plantsCount))"
     }
 }
 
@@ -171,7 +151,7 @@ struct QuickFiltersView: View {
                     action: { sortBy = .dateAdded }
                 )
             }
-            .padding(.horizontal, BotanicaTheme.Spacing.lg)
+            .padding(.horizontal, BotanicaTheme.Spacing.screenPadding)
         }
     }
 }
@@ -200,12 +180,12 @@ struct ModernEmptyStateView: View {
                     
                     VStack(spacing: BotanicaTheme.Spacing.sm) {
                         Image(systemName: "leaf.fill")
-                            .font(.system(size: 40, weight: .light))
+                            .font(.system(size: BotanicaTheme.Sizing.iconXXXL, weight: .light))
                             .foregroundStyle(BotanicaTheme.Colors.primary)
                             .breatheRepeating()
                         
                         Text("🌱")
-                            .font(.system(size: 24))
+                            .font(BotanicaTheme.Typography.title1)
                     }
                 }
                 
@@ -227,7 +207,7 @@ struct ModernEmptyStateView: View {
                 } label: {
                     HStack(spacing: BotanicaTheme.Spacing.md) {
                         Image(systemName: "plus.circle.fill")
-                            .font(.title3)
+                            .font(BotanicaTheme.Typography.title3)
                         Text("Add Your First Plant")
                             .fontWeight(.semibold)
                     }
@@ -262,6 +242,6 @@ struct PlantsMainContentView: View {
                 )
             }
         }
-        .padding(.horizontal, BotanicaTheme.Spacing.lg)
+        .padding(.horizontal, BotanicaTheme.Spacing.screenPadding)
     }
 }

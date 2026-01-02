@@ -10,6 +10,10 @@ final class NotificationManager: ObservableObject {
     @Published var authorizationStatus: UNAuthorizationStatus = .notDetermined
     @Published var isEnabled = true
     
+    private var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+    
     private init() {
         Task { await updateAuthorizationStatus() }
     }
@@ -42,6 +46,7 @@ final class NotificationManager: ObservableObject {
     
     /// Schedule notifications for a specific plant based on its care requirements
     func scheduleNotificationsForPlant(_ plant: Plant) async {
+        guard !isRunningTests else { return }
         guard isEnabled && authorizationStatus == .authorized else { return }
         
         // Remove existing notifications for this plant
@@ -65,6 +70,7 @@ final class NotificationManager: ObservableObject {
     
     /// Schedule notifications for all plants
     func scheduleNotificationsForAllPlants(_ plants: [Plant]) async {
+        guard !isRunningTests else { return }
         guard isEnabled && authorizationStatus == .authorized else { return }
         
         for plant in plants {

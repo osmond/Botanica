@@ -104,45 +104,45 @@ struct DataManagementView: View {
                 Image(systemName: "externaldrive.fill")
                     .foregroundColor(BotanicaTheme.Colors.soilBrown)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text("App Data Size")
                         .font(BotanicaTheme.Typography.subheadline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Text("Estimated storage usage")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 Spacer()
                 
                 Text(estimatedDataSize)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, BotanicaTheme.Spacing.xxs)
             
             HStack {
                 Image(systemName: "photo.stack.fill")
                     .foregroundColor(BotanicaTheme.Colors.terracotta)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text("Photos Size")
                         .font(BotanicaTheme.Typography.subheadline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Text("Storage used by plant photos")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 Spacer()
                 
                 Text(estimatedPhotosSize)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, BotanicaTheme.Spacing.xxs)
         }
     }
     
@@ -158,23 +158,23 @@ struct DataManagementView: View {
                     Image(systemName: "square.and.arrow.up.fill")
                         .foregroundColor(BotanicaTheme.Colors.primary)
                     
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Export Data")
                             .font(BotanicaTheme.Typography.subheadline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(BotanicaTheme.Colors.textPrimary)
                         
                         Text("Export your data as JSON")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(BotanicaTheme.Colors.textTertiary)
                 }
-                .padding(.vertical, 2)
+                .padding(.vertical, BotanicaTheme.Spacing.xxs)
             }
             .buttonStyle(.plain)
             
@@ -183,21 +183,21 @@ struct DataManagementView: View {
             } label: {
                 HStack {
                     Image(systemName: "photo.badge.minus.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(BotanicaTheme.Colors.warning)
                     
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Clear All Photos")
                             .font(BotanicaTheme.Typography.subheadline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(BotanicaTheme.Colors.textPrimary)
                         
                         Text("Remove all plant photos")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     
                     Spacer()
                 }
-                .padding(.vertical, 2)
+                .padding(.vertical, BotanicaTheme.Spacing.xxs)
             }
             .buttonStyle(.plain)
             
@@ -206,21 +206,21 @@ struct DataManagementView: View {
             } label: {
                 HStack {
                     Image(systemName: "trash.fill")
-                        .foregroundColor(.red)
+                        .foregroundColor(BotanicaTheme.Colors.error)
                     
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Clear All Data")
                             .font(BotanicaTheme.Typography.subheadline)
-                            .foregroundColor(.red)
+                            .foregroundColor(BotanicaTheme.Colors.error)
                         
                         Text("Permanently delete all app data")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     
                     Spacer()
                 }
-                .padding(.vertical, 2)
+                .padding(.vertical, BotanicaTheme.Spacing.xxs)
             }
             .buttonStyle(.plain)
         }
@@ -316,14 +316,14 @@ struct DataStatRow: View {
             Image(systemName: icon)
                 .foregroundColor(color)
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text(title)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 Text("\\(count) \\(count == 1 ? title.lowercased().dropLast() : title.lowercased())")
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             
             Spacer()
@@ -333,7 +333,7 @@ struct DataStatRow: View {
                 .fontWeight(.semibold)
                 .foregroundColor(color)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, BotanicaTheme.Spacing.xxs)
     }
 }
 

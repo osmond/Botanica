@@ -16,6 +16,7 @@ final class DataModelTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
+        ModelTransformers.register()
         
         // Create in-memory model container for testing
         let schema = Schema([Plant.self, CareEvent.self, Photo.self, Reminder.self, CarePlan.self])
@@ -23,7 +24,7 @@ final class DataModelTests: XCTestCase {
         
         do {
             modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
-            modelContext = ModelContext(modelContainer)
+            modelContext = modelContainer.mainContext
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }

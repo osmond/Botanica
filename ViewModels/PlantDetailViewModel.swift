@@ -141,7 +141,7 @@ final class PlantDetailViewModel: ObservableObject {
 
         return CareState(
             statusType: .allSet,
-            primaryTitle: "All set",
+            primaryTitle: "Next care",
             primarySubtitle: subtitle,
             primaryMeta: nil,
             primaryCTA: nil

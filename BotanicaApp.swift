@@ -8,6 +8,10 @@ import UserNotifications
 struct BotanicaApp: App {
     @StateObject private var notificationManager = NotificationManager.shared
     @AppStorage("theme_mode") private var themeMode = "system"
+
+    init() {
+        ModelTransformers.register()
+    }
     
     var colorScheme: ColorScheme? {
         switch themeMode {

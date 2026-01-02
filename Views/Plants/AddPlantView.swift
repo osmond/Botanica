@@ -9,10 +9,10 @@ struct CustomPicker<T: CaseIterable & Hashable & RawRepresentable>: View where T
     @Binding var selection: T
     let options: [T]
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             Text(title)
                 .font(BotanicaTheme.Typography.callout)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             Picker(title, selection: $selection) {
                 ForEach(options, id: \.self) { option in
                     Text(option.rawValue.capitalized)
@@ -20,8 +20,8 @@ struct CustomPicker<T: CaseIterable & Hashable & RawRepresentable>: View where T
                 }
             }
             .pickerStyle(.menu)
-            .padding(12)
-            .background(Color.gray.opacity(0.1))
+            .padding(BotanicaTheme.Spacing.smPlus)
+            .background(BotanicaTheme.Colors.surfaceAlt)
             .cornerRadius(8)
         }
     }
@@ -33,15 +33,15 @@ struct CustomSlider: View {
     let range: ClosedRange<Double>
     let suffix: String
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             HStack {
                 Text(title)
                     .font(BotanicaTheme.Typography.callout)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 Spacer()
                 Text("\(Int(value))\(suffix)")
                     .font(BotanicaTheme.Typography.callout)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             Slider(value: $value, in: range, step: 1)
                 .tint(BotanicaTheme.Colors.leafGreen)
@@ -175,7 +175,7 @@ struct AddPlantView: View {
                                     .foregroundColor(BotanicaTheme.Colors.error)
                                     .frame(maxWidth: .infinity)
                                     .padding()
-                                    .background(Color.red.opacity(0.08))
+                                    .background(BotanicaTheme.Colors.error.opacity(0.08))
                                     .cornerRadius(BotanicaTheme.CornerRadius.medium)
                                     .accessibilityLabel("Validation: \(validation)")
                             }
@@ -214,7 +214,7 @@ struct AddPlantView: View {
                         HapticManager.shared.selection()
                         dismiss()
                     }
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -241,20 +241,20 @@ struct AddPlantView: View {
                                 Spacer()
                                 if #available(iOS 18.0, *) {
                                     Image(systemName: "leaf.fill")
-                                        .font(.system(size: 80))
+                                        .font(.system(size: BotanicaTheme.Sizing.iconMega))
                                         .foregroundColor(BotanicaTheme.Colors.leafGreen)
                                         .transition(.scale.combined(with: .opacity))
                                         .symbolEffect(.bounce, options: .repeating)
                                 } else {
                                     Image(systemName: "leaf.fill")
-                                        .font(.system(size: 80))
+                                        .font(.system(size: BotanicaTheme.Sizing.iconMega))
                                         .foregroundColor(BotanicaTheme.Colors.leafGreen)
                                         .transition(.scale.combined(with: .opacity))
                                 }
                                 Spacer()
                             }
                             Text("Plant Added!")
-                                .font(.title)
+                                .font(BotanicaTheme.Typography.display)
                                 .fontWeight(.bold)
                                 .foregroundColor(BotanicaTheme.Colors.primary)
                                 .transition(.opacity)
@@ -264,7 +264,7 @@ struct AddPlantView: View {
                     }
                     }
                     .disabled(nickname.isEmpty || isSaving)
-                    .foregroundColor(nickname.isEmpty ? .secondary : BotanicaTheme.Colors.primary)
+                    .foregroundColor(nickname.isEmpty ? BotanicaTheme.Colors.textSecondary : BotanicaTheme.Colors.primary)
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -283,7 +283,7 @@ struct AddPlantView: View {
                                     .transition(.scale.combined(with: .opacity))
                             } else {
                                 Image(systemName: "leaf.fill")
-                                    .font(.caption)
+                                    .font(BotanicaTheme.Typography.caption)
                                     .transition(.scale.combined(with: .opacity))
                             }
                             
@@ -381,7 +381,7 @@ struct AddPlantView: View {
                     .shadow(color: BotanicaTheme.Colors.primary.opacity(0.3), radius: 12, x: 0, y: 6)
                 
                 Image(systemName: "leaf.fill")
-                    .font(.system(size: 32, weight: .light))
+                    .font(.system(size: BotanicaTheme.Sizing.iconLargePlus, weight: .light))
                     .foregroundColor(.white)
             }
             
@@ -389,11 +389,11 @@ struct AddPlantView: View {
                 Text("Add New Plant")
                     .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 Text("Fill in the details to start caring for your new plant")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(BotanicaTheme.Typography.subheadline)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 // Low confidence warning
                 .alert("Low Confidence", isPresented: $showLowConfidenceWarning) {
                     Button("Add More Photos") { showingPhotosPicker = true }
@@ -433,7 +433,7 @@ struct AddPlantView: View {
                         Label("Choose from Library", systemImage: "photo.on.rectangle")
                     }
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
                         Image(systemName: "camera")
                         Text("Add Photos")
                     }
@@ -446,16 +446,16 @@ struct AddPlantView: View {
             if photoData.isEmpty {
                 // Placeholder photo area
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.1))
+                    .fill(BotanicaTheme.Colors.surfaceAlt)
                     .frame(height: 200)
                     .overlay {
-                        VStack(spacing: 8) {
+                        VStack(spacing: BotanicaTheme.Spacing.sm) {
                             Image(systemName: "camera.fill")
-                                .font(.largeTitle)
-                                .foregroundColor(.gray)
+                                .font(BotanicaTheme.Typography.largeTitle)
+                                .foregroundColor(BotanicaTheme.Colors.textTertiary)
                             Text("Add photos of your plant")
                                 .font(BotanicaTheme.Typography.callout)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         }
                     }
                     .onTapGesture {
@@ -463,7 +463,7 @@ struct AddPlantView: View {
                     }
             } else {
                 // Photo grid
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 8) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: BotanicaTheme.Spacing.sm) {
                     ForEach(Array(photoData.enumerated()), id: \.offset) { index, data in
                         if let uiImage = UIImage(data: data) {
                             PlantPhotoThumbnail(uiImage: uiImage, index: index)
@@ -489,7 +489,7 @@ struct AddPlantView: View {
                         .foregroundColor(.white)
                         .background(Circle().fill(.black.opacity(0.6)))
                 }
-                .padding(4)
+                .padding(BotanicaTheme.Spacing.xs)
             }
     }
     
@@ -523,14 +523,14 @@ struct AddPlantView: View {
                             .foregroundColor(BotanicaTheme.Colors.primary)
                         Text("Tip: Set pot size to personalize water amount and schedules.")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         Spacer()
                         Button("Set Pot Size") { proxy.scrollTo("potSizeAnchor", anchor: .top) }
                             .font(BotanicaTheme.Typography.caption)
                     }
-                    .padding(10)
-                    .background(Color(.secondarySystemBackground))
-                    .cornerRadius(10)
+                    .padding(BotanicaTheme.Spacing.smPlus)
+                    .background(BotanicaTheme.Colors.surfaceAlt)
+                    .cornerRadius(BotanicaTheme.CornerRadius.medium)
                 }
             }
         }
@@ -569,17 +569,17 @@ struct AddPlantView: View {
                 CustomSlider(title: "Watering Frequency", value: $wateringFrequency, range: 1...30, suffix: " days")
                 
                 // Water Amount Section
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Recommended Water Amount (based on pot size)")
                         .font(BotanicaTheme.Typography.callout)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     HStack(spacing: BotanicaTheme.Spacing.md) {
                         // Amount input
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                             Text("Amount")
                                 .font(BotanicaTheme.Typography.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             
                             HStack {
                                 TextField(recommendedWaterAmount == 0 ? "Select pot size" : String(Int(recommendedWaterAmount)), value: $recommendedWaterAmount, format: .number)
@@ -589,17 +589,17 @@ struct AddPlantView: View {
                                 
                                 Text(selectedWaterUnit.description)
                                     .font(BotanicaTheme.Typography.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             }
                         }
                         
                         Spacer()
                         
                         // Unit picker
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                             Text("Unit")
                                 .font(BotanicaTheme.Typography.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             
                             Picker("Water Unit", selection: $selectedWaterUnit) {
                                 ForEach(WaterUnit.allCases, id: \.self) { unit in
@@ -613,7 +613,7 @@ struct AddPlantView: View {
                     if recommendedWaterAmount == 0 {
                         Text("Select a pot size to auto-calculate a recommended amount.")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
                 
@@ -622,16 +622,16 @@ struct AddPlantView: View {
                 CustomSlider(title: "Humidity Preference", value: $humidityPreference, range: 20...90, suffix: "%")
                 
                 // Temperature Range
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Temperature Range")
                         .font(BotanicaTheme.Typography.callout)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     HStack {
                         VStack {
                             Text("Min")
                                 .font(BotanicaTheme.Typography.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             Text("\(Int(minTemperature))°F")
                                 .font(BotanicaTheme.Typography.callout)
                         }
@@ -641,7 +641,7 @@ struct AddPlantView: View {
                         VStack {
                             Text("Max")
                                 .font(BotanicaTheme.Typography.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             Text("\(Int(maxTemperature))°F")
                                 .font(BotanicaTheme.Typography.callout)
                         }
@@ -666,10 +666,10 @@ struct AddPlantView: View {
                         let usedLocations = Set(plants.compactMap { $0.location.isEmpty ? nil : $0.location })
                         let filtered = usedLocations.filter { $0.localizedCaseInsensitiveContains(location) && $0 != location }
                         if !filtered.isEmpty {
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                                 Text("Suggestions:")
                                     .font(BotanicaTheme.Typography.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         ForEach(Array(filtered.prefix(4)), id: \.self) { suggestion in
                                     Button(action: { location = suggestion }) {
                                         Text(suggestion)
@@ -684,15 +684,15 @@ struct AddPlantView: View {
                 
                 CustomPicker(title: "Current Health Status", selection: $selectedHealthStatus, options: HealthStatus.allCases)
                 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Notes")
                         .font(BotanicaTheme.Typography.callout)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     TextField("Additional care notes, observations, special requirements...", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
-                        .padding(12)
-                        .background(Color.gray.opacity(0.1))
+                        .padding(BotanicaTheme.Spacing.smPlus)
+                        .background(BotanicaTheme.Colors.surfaceAlt)
                         .cornerRadius(8)
                 }
             }
@@ -706,22 +706,22 @@ struct AddPlantView: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             Text("Care History")
                 .font(BotanicaTheme.Typography.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             
             Text("When was this plant last cared for? This helps calculate when it's next due.")
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             
             VStack(spacing: BotanicaTheme.Spacing.md) {
                 // Last Watered
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Toggle(isOn: $hasBeenWatered) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: BotanicaTheme.Spacing.sm) {
                             Image(systemName: "drop.fill")
                                 .foregroundColor(BotanicaTheme.Colors.waterBlue)
                             Text("Last Watered")
                                 .font(BotanicaTheme.Typography.callout)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                         }
                     }
                     
@@ -731,21 +731,21 @@ struct AddPlantView: View {
                             set: { lastWatered = $0 }
                         ), displayedComponents: [.date])
                         .datePickerStyle(.compact)
-                        .padding(.leading, 32)
+                        .padding(.leading, BotanicaTheme.Spacing.xl)
                     }
                 }
                 
                 Divider()
                 
                 // Last Fertilized
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Toggle(isOn: $hasBeenFertilized) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: BotanicaTheme.Spacing.sm) {
                             Image(systemName: "leaf.fill")
                                 .foregroundColor(BotanicaTheme.Colors.leafGreen)
                             Text("Last Fertilized")
                                 .font(BotanicaTheme.Typography.callout)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                         }
                     }
                     
@@ -755,7 +755,7 @@ struct AddPlantView: View {
                             set: { lastFertilized = $0 }
                         ), displayedComponents: [.date])
                         .datePickerStyle(.compact)
-                        .padding(.leading, 32)
+                        .padding(.leading, BotanicaTheme.Spacing.xl)
                     }
                 }
             }
@@ -1042,14 +1042,14 @@ struct CustomTextField: View {
     let placeholder: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             Text(title)
                 .font(BotanicaTheme.Typography.callout)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             
             TextField(placeholder, text: $text)
-                .padding(12)
-                .background(Color.gray.opacity(0.1))
+                .padding(BotanicaTheme.Spacing.smPlus)
+                .background(BotanicaTheme.Colors.surfaceAlt)
                 .cornerRadius(8)
         }
     }
@@ -1063,11 +1063,11 @@ struct CustomTextField: View {
         HStack(spacing: BotanicaTheme.Spacing.sm) {
             Text(title)
                 .font(BotanicaTheme.Typography.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             if isComplete {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(BotanicaTheme.Colors.success)
-                    .font(.footnote)
+                    .font(BotanicaTheme.Typography.footnote)
             }
             Spacer()
         }

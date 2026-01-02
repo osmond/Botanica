@@ -60,63 +60,18 @@ struct MyPlantsView: View {
         plants.isEmpty ? 100 : Int((Double(healthyPlantCount) / Double(plants.count)) * 100)
     }
     
-    private var collectionFilterChips: [CollectionFilterChip] {
-        let isAllSelected = careNeededFilter == nil && filterBy == nil && lightLevelFilter == nil && !showUnhealthyOnly
-        return [
-            CollectionFilterChip(
-                id: "all",
-                title: "All",
-                count: plants.count,
-                isSelected: isAllSelected,
-                action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        clearCollectionFilters()
-                    }
-                }
-            ),
-            CollectionFilterChip(
-                id: "needs-attention",
-                title: "Needs attention",
-                count: unhealthyPlantCount,
-                isSelected: showUnhealthyOnly,
-                action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showUnhealthyOnly = true
-                        filterBy = nil
-                        careNeededFilter = nil
-                        lightLevelFilter = nil
-                    }
-                }
-            ),
-            CollectionFilterChip(
-                id: "low-light",
-                title: "Low light",
-                count: lowLightCount,
-                isSelected: lightLevelFilter == .low,
-                action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        lightLevelFilter = .low
-                        filterBy = nil
-                        careNeededFilter = nil
-                        showUnhealthyOnly = false
-                    }
-                }
-            ),
-            CollectionFilterChip(
-                id: "bright-light",
-                title: "Bright light",
-                count: brightLightCount,
-                isSelected: lightLevelFilter == .bright,
-                action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        lightLevelFilter = .bright
-                        filterBy = nil
-                        careNeededFilter = nil
-                        showUnhealthyOnly = false
-                    }
-                }
-            )
-        ]
+    private var activeFilterCount: Int? {
+        if showUnhealthyOnly { return unhealthyPlantCount }
+        if let health = filterBy {
+            return plants.filter { $0.healthStatus == health }.count
+        }
+        if let light = lightLevelFilter {
+            return plants.filter { $0.lightLevel == light }.count
+        }
+        if let care = careNeededFilter {
+            return careFilterCount(for: care)
+        }
+        return nil
     }
     
     private func clearCollectionFilters() {
@@ -124,6 +79,28 @@ struct MyPlantsView: View {
         filterBy = nil
         lightLevelFilter = nil
         showUnhealthyOnly = false
+    }
+
+    private func careFilterCount(for filter: CareNeededFilter) -> Int {
+        switch filter {
+        case .needsWatering:
+            return plants.filter { $0.isWateringOverdue }.count
+        case .needsFertilizing:
+            return plants.filter { $0.isFertilizingOverdue }.count
+        case .needsAnyCare, .overdue:
+            return plants.filter { $0.isWateringOverdue || $0.isFertilizingOverdue || $0.isRepottingOverdue }.count
+        case .upToDate:
+            return plants.filter { !$0.isWateringOverdue && !$0.isFertilizingOverdue && !$0.isRepottingOverdue }.count
+        case .dueToday:
+            return plants.filter { plant in
+                let cal = Calendar.current
+                let dueWaterToday = plant.nextWateringDate.map { cal.isDateInToday($0) } ?? false
+                let dueFeedToday = plant.nextFertilizingDate.map { cal.isDateInToday($0) } ?? false
+                let dueRepotToday = plant.nextRepottingDate.map { cal.isDateInToday($0) } ?? false
+                let isOverdue = plant.isWateringOverdue || plant.isFertilizingOverdue || plant.isRepottingOverdue
+                return dueWaterToday || dueFeedToday || dueRepotToday || isOverdue
+            }.count
+        }
     }
     
     private func sortPlants(_ plants: [Plant], by option: SortOption) -> [Plant] {
@@ -190,7 +167,7 @@ struct MyPlantsView: View {
     private var modernBackgroundView: some View {
         ZStack {
             // Primary background
-            Color(.systemGroupedBackground)
+            BotanicaTheme.Colors.background
                 .ignoresSafeArea()
             
             // Subtle botanical pattern overlay
@@ -349,18 +326,18 @@ struct MyPlantsView: View {
                         // Redesigned collection insights
                         CollectionInsightsHeaderView(
                             plantsCount: plants.count,
-                            collectionHealthPercentage: collectionHealthPercentage,
-                            weeklyAddedCount: weeklyAddedCount,
-                            monthlyAddedCount: monthlyAddedCount,
                             insight: collectionInsightMessage,
                             summary: collectionSummary,
-                            chips: collectionFilterChips,
                             onClearFilter: {
                                 withAnimation(.easeInOut(duration: 0.2)) {
                                     clearCollectionFilters()
                                 }
                             },
-                            activeFilterTitle: activeFilterTitle
+                            onFilterTap: {
+                                showingAdvancedFilters = true
+                            },
+                            activeFilterTitle: activeFilterTitle,
+                            activeFilterCount: activeFilterCount
                         )
                         
                         // Quick filter pills
@@ -463,7 +440,7 @@ struct MyPlantsView: View {
                         }
                     } label: {
                         Image(systemName: "line.3.horizontal.decrease.circle")
-                            .font(.title3)
+                            .font(BotanicaTheme.Typography.title3)
                             .foregroundStyle(BotanicaTheme.Colors.primary)
                     }
                     .menuStyle(.borderlessButton)
@@ -475,6 +452,7 @@ struct MyPlantsView: View {
                 AdvancedFiltersView(
                     healthFilter: $filterBy,
                     lightLevelFilter: $lightLevelFilter,
+                    showUnhealthyOnly: $showUnhealthyOnly,
                     plantCount: plants.count
                 )
             }
@@ -677,7 +655,7 @@ struct FloatingAddButton: View {
                 
                 // Plus icon with enhanced styling
                 Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(BotanicaTheme.Typography.title4)
                     .foregroundStyle(.white)
                     .bounceByLayer(value: isPressed)
             }
@@ -704,12 +682,17 @@ struct FloatingAddButton: View {
 struct AdvancedFiltersView: View {
     @Binding var healthFilter: HealthStatus?
     @Binding var lightLevelFilter: LightLevel?
+    @Binding var showUnhealthyOnly: Bool
     let plantCount: Int
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationStack {
             Form {
+                Section("Quick Filters") {
+                    Toggle("Needs attention only", isOn: $showUnhealthyOnly)
+                }
+                
                 Section("Health Status") {
                     Picker("Health Filter", selection: $healthFilter) {
                         Text("All (\(plantCount))").tag(HealthStatus?.none)
@@ -734,6 +717,7 @@ struct AdvancedFiltersView: View {
                     Button("Clear All Filters", role: .destructive) {
                         healthFilter = nil
                         lightLevelFilter = nil
+                        showUnhealthyOnly = false
                         dismiss()
                     }
                 }
@@ -762,7 +746,7 @@ struct ModernInsightCard: View {
         HStack(spacing: BotanicaTheme.Spacing.md) {
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text("Garden Insight")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(BotanicaTheme.Typography.caption2Emphasized)
                     .foregroundStyle(BotanicaTheme.Colors.primary)
                     .textCase(.uppercase)
                     .tracking(0.5)
@@ -778,7 +762,7 @@ struct ModernInsightCard: View {
             if let actionText = actionText, let action = action {
                 Button(action: action) {
                     Text(actionText)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(BotanicaTheme.Typography.captionEmphasized)
                         .foregroundStyle(BotanicaTheme.Colors.primary)
                         .padding(.horizontal, BotanicaTheme.Spacing.md)
                         .padding(.vertical, BotanicaTheme.Spacing.xs)
@@ -792,7 +776,7 @@ struct ModernInsightCard: View {
         .padding(BotanicaTheme.Spacing.lg)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(Color(.secondarySystemGroupedBackground))
+                .fill(BotanicaTheme.Colors.surfaceAlt)
                 .overlay(
                     RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
                         .stroke(BotanicaTheme.Colors.primary.opacity(0.1), lineWidth: 1)
@@ -848,13 +832,15 @@ struct QuickFilterPill: View {
         Button(action: action) {
             HStack(spacing: BotanicaTheme.Spacing.xs) {
                 Text(title)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(BotanicaTheme.Typography.label)
+                    .fontWeight(.medium)
                 
                 if count > 0 {
                     Text("\(count)")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(BotanicaTheme.Typography.captionEmphasized)
+                        .fontWeight(.bold)
                         .foregroundStyle(isSelected ? .white : BotanicaTheme.Colors.textSecondary)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
                         .padding(.vertical, 2)
                         .background(
                             Capsule()
@@ -865,9 +851,10 @@ struct QuickFilterPill: View {
             .foregroundStyle(isSelected ? .white : BotanicaTheme.Colors.textPrimary)
             .padding(.horizontal, BotanicaTheme.Spacing.md)
             .padding(.vertical, BotanicaTheme.Spacing.sm)
+            .frame(minHeight: BotanicaTheme.Sizing.chipHeight)
             .background(
                 Capsule()
-                    .fill(isSelected ? BotanicaTheme.Colors.primary : Color(.secondarySystemGroupedBackground))
+                    .fill(isSelected ? BotanicaTheme.Colors.primary : BotanicaTheme.Colors.surfaceAlt)
                     .overlay(
                         Capsule()
                             .stroke(isSelected ? Color.clear : BotanicaTheme.Colors.primary.opacity(0.2), lineWidth: 1)
@@ -896,7 +883,7 @@ struct ModernPlantSection: View {
                     Spacer()
                     
                     Text("\(group.plants.count)")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(BotanicaTheme.Typography.captionEmphasized)
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                         .padding(.horizontal, BotanicaTheme.Spacing.sm)
                         .padding(.vertical, BotanicaTheme.Spacing.xs)
@@ -966,7 +953,7 @@ struct ModernPlantCard: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
                         .fill(BotanicaTheme.Colors.leafGreen.opacity(0.08))
-                        .aspectRatio(1.3, contentMode: .fit)
+                        .aspectRatio(1.1, contentMode: .fit)
                     
                     AsyncPlantImageFill(photo: plant.primaryPhoto, cornerRadius: BotanicaTheme.CornerRadius.large)
                 }
@@ -981,23 +968,26 @@ struct ModernPlantCard: View {
             // Plant information
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                 Text(plant.displayName)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(BotanicaTheme.Typography.headlineSmall)
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                     .lineLimit(1)
                 
                 if isDueToday {
                     HStack(spacing: BotanicaTheme.Spacing.xs) {
                         Image(systemName: "calendar.badge.clock")
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(BotanicaTheme.Typography.nano)
+                            .fontWeight(.semibold)
                             .foregroundColor(BotanicaTheme.Colors.sunYellow)
                         Text("Due today")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(BotanicaTheme.Typography.caption2)
+                            .fontWeight(.medium)
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     }
                     
                     if let amount = waterAmountText {
                         Text("Water · \(amount)")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(BotanicaTheme.Typography.caption2)
+                            .fontWeight(.medium)
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     }
                 }
@@ -1005,10 +995,12 @@ struct ModernPlantCard: View {
                 if !plant.location.isEmpty {
                     HStack(spacing: BotanicaTheme.Spacing.xs) {
                         Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(BotanicaTheme.Typography.nano)
+                            .fontWeight(.semibold)
                             .foregroundStyle(BotanicaTheme.Colors.primary)
                         Text(plant.location)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(BotanicaTheme.Typography.caption2)
+                            .fontWeight(.medium)
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                             .lineLimit(1)
                     }
@@ -1016,7 +1008,8 @@ struct ModernPlantCard: View {
                 
                 if !plant.scientificName.isEmpty {
                     Text(plant.scientificName)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(BotanicaTheme.Typography.caption)
+                        .fontWeight(.medium)
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                         .italic()
                         .lineLimit(1)
@@ -1030,7 +1023,8 @@ struct ModernPlantCard: View {
                     
                     if let lastCare = plant.careEvents.max(by: { $0.date < $1.date }) {
                         Text(lastCare.timeAgo)
-                            .font(.system(size: 10, weight: .medium))
+                            .font(BotanicaTheme.Typography.nano)
+                            .fontWeight(.medium)
                             .foregroundStyle(BotanicaTheme.Colors.textTertiary)
                     }
                 }
@@ -1039,7 +1033,7 @@ struct ModernPlantCard: View {
         }
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(Color(.secondarySystemGroupedBackground))
+                .fill(BotanicaTheme.Colors.surfaceAlt)
                 .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         )
     }
@@ -1076,23 +1070,26 @@ struct ModernPlantListRow: View {
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text(plant.displayName)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(BotanicaTheme.Typography.headlineSmall)
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                     .lineLimit(1)
                 
                 if isDueToday {
                     HStack(spacing: BotanicaTheme.Spacing.xs) {
                         Image(systemName: "calendar.badge.clock")
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(BotanicaTheme.Typography.nano)
+                            .fontWeight(.semibold)
                             .foregroundColor(BotanicaTheme.Colors.sunYellow)
                         Text("Due today")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(BotanicaTheme.Typography.caption2)
+                            .fontWeight(.medium)
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     }
                     
                     if let amount = waterAmountText {
                         Text("Water · \(amount)")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(BotanicaTheme.Typography.caption2)
+                            .fontWeight(.medium)
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     }
                 }
@@ -1100,10 +1097,11 @@ struct ModernPlantListRow: View {
                 if !plant.location.isEmpty {
                     HStack(spacing: BotanicaTheme.Spacing.xs) {
                         Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(BotanicaTheme.Typography.caption2Emphasized)
                             .foregroundStyle(BotanicaTheme.Colors.primary)
                         Text(plant.location)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(BotanicaTheme.Typography.caption)
+                            .fontWeight(.medium)
                             .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                             .lineLimit(1)
                     }
@@ -1111,7 +1109,7 @@ struct ModernPlantListRow: View {
                 
                 if !plant.scientificName.isEmpty {
                     Text(plant.scientificName)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(BotanicaTheme.Typography.callout)
                         .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                         .italic()
                         .lineLimit(1)
@@ -1129,13 +1127,14 @@ struct ModernPlantListRow: View {
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .medium))
+                .font(BotanicaTheme.Typography.caption)
+                .fontWeight(.medium)
                 .foregroundStyle(BotanicaTheme.Colors.textTertiary)
         }
         .padding(BotanicaTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                .fill(Color(.secondarySystemGroupedBackground))
+                .fill(BotanicaTheme.Colors.surfaceAlt)
         )
     }
 }
@@ -1144,27 +1143,27 @@ struct CareStatusBadge: View {
     let plant: Plant
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: BotanicaTheme.Spacing.xs) {
             if plant.isWateringOverdue {
                 Image(systemName: "drop.fill")
-                    .font(.system(size: 10))
+                    .font(BotanicaTheme.Typography.nano)
                     .foregroundStyle(.white)
             }
             
             if plant.isFertilizingOverdue {
                 Image(systemName: "leaf.fill")
-                    .font(.system(size: 10))
+                    .font(BotanicaTheme.Typography.nano)
                     .foregroundStyle(.white)
             }
             
             if plant.isRepottingOverdue {
                 Image(systemName: "flowerpot.fill")
-                    .font(.system(size: 10))
+                    .font(BotanicaTheme.Typography.nano)
                     .foregroundStyle(.white)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
         .background(
             Capsule()
                 .fill(BotanicaTheme.Colors.error)
@@ -1176,13 +1175,14 @@ struct HealthStatusIndicator: View {
     let status: HealthStatus
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: BotanicaTheme.Spacing.xs) {
             Circle()
                 .fill(healthStatusColor(for: status))
                 .frame(width: 8, height: 8)
             
             Text(status.rawValue)
-                .font(.system(size: 11, weight: .medium))
+                .font(BotanicaTheme.Typography.caption2)
+                .fontWeight(.medium)
                 .foregroundStyle(BotanicaTheme.Colors.textSecondary)
         }
     }
@@ -1203,19 +1203,22 @@ struct CareIndicators: View {
         HStack(spacing: BotanicaTheme.Spacing.xs) {
             if plant.isWateringOverdue {
                 Label("Water", systemImage: "drop.fill")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(BotanicaTheme.Typography.nano)
+                    .fontWeight(.medium)
                     .foregroundStyle(BotanicaTheme.Colors.waterBlue)
             }
             
             if plant.isFertilizingOverdue {
                 Label("Feed", systemImage: "leaf.fill")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(BotanicaTheme.Typography.nano)
+                    .fontWeight(.medium)
                     .foregroundStyle(BotanicaTheme.Colors.leafGreen)
             }
             
             if plant.isRepottingOverdue {
                 Label("Repot", systemImage: "flowerpot.fill")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(BotanicaTheme.Typography.nano)
+                    .fontWeight(.medium)
                     .foregroundStyle(BotanicaTheme.Colors.soilBrown)
             }
         }
@@ -1312,7 +1315,8 @@ struct EnhancedStatCard: View {
         VStack(spacing: BotanicaTheme.Spacing.sm) {
             HStack {
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .medium))
+                    .font(BotanicaTheme.Typography.headlineLarge)
+                    .fontWeight(.medium)
                     .foregroundStyle(color)
                     .bounceByLayerNonRepeating()
                 
@@ -1320,9 +1324,10 @@ struct EnhancedStatCard: View {
                 
                 if let trend = trend {
                     Text(trend)
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(BotanicaTheme.Typography.nano)
+                        .fontWeight(.semibold)
                         .foregroundStyle(BotanicaTheme.Colors.success)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
                         .padding(.vertical, 2)
                         .background(
                             Capsule()
@@ -1333,11 +1338,12 @@ struct EnhancedStatCard: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(value)
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(BotanicaTheme.Typography.statValue)
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                 
                 Text(title)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(BotanicaTheme.Typography.caption2)
+                    .fontWeight(.medium)
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -1389,20 +1395,21 @@ struct PlantCareReminderRow: View {
             // Plant info
             VStack(alignment: .leading, spacing: 2) {
                 Text(plant.displayName)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(BotanicaTheme.Typography.label)
+                    .fontWeight(.medium)
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                     .lineLimit(1)
                 
                 HStack(spacing: BotanicaTheme.Spacing.xs) {
                     if plant.isWateringOverdue {
                         Label("Water", systemImage: "drop.fill")
-                            .font(.system(size: 12))
+                            .font(BotanicaTheme.Typography.caption)
                             .foregroundStyle(BotanicaTheme.Colors.waterBlue)
                     }
                     
                     if plant.isFertilizingOverdue {
                         Label("Feed", systemImage: "leaf.fill")
-                            .font(.system(size: 12))
+                            .font(BotanicaTheme.Typography.caption)
                             .foregroundStyle(BotanicaTheme.Colors.leafGreen)
                     }
                 }
@@ -1416,7 +1423,7 @@ struct PlantCareReminderRow: View {
                 HapticManager.shared.light()
             } label: {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.title3)
+                    .font(BotanicaTheme.Typography.title3)
                     .foregroundStyle(BotanicaTheme.Colors.success)
             }
         }
@@ -1436,7 +1443,7 @@ struct ModernStatCard: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             HStack {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(BotanicaTheme.Typography.headlineSmall)
                     .foregroundStyle(color)
                 
                 Spacer()
@@ -1444,18 +1451,20 @@ struct ModernStatCard: View {
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text(value)
-                    .font(.system(size: 20, weight: .bold))
+                    .font(BotanicaTheme.Typography.title2)
+                    .fontWeight(.bold)
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
                 
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(BotanicaTheme.Typography.caption)
+                    .fontWeight(.medium)
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary)
             }
         }
         .padding(BotanicaTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(Color(.secondarySystemGroupedBackground))
+                .fill(BotanicaTheme.Colors.surfaceAlt)
                 .overlay(
                     RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
                         .stroke(color.opacity(0.2), lineWidth: 1)

@@ -38,10 +38,7 @@ struct PlantIdentificationView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: BotanicaTheme.Spacing.xl) {
-                    // Header
-                    headerSection
-                    
-                // Error banner
+                    // Error banner
                 if let errorMessage = errorMessage, case .failed = loadState {
                     ErrorBanner(
                         title: "Identification Failed",
@@ -52,11 +49,7 @@ struct PlantIdentificationView: View {
                         }
                     }
                     
-                    // Image capture/display section
-                    imageSection
-                    
-                    // Action buttons
-                    actionButtonsSection
+                    captureSection
                     
                     // Results section
                     if let result = identificationResult {
@@ -72,10 +65,13 @@ struct PlantIdentificationView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(BotanicaTheme.Typography.labelEmphasized)
+                            .foregroundColor(BotanicaTheme.Colors.primary)
                     }
-                    .foregroundColor(BotanicaTheme.Colors.primary)
                 }
                 
                 if identificationResult != nil, let image = selectedImage {
@@ -145,100 +141,84 @@ struct PlantIdentificationView: View {
     
     // MARK: - View Components
     
-    private var headerSection: some View {
-        VStack(spacing: BotanicaTheme.Spacing.md) {
-            Image(systemName: "camera.viewfinder")
-                .font(.system(size: 60))
-                .foregroundColor(BotanicaTheme.Colors.primary)
-            
-            VStack(spacing: BotanicaTheme.Spacing.sm) {
-                Text("AI Plant Identification")
-                    .font(BotanicaTheme.Typography.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                
-                Text("Take a photo or select from your library to identify your plant")
-                    .font(BotanicaTheme.Typography.callout)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
+    private var captureSection: some View {
+        VStack(spacing: BotanicaTheme.Spacing.lg) {
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                Image(systemName: "camera.viewfinder")
+                    .font(.system(size: BotanicaTheme.Sizing.iconLarge, weight: .semibold))
+                    .foregroundColor(BotanicaTheme.Colors.primary)
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                    Text("AI Plant Identification")
+                        .font(BotanicaTheme.Typography.title3)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
+                    Text("Take a photo or choose from your library to identify your plant.")
+                        .font(BotanicaTheme.Typography.callout)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
+                }
+                Spacer()
             }
-        }
-        .padding(BotanicaTheme.Spacing.lg)
-        .cardStyle()
-    }
-    
-    private var imageSection: some View {
-        VStack(spacing: BotanicaTheme.Spacing.md) {
+
             if let image = selectedImage {
-                // Display selected image
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(maxHeight: 300)
+                    .frame(maxHeight: 280)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(BotanicaTheme.Colors.primary.opacity(0.2), lineWidth: 2)
+                            .stroke(BotanicaTheme.Colors.primary.opacity(0.2), lineWidth: 1)
                     )
-                
-                if loadState == .loading {
-                    HStack(spacing: BotanicaTheme.Spacing.sm) {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: BotanicaTheme.Colors.primary))
-                        
-                        Text("Identifying plant...")
-                            .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(BotanicaTheme.Spacing.md)
-                }
             } else {
-                // Placeholder for image
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.1))
-                    .frame(height: 200)
+                    .fill(BotanicaTheme.Colors.surfaceAlt)
+                    .frame(height: 220)
                     .overlay(
-                        VStack(spacing: BotanicaTheme.Spacing.md) {
-                            Image(systemName: "photo.badge.plus")
-                                .font(.system(size: 40))
-                                .foregroundColor(.secondary)
-                            
-                            Text("No image selected")
+                        VStack(spacing: BotanicaTheme.Spacing.sm) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.system(size: BotanicaTheme.Sizing.iconXL))
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
+                            Text("No photo selected")
                                 .font(BotanicaTheme.Typography.callout)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         }
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(BotanicaTheme.Colors.primary.opacity(0.15), lineWidth: 1)
+                    )
             }
-        }
-        .padding(BotanicaTheme.Spacing.lg)
-        .cardStyle()
-    }
-    
-    private var actionButtonsSection: some View {
-        VStack(spacing: BotanicaTheme.Spacing.md) {
+
+            if loadState == .loading {
+                HStack(spacing: BotanicaTheme.Spacing.sm) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: BotanicaTheme.Colors.primary))
+                    Text("Identifying plant...")
+                        .font(BotanicaTheme.Typography.callout)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
+                }
+            }
+
             if selectedImage == nil {
-                // Initial capture buttons
-                VStack(spacing: BotanicaTheme.Spacing.md) {
+                HStack(spacing: BotanicaTheme.Spacing.md) {
                     Button(action: { showingCamera = true }) {
-                        HStack(spacing: BotanicaTheme.Spacing.sm) {
+                        HStack(spacing: BotanicaTheme.Spacing.xs) {
                             Image(systemName: "camera.fill")
                             Text("Take Photo")
                         }
                         .frame(maxWidth: .infinity)
                     }
                     .primaryButtonStyle()
-                    
+
                     Button(action: { showingPhotoPicker = true }) {
-                        HStack(spacing: BotanicaTheme.Spacing.sm) {
+                        HStack(spacing: BotanicaTheme.Spacing.xs) {
                             Image(systemName: "photo.on.rectangle")
-                            Text("Choose from Library")
+                            Text("Choose Photo")
                         }
                         .frame(maxWidth: .infinity)
                     }
                     .secondaryButtonStyle()
                 }
             } else {
-                // Action buttons after image selected
                 HStack(spacing: BotanicaTheme.Spacing.md) {
                     Button("Retake") {
                         selectedImage = nil
@@ -248,7 +228,7 @@ struct PlantIdentificationView: View {
                         showingCamera = true
                     }
                     .secondaryButtonStyle()
-                    
+
                     Button("Choose Different") {
                         selectedImage = nil
                         identificationResult = nil
@@ -258,15 +238,17 @@ struct PlantIdentificationView: View {
                     }
                     .secondaryButtonStyle()
                 }
-                
+
                 if identificationResult == nil && loadState != .loading {
-                    Button("Identify Again") {
+                    Button("Identify Plant") {
                         identifyPlant()
                     }
                     .primaryButtonStyle()
                 }
             }
         }
+        .padding(BotanicaTheme.Spacing.lg)
+        .cardStyle()
         .disabled(loadState == .loading)
     }
     
@@ -274,7 +256,7 @@ struct PlantIdentificationView: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.lg) {
             HStack {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+                    .foregroundColor(BotanicaTheme.Colors.success)
                 
                 Text("Plant Identified!")
                     .font(BotanicaTheme.Typography.title3)
@@ -284,10 +266,10 @@ struct PlantIdentificationView: View {
                 
                 Text("\(Int(result.confidence * 100))% confident")
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     .padding(.horizontal, BotanicaTheme.Spacing.sm)
-                    .padding(.vertical, 4)
-                    .background(Color.green.opacity(0.1))
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    .background(BotanicaTheme.Colors.success.opacity(0.1))
                     .clipShape(Capsule())
             }
             
@@ -317,7 +299,7 @@ struct PlantIdentificationView: View {
                         
                         Text(result.description)
                             .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
                 
@@ -334,7 +316,7 @@ struct PlantIdentificationView: View {
                         
                         Text(result.careInstructions)
                             .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
                 
@@ -407,7 +389,7 @@ struct ResultRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 
                 Text(value)
                     .font(BotanicaTheme.Typography.callout)

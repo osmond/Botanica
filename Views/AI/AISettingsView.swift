@@ -134,11 +134,11 @@ struct AISettingsView: View {
                                 switch result {
                                 case .success:
                                     Label("Connection successful!", systemImage: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
+                                        .foregroundColor(BotanicaTheme.Colors.success)
                                         .font(BotanicaTheme.Typography.caption)
                                 case .failure(let error):
                                     Label("Connection failed: \(error)", systemImage: "xmark.circle.fill")
-                                        .foregroundColor(.red)
+                                        .foregroundColor(BotanicaTheme.Colors.error)
                                         .font(BotanicaTheme.Typography.caption)
                                 }
                             }
@@ -182,7 +182,7 @@ struct AISettingsView: View {
                         }
                 }
                 if coachEnabled {
-                    Section(header: Text("Coach Rules"), footer: Text("Coach runs locally by default. Disable specific rules to reduce suggestions.").font(BotanicaTheme.Typography.caption).foregroundColor(.secondary)) {
+                    Section(header: Text("Coach Rules"), footer: Text("Coach runs locally by default. Disable specific rules to reduce suggestions.").font(BotanicaTheme.Typography.caption).foregroundColor(BotanicaTheme.Colors.textSecondary)) {
                         Toggle("Overdue Watering Suggestions", isOn: $coachRuleOverdueWatering)
                         // Preview
                         CoachCard(suggestion: CoachSuggestion(
@@ -209,7 +209,7 @@ struct AISettingsView: View {
                         .disabled(true)
                         .opacity(0.8)
                     }
-                    Section(header: Text("Coach Maintenance"), footer: Text("Clears cached suggestions and re-evaluates rules on next open.").font(BotanicaTheme.Typography.caption).foregroundColor(.secondary)) {
+                    Section(header: Text("Coach Maintenance"), footer: Text("Clears cached suggestions and re-evaluates rules on next open.").font(BotanicaTheme.Typography.caption).foregroundColor(BotanicaTheme.Colors.textSecondary)) {
                         Button(role: .destructive) {
                             coachResetToken = UUID().uuidString
                             HapticManager.shared.selection()
@@ -220,12 +220,12 @@ struct AISettingsView: View {
                 }
                 
                 if developerOptionsEnabled {
-                    Section(header: Text("Developer Options"), footer: Text("Adjust image cache size. Use carefully.").font(BotanicaTheme.Typography.caption).foregroundColor(.secondary)) {
+                    Section(header: Text("Developer Options"), footer: Text("Adjust image cache size. Use carefully.").font(BotanicaTheme.Typography.caption).foregroundColor(BotanicaTheme.Colors.textSecondary)) {
                         VStack(alignment: .leading) {
                             HStack {
                                 Text("Thumbnail Cache Capacity: \(Int(thumbnailCacheCapacity))")
                                     .font(BotanicaTheme.Typography.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                 Spacer()
                                 Button("Apply") {
                                     Task { await ThumbnailCache.shared.setCapacity(Int(thumbnailCacheCapacity)) }

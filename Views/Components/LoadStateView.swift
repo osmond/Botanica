@@ -28,17 +28,17 @@ struct LoadStateView<Content: View, Loading: View>: View {
         case .failed(let message):
             VStack(spacing: BotanicaTheme.Spacing.md) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.largeTitle)
-                    .foregroundColor(.orange)
+                    .font(BotanicaTheme.Typography.largeTitle)
+                    .foregroundColor(BotanicaTheme.Colors.warning)
                 Text("Something went wrong")
                     .font(BotanicaTheme.Typography.headline)
                 Text(message)
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
                 if let retry {
                     Button("Retry") { retry() }
-                        .buttonStyle(.borderedProminent)
+                        .primaryButtonStyle()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -33,7 +33,7 @@ struct LoadingView: View {
                 
                 // Central plant icon
                 Image(systemName: "leaf.fill")
-                    .font(.system(size: 24, weight: .light))
+                    .font(.system(size: BotanicaTheme.Sizing.iconPrimary, weight: .light))
                     .foregroundColor(BotanicaTheme.Colors.primary)
                     .scaleEffect(isAnimating ? 1.1 : 0.9)
                     .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: isAnimating)
@@ -76,14 +76,14 @@ struct CompactLoadingView: View {
     var body: some View {
         HStack(spacing: BotanicaTheme.Spacing.sm) {
             Image(systemName: "leaf.fill")
-                .font(.callout)
+                .font(BotanicaTheme.Typography.callout)
                 .foregroundColor(BotanicaTheme.Colors.primary)
                 .rotationEffect(.degrees(isAnimating ? 360 : 0))
                 .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isAnimating)
             
             Text("Loading...")
                 .font(BotanicaTheme.Typography.callout)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
         .onAppear {
             isAnimating = true
@@ -108,9 +108,9 @@ struct SkeletonView: View {
             .fill(
                 LinearGradient(
                     colors: [
-                        Color.gray.opacity(0.3),
-                        Color.gray.opacity(0.1),
-                        Color.gray.opacity(0.3)
+                        BotanicaTheme.Colors.border.opacity(0.4),
+                        BotanicaTheme.Colors.surfaceAlt.opacity(0.8),
+                        BotanicaTheme.Colors.border.opacity(0.4)
                     ],
                     startPoint: .leading,
                     endPoint: .trailing
@@ -123,7 +123,7 @@ struct SkeletonView: View {
                         LinearGradient(
                             colors: [
                                 Color.clear,
-                                Color.white.opacity(0.6),
+                                BotanicaTheme.Colors.surface.opacity(0.8),
                                 Color.clear
                             ],
                             startPoint: .leading,
@@ -141,12 +141,12 @@ struct SkeletonView: View {
 }
 
 #Preview {
-    VStack(spacing: 40) {
+    VStack(spacing: BotanicaTheme.Spacing.xxl) {
         LoadingView(message: "Growing your garden...")
         
         CompactLoadingView()
         
-        VStack(spacing: 12) {
+        VStack(spacing: BotanicaTheme.Spacing.smPlus) {
             SkeletonView(height: 60, cornerRadius: 8)
             SkeletonView(height: 20)
             SkeletonView(height: 16)

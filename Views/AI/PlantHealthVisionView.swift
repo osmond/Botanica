@@ -16,6 +16,7 @@ struct PlantHealthVisionView: View {
     @State private var analysisHistory: [PlantHealthAnalysis] = []
     @State private var loadState: LoadState = .idle
     @State private var errorMessage: String?
+    @State private var tipsExpanded = false
     
     private var isFailed: Bool {
         if case .failed = loadState { return true }
@@ -58,20 +59,6 @@ struct PlantHealthVisionView: View {
             )
             .navigationTitle("Health Analysis")
             .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button("Take Photo", systemImage: "camera") {
-                            showingCamera = true
-                        }
-                        Button("Choose Photo", systemImage: "photo") {
-                            showingImagePicker = true
-                        }
-                    } label: {
-                        Image(systemName: "plus.circle")
-                    }
-                }
-            }
             .sheet(isPresented: $showingImagePicker) {
                 ImagePicker(selectedImage: $selectedImage)
             }
@@ -115,7 +102,7 @@ struct PlantHealthVisionView: View {
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(maxHeight: 300)
+                        .frame(maxHeight: 340)
                         .cornerRadius(BotanicaTheme.CornerRadius.medium)
                         .shadow(radius: 4)
                     
@@ -139,23 +126,29 @@ struct PlantHealthVisionView: View {
                     
                     if visionAnalyzer.isAnalyzing {
                         ProgressView("Analyzing plant health...")
-                            .font(.caption)
+                            .font(BotanicaTheme.Typography.caption)
                     }
                 }
             } else {
                 VStack(spacing: BotanicaTheme.Spacing.lg) {
-                    Image(systemName: "camera.viewfinder")
-                        .font(.system(size: 60))
-                        .foregroundColor(.secondary)
+                    HStack(spacing: BotanicaTheme.Spacing.sm) {
+                        Image(systemName: "camera.viewfinder")
+                            .font(BotanicaTheme.Typography.title4)
+                            .foregroundColor(BotanicaTheme.Colors.primary)
+                        Text("Health Analysis Photo")
+                            .font(BotanicaTheme.Typography.labelEmphasized)
+                            .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                        Spacer()
+                    }
                     
                     Text("Take or select a photo of \(plant.nickname)")
-                        .font(.headline)
+                        .font(BotanicaTheme.Typography.headline)
                         .multilineTextAlignment(.center)
                     
-                    Text("For best results, ensure good lighting and capture the entire plant")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
+                    Text("For best results, use good lighting and capture the entire plant.")
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
                     
                     HStack(spacing: BotanicaTheme.Spacing.lg) {
                         Button("Take Photo") {
@@ -172,8 +165,8 @@ struct PlantHealthVisionView: View {
                 .padding(BotanicaTheme.Spacing.xl)
                 .background(
                     RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                        .fill(Color(.systemGray6))
-                        .strokeBorder(Color(.systemGray4), style: StrokeStyle(lineWidth: 1, dash: [5]))
+                        .fill(BotanicaTheme.Colors.surfaceAlt)
+                        .strokeBorder(BotanicaTheme.Colors.border, style: StrokeStyle(lineWidth: 1, dash: [5]))
                 )
             }
         }
@@ -187,11 +180,11 @@ struct PlantHealthVisionView: View {
                 Image(systemName: "stethoscope")
                     .foregroundColor(BotanicaTheme.Colors.primary)
                 Text("Quick Health Screen")
-                    .font(.headline)
+                    .font(BotanicaTheme.Typography.headline)
                 Spacer()
                 Text("\(String(format: "%.0f", result.confidence * 100))% confidence")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             
             HStack(spacing: BotanicaTheme.Spacing.lg) {
@@ -201,13 +194,13 @@ struct PlantHealthVisionView: View {
                             .fill(result.overallHealth.color)
                             .frame(width: 12, height: 12)
                         Text(result.overallHealth.description)
-                            .font(.subheadline)
+                            .font(BotanicaTheme.Typography.subheadline)
                             .fontWeight(.medium)
                     }
                     
                     Text("Overall Status")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 Spacer()
@@ -220,23 +213,23 @@ struct PlantHealthVisionView: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                .font(.caption)
+                .font(BotanicaTheme.Typography.caption)
             }
             
             if !result.alerts.isEmpty {
                 Divider()
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Alerts")
-                        .font(.subheadline)
+                        .font(BotanicaTheme.Typography.subheadline)
                         .fontWeight(.medium)
                     
                     ForEach(result.alerts, id: \.self) { alert in
                         HStack {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.orange)
-                                .font(.caption)
+                                .foregroundColor(BotanicaTheme.Colors.warning)
+                                .font(BotanicaTheme.Typography.caption)
                             Text(alert)
-                                .font(.caption)
+                                .font(BotanicaTheme.Typography.caption)
                             Spacer()
                         }
                     }
@@ -246,7 +239,7 @@ struct PlantHealthVisionView: View {
         .padding(BotanicaTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(Color(.systemBackground))
+                .fill(BotanicaTheme.Colors.surface)
                 .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
         )
     }
@@ -259,12 +252,12 @@ struct PlantHealthVisionView: View {
                 Image(systemName: "brain.head.profile")
                     .foregroundColor(BotanicaTheme.Colors.primary)
                 Text("AI Health Analysis")
-                    .font(.headline)
+                    .font(BotanicaTheme.Typography.headline)
                 Spacer()
                 Button("View Full Report") {
                     showingDetailedAnalysis = true
                 }
-                .font(.caption)
+                .font(BotanicaTheme.Typography.caption)
                 .foregroundColor(BotanicaTheme.Colors.primary)
             }
             
@@ -272,11 +265,11 @@ struct PlantHealthVisionView: View {
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                 HStack {
                     Text("Health Score")
-                        .font(.subheadline)
+                        .font(BotanicaTheme.Typography.subheadline)
                         .fontWeight(.medium)
                     Spacer()
                     Text("\(String(format: "%.0f", analysis.healthScore))/100")
-                        .font(.title2)
+                        .font(BotanicaTheme.Typography.title2)
                         .fontWeight(.bold)
                         .foregroundColor(healthScoreColor(analysis.healthScore))
                 }
@@ -290,16 +283,16 @@ struct PlantHealthVisionView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Key Insights")
-                        .font(.subheadline)
+                        .font(BotanicaTheme.Typography.subheadline)
                         .fontWeight(.medium)
                     
                     ForEach(analysis.aiAssessment.primaryInsights.prefix(3), id: \.self) { insight in
                         HStack(alignment: .top) {
                             Image(systemName: "lightbulb.fill")
-                                .foregroundColor(.yellow)
-                                .font(.caption)
+                                .foregroundColor(BotanicaTheme.Colors.sunYellow)
+                                .font(BotanicaTheme.Typography.caption)
                             Text(insight)
-                                .font(.caption)
+                                .font(BotanicaTheme.Typography.caption)
                             Spacer()
                         }
                     }
@@ -311,7 +304,7 @@ struct PlantHealthVisionView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Detected Issues")
-                        .font(.subheadline)
+                        .font(BotanicaTheme.Typography.subheadline)
                         .fontWeight(.medium)
                     
                     ForEach(analysis.healthIssues.prefix(3), id: \.type.rawValue) { issue in
@@ -325,16 +318,16 @@ struct PlantHealthVisionView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Immediate Actions")
-                        .font(.subheadline)
+                        .font(BotanicaTheme.Typography.subheadline)
                         .fontWeight(.medium)
                     
                     ForEach(analysis.recommendations.filter { $0.priority == .high }.prefix(2), id: \.action) { rec in
                         HStack(alignment: .top) {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.caption)
+                                .foregroundColor(BotanicaTheme.Colors.success)
+                                .font(BotanicaTheme.Typography.caption)
                             Text(rec.action)
-                                .font(.caption)
+                                .font(BotanicaTheme.Typography.caption)
                             Spacer()
                         }
                     }
@@ -344,7 +337,7 @@ struct PlantHealthVisionView: View {
         .padding(BotanicaTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(Color(.systemBackground))
+                .fill(BotanicaTheme.Colors.surface)
                 .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
         )
     }
@@ -357,7 +350,7 @@ struct PlantHealthVisionView: View {
                 Image(systemName: "clock.arrow.circlepath")
                     .foregroundColor(BotanicaTheme.Colors.primary)
                 Text("Analysis History")
-                    .font(.headline)
+                    .font(BotanicaTheme.Typography.headline)
                 Spacer()
             }
             
@@ -372,7 +365,7 @@ struct PlantHealthVisionView: View {
         .padding(BotanicaTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(Color(.systemBackground))
+                .fill(BotanicaTheme.Colors.surface)
                 .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
         )
     }
@@ -381,26 +374,41 @@ struct PlantHealthVisionView: View {
     
     private var tipsSection: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
-            HStack {
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(.blue)
-                Text("Photography Tips")
-                    .font(.headline)
-                Spacer()
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    tipsExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(BotanicaTheme.Colors.info)
+                    Text("Photography Tips")
+                        .font(BotanicaTheme.Typography.headline)
+                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                    Spacer()
+                    Image(systemName: tipsExpanded ? "chevron.down" : "chevron.right")
+                        .font(BotanicaTheme.Typography.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                }
             }
-            
-            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
-                TipRow(icon: "sun.max.fill", tip: "Use natural lighting when possible")
-                TipRow(icon: "viewfinder", tip: "Include the entire plant in frame")
-                TipRow(icon: "hand.raised.fill", tip: "Keep camera steady to avoid blur")
-                TipRow(icon: "leaf.fill", tip: "Take close-ups of concerning areas")
-                TipRow(icon: "camera.filters", tip: "Avoid using filters or editing")
+            .buttonStyle(.plain)
+
+            if tipsExpanded {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+                    TipRow(icon: "sun.max.fill", tip: "Use natural lighting when possible")
+                    TipRow(icon: "viewfinder", tip: "Include the entire plant in frame")
+                    TipRow(icon: "hand.raised.fill", tip: "Keep camera steady to avoid blur")
+                    TipRow(icon: "leaf.fill", tip: "Take close-ups of concerning areas")
+                    TipRow(icon: "camera.filters", tip: "Avoid using filters or editing")
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .padding(BotanicaTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(Color(.systemGray6))
+                .fill(BotanicaTheme.Colors.surfaceAlt)
         )
     }
     
@@ -445,17 +453,17 @@ struct PlantHealthVisionView: View {
                 .progressViewStyle(.circular)
             Text("Running health checks on your photo")
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func healthScoreColor(_ score: Double) -> Color {
         switch score {
-        case 80...100: return .green
-        case 60...79: return .orange
-        case 40...59: return .yellow
-        default: return .red
+        case 80...100: return BotanicaTheme.Colors.success
+        case 60...79: return BotanicaTheme.Colors.warning
+        case 40...59: return BotanicaTheme.Colors.nutrientOrange
+        default: return BotanicaTheme.Colors.error
         }
     }
 }
@@ -523,22 +531,22 @@ struct HealthIssueRow: View {
         HStack(alignment: .top) {
             Image(systemName: severityIcon(issue.severity))
                 .foregroundColor(severityColor(issue.severity))
-                .font(.caption)
+                .font(BotanicaTheme.Typography.caption)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(issue.type.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
-                    .font(.caption)
+                    .font(BotanicaTheme.Typography.caption)
                     .fontWeight(.medium)
                 Text(issue.description)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(BotanicaTheme.Typography.caption2)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             
             Spacer()
             
             Text("\(String(format: "%.0f", issue.confidence * 100))%")
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(BotanicaTheme.Typography.caption2)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
     }
     
@@ -553,10 +561,10 @@ struct HealthIssueRow: View {
     
     private func severityColor(_ severity: IssueSeverity) -> Color {
         switch severity {
-        case .low: return .blue
-        case .moderate: return .orange
-        case .high: return .red
-        case .critical: return .purple
+        case .low: return BotanicaTheme.Colors.info
+        case .moderate: return BotanicaTheme.Colors.nutrientOrange
+        case .high: return BotanicaTheme.Colors.error
+        case .critical: return BotanicaTheme.Colors.error
         }
     }
 }
@@ -577,11 +585,11 @@ struct HistoryRow: View {
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(analysis.analysisDate, style: .date)
-                        .font(.subheadline)
+                        .font(BotanicaTheme.Typography.subheadline)
                         .fontWeight(.medium)
                     Text("Score: \(String(format: "%.0f", analysis.healthScore))/100")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 Spacer()
@@ -591,8 +599,8 @@ struct HistoryRow: View {
                         .fill(healthScoreColor(analysis.healthScore))
                         .frame(width: 12, height: 12)
                     Text("\(analysis.healthIssues.count) issues")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(BotanicaTheme.Typography.caption2)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
             }
         }
@@ -601,9 +609,9 @@ struct HistoryRow: View {
     
     private func healthScoreColor(_ score: Double) -> Color {
         switch score {
-        case 80...100: return .green
-        case 60...79: return .orange
-        default: return .red
+        case 80...100: return BotanicaTheme.Colors.success
+        case 60...79: return BotanicaTheme.Colors.warning
+        default: return BotanicaTheme.Colors.error
         }
     }
 }
@@ -615,11 +623,11 @@ struct TipRow: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.blue)
-                .font(.caption)
+                .foregroundColor(BotanicaTheme.Colors.info)
+                .font(BotanicaTheme.Typography.caption)
                 .frame(width: 16)
             Text(tip)
-                .font(.caption)
+                .font(BotanicaTheme.Typography.caption)
             Spacer()
         }
     }
@@ -645,12 +653,12 @@ struct DetailedAnalysisView: View {
                         
                         VStack {
                             Text("\(String(format: "%.0f", analysis.healthScore))/100")
-                                .font(.largeTitle)
+                                .font(BotanicaTheme.Typography.largeTitle)
                                 .fontWeight(.bold)
                                 .foregroundColor(healthScoreColor(analysis.healthScore))
                             Text("Health Score")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(BotanicaTheme.Typography.caption)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         }
                     }
                     
@@ -680,7 +688,7 @@ struct DetailedAnalysisView: View {
                         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                             ForEach(analysis.aiAssessment.primaryInsights, id: \.self) { insight in
                                 Text("• \(insight)")
-                                    .font(.caption)
+                                    .font(BotanicaTheme.Typography.caption)
                             }
                         }
                     }
@@ -712,9 +720,9 @@ struct DetailedAnalysisView: View {
     
     private func healthScoreColor(_ score: Double) -> Color {
         switch score {
-        case 80...100: return .green
-        case 60...79: return .orange
-        default: return .red
+        case 80...100: return BotanicaTheme.Colors.success
+        case 60...79: return BotanicaTheme.Colors.warning
+        default: return BotanicaTheme.Colors.error
         }
     }
 }
@@ -736,7 +744,7 @@ struct AnalysisSection<Content: View>: View {
                 Image(systemName: icon)
                     .foregroundColor(BotanicaTheme.Colors.primary)
                 Text(title)
-                    .font(.headline)
+                    .font(BotanicaTheme.Typography.headline)
                 Spacer()
             }
             
@@ -745,7 +753,7 @@ struct AnalysisSection<Content: View>: View {
         .padding(BotanicaTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(Color(.systemBackground))
+                .fill(BotanicaTheme.Colors.surface)
                 .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
         )
     }
@@ -758,11 +766,11 @@ struct VisionDetailRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             Spacer()
             Text(value)
-                .font(.caption)
+                .font(BotanicaTheme.Typography.caption)
                 .fontWeight(.medium)
         }
     }
@@ -775,12 +783,12 @@ struct DetailedHealthIssueCard: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             HStack {
                 Text(issue.type.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
-                    .font(.subheadline)
+                    .font(BotanicaTheme.Typography.subheadline)
                     .fontWeight(.medium)
                 Spacer()
                 Text(issue.severity.description)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
+                    .font(BotanicaTheme.Typography.caption)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
                     .padding(.vertical, 2)
                     .background(severityColor(issue.severity).opacity(0.2))
                     .foregroundColor(severityColor(issue.severity))
@@ -788,25 +796,25 @@ struct DetailedHealthIssueCard: View {
             }
             
             Text(issue.description)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             
             Text("Recommended: \(issue.recommendedAction)")
-                .font(.caption)
+                .font(BotanicaTheme.Typography.caption)
                 .fontWeight(.medium)
                 .foregroundColor(BotanicaTheme.Colors.primary)
         }
         .padding(BotanicaTheme.Spacing.sm)
-        .background(Color(.systemGray6))
+        .background(BotanicaTheme.Colors.surfaceAlt)
         .cornerRadius(BotanicaTheme.CornerRadius.small)
     }
     
     private func severityColor(_ severity: IssueSeverity) -> Color {
         switch severity {
-        case .low: return .blue
-        case .moderate: return .orange
-        case .high: return .red
-        case .critical: return .purple
+        case .low: return BotanicaTheme.Colors.info
+        case .moderate: return BotanicaTheme.Colors.nutrientOrange
+        case .high: return BotanicaTheme.Colors.error
+        case .critical: return BotanicaTheme.Colors.error
         }
     }
 }
@@ -818,21 +826,21 @@ struct RecommendationCard: View {
         HStack(alignment: .top) {
             Image(systemName: priorityIcon(recommendation.priority))
                 .foregroundColor(priorityColor(recommendation.priority))
-                .font(.caption)
+                .font(BotanicaTheme.Typography.caption)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(recommendation.action)
-                    .font(.caption)
+                    .font(BotanicaTheme.Typography.caption)
                     .fontWeight(.medium)
                 Text(recommendation.reason)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(BotanicaTheme.Typography.caption2)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             
             Spacer()
         }
         .padding(BotanicaTheme.Spacing.sm)
-        .background(Color(.systemGray6))
+        .background(BotanicaTheme.Colors.surfaceAlt)
         .cornerRadius(BotanicaTheme.CornerRadius.small)
     }
     
@@ -847,10 +855,10 @@ struct RecommendationCard: View {
     
     private func priorityColor(_ priority: RecommendationPriority) -> Color {
         switch priority {
-        case .low: return .blue
-        case .medium: return .yellow
-        case .high: return .orange
-        case .urgent: return .red
+        case .low: return BotanicaTheme.Colors.info
+        case .medium: return BotanicaTheme.Colors.warning
+        case .high: return BotanicaTheme.Colors.nutrientOrange
+        case .urgent: return BotanicaTheme.Colors.error
         }
     }
 }

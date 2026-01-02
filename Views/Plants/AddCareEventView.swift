@@ -78,7 +78,7 @@ struct AddCareEventView: View {
                                 .frame(width: 40, height: 40)
                             
                             Image(systemName: typeIcon)
-                                .font(.system(size: 16, weight: .medium))
+                                .font(BotanicaTheme.Typography.bodyLargeEmphasized)
                                 .foregroundColor(typeColor)
                         }
                         
@@ -115,18 +115,18 @@ struct AddCareEventView: View {
                                 .frame(width: 100)
                                 .keyboardType(.decimalPad)
                             Text(amountUnit)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         }
                         
                         if !recentAmounts.isEmpty {
                             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                                 Text("Recent presets")
                                     .font(BotanicaTheme.Typography.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                 LazyVGrid(
-                                    columns: [GridItem(.adaptive(minimum: 100), spacing: 8)],
+                                    columns: [GridItem(.adaptive(minimum: 100), spacing: BotanicaTheme.Spacing.sm)],
                                     alignment: .leading,
-                                    spacing: 8
+                                    spacing: BotanicaTheme.Spacing.sm
                                 ) {
                                     ForEach(recentAmounts, id: \.self) { value in
                                         Button("\(Int(round(value))) \(amountUnit)") {
@@ -193,7 +193,7 @@ struct AddCareEventView: View {
     private var recommendationsView: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             if selectedType == .watering {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     HStack {
                         Image(systemName: "drop.fill")
                             .foregroundColor(BotanicaTheme.Colors.waterBlue)
@@ -204,15 +204,15 @@ struct AddCareEventView: View {
                     
                     Text("Amount: \(plant.recommendedWateringAmount.amount)\(plant.recommendedWateringAmount.unit)")
                         .font(BotanicaTheme.Typography.body)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Text("Frequency: Every \(plant.wateringFrequency) days")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         
                     Text("💡 Check soil moisture before watering")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         .italic()
                 }
                 .padding(BotanicaTheme.Spacing.sm)
@@ -220,7 +220,7 @@ struct AddCareEventView: View {
                 .cornerRadius(BotanicaTheme.CornerRadius.small)            } else if selectedType == .fertilizing {
                 let fertilizerRec = plant.recommendedFertilizerAmount
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     HStack {
                         Image(systemName: "leaf.arrow.circlepath")
                             .foregroundColor(BotanicaTheme.Colors.nutrientOrange)
@@ -231,15 +231,15 @@ struct AddCareEventView: View {
                     
                     Text("Amount: \(String(format: "%.1f", fertilizerRec.amount))\(fertilizerRec.unit)")
                         .font(BotanicaTheme.Typography.body)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Text("Dilution: \(fertilizerRec.dilution)")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     
                     Text("💡 \(fertilizerRec.instructions)")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         .italic()
                 }
                 .padding(BotanicaTheme.Spacing.sm)

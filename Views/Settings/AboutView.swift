@@ -69,7 +69,7 @@ struct AboutView: View {
                     .shadow(color: BotanicaTheme.Colors.leafGreen.opacity(0.3), radius: 10, x: 0, y: 5)
                 
                 Image(systemName: "leaf.fill")
-                    .font(.system(size: 50, weight: .medium))
+                    .font(.system(size: BotanicaTheme.Sizing.iconFeature, weight: .medium))
                     .foregroundColor(.white)
             }
             
@@ -77,11 +77,11 @@ struct AboutView: View {
                 Text(appName)
                     .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 Text("Your AI-Powered Plant Care Companion")
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -93,7 +93,7 @@ struct AboutView: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             Text("About Botanica")
                 .font(BotanicaTheme.Typography.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             
             Text("""
             Botanica is designed to help you become the best plant parent you can be. With AI-powered plant identification, personalized care recommendations, and comprehensive tracking tools, keeping your plants healthy has never been easier.
@@ -101,7 +101,7 @@ struct AboutView: View {
             Whether you're a beginner learning the basics or an experienced gardener looking to optimize your care routine, Botanica provides the insights and reminders you need to help your plants thrive.
             """)
                 .font(BotanicaTheme.Typography.body)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 .lineSpacing(4)
         }
         .padding(BotanicaTheme.Spacing.lg)
@@ -115,7 +115,7 @@ struct AboutView: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             Text("Key Features")
                 .font(BotanicaTheme.Typography.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -172,7 +172,7 @@ struct AboutView: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
             Text("Powered By")
                 .font(BotanicaTheme.Typography.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             
             VStack(spacing: BotanicaTheme.Spacing.sm) {
                 CreditRow(
@@ -202,11 +202,11 @@ struct AboutView: View {
         VStack(spacing: BotanicaTheme.Spacing.sm) {
             Text("Version \\(appVersion) (\\(buildNumber))")
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             
             Text("© 2024 Botanica. Made for plant lovers.")
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -228,19 +228,19 @@ struct FeatureCard: View {
                     .frame(width: 50, height: 50)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 24, weight: .medium))
+                    .font(.system(size: BotanicaTheme.Sizing.iconPrimary, weight: .medium))
                     .foregroundColor(color)
             }
             
-            VStack(spacing: 4) {
+            VStack(spacing: BotanicaTheme.Spacing.xs) {
                 Text(title)
                     .font(BotanicaTheme.Typography.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 Text(description)
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -257,15 +257,15 @@ struct CreditRow: View {
     let description: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
             Text(title)
                 .font(BotanicaTheme.Typography.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             
             Text(description)
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
     }
 }

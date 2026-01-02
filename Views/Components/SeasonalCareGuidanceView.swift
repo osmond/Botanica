@@ -84,7 +84,7 @@ struct SeasonalCareGuidanceView: View {
                         .fontWeight(.bold)
                     Text(currentSeason.careModifications)
                         .font(BotanicaTheme.Typography.body)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
@@ -97,10 +97,10 @@ struct SeasonalCareGuidanceView: View {
                                 Circle()
                                     .fill(currentSeason.primaryColor)
                                     .frame(width: 6, height: 6)
-                                    .padding(.top, 6)
+                                    .padding(.top, BotanicaTheme.Spacing.sm)
                                 Text(tip)
                                     .font(BotanicaTheme.Typography.body)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             }
                         }
                     }
@@ -117,23 +117,23 @@ struct SeasonalCareGuidanceView: View {
                     if plants.isEmpty {
                         Text("Add plants to receive seasonal guidance.")
                             .font(BotanicaTheme.Typography.body)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     } else {
                         VStack(spacing: BotanicaTheme.Spacing.md) {
                             ForEach(plants.prefix(6), id: \.id) { plant in
                                 HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
+                                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                                         Text(plant.displayName)
                                             .font(BotanicaTheme.Typography.subheadline)
-                                            .foregroundColor(.primary)
+                                            .foregroundColor(BotanicaTheme.Colors.textPrimary)
                                         Text(nextCareLine(for: plant))
                                             .font(BotanicaTheme.Typography.caption)
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                        .font(BotanicaTheme.Typography.caption)
+                                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                 }
                                 .padding(BotanicaTheme.Spacing.md)
                                 .background(BotanicaTheme.Colors.cardBackground)

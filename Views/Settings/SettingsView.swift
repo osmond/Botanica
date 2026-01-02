@@ -54,23 +54,23 @@ struct SettingsView: View {
                             .frame(width: 32, height: 32)
                         
                         Image(systemName: "bell.fill")
-                            .font(.system(size: 16, weight: .medium))
+                            .font(BotanicaTheme.Typography.bodyLargeEmphasized)
                             .foregroundColor(BotanicaTheme.Colors.primary)
                     }
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Notifications")
                             .font(BotanicaTheme.Typography.subheadline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(BotanicaTheme.Colors.textPrimary)
                         
                         Text("Manage plant care reminders")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     
                     Spacer()
                 }
-                .padding(.vertical, 2)
+                .padding(.vertical, BotanicaTheme.Spacing.xxs)
             }
             .buttonStyle(.plain)
         }

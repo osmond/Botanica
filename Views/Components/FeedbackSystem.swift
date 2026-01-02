@@ -13,10 +13,10 @@ struct FeedbackOverlay: View {
     
     private var color: Color {
         switch type {
-        case .success: return .green
-        case .error: return .red
-        case .warning: return .orange
-        case .info: return BotanicaTheme.Colors.primary
+        case .success: return BotanicaTheme.Colors.success
+        case .error: return BotanicaTheme.Colors.error
+        case .warning: return BotanicaTheme.Colors.warning
+        case .info: return BotanicaTheme.Colors.info
         }
     }
     
@@ -34,10 +34,10 @@ struct FeedbackOverlay: View {
             HStack(spacing: BotanicaTheme.Spacing.md) {
                 Image(systemName: icon)
                     .foregroundColor(color)
-                    .font(.title3)
+                    .font(BotanicaTheme.Typography.title3)
                 Text(message)
                     .font(BotanicaTheme.Typography.headline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
             }
             .padding(BotanicaTheme.Spacing.lg)
             .background(
@@ -87,10 +87,9 @@ struct ToastView: View {
 }
 
 #Preview {
-    VStack(spacing: 20) {
+    VStack(spacing: BotanicaTheme.Spacing.mdPlus) {
         FeedbackOverlay(type: .success, message: "Saved", isPresented: .constant(true))
         ToastView(message: "Welcome", isPresented: .constant(true))
     }
     .padding()
 }
-

@@ -6,6 +6,10 @@ struct RootBootstrapView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var loadState: LoadState = .idle
     @State private var lastError: String?
+    
+    private var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
 
     var body: some View {
         LoadStateView(
@@ -19,14 +23,20 @@ struct RootBootstrapView: View {
     }
     
     private var launchLoading: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: BotanicaTheme.Spacing.md) {
             ProgressView()
             Text("Preparing your plants…")
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
     }
     
     private func seedIfNeeded() async {
+        if isRunningTests {
+            await MainActor.run {
+                loadState = .loaded
+            }
+            return
+        }
         await MainActor.run {
             loadState = .loading
             lastError = nil

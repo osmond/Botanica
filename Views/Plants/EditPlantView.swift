@@ -208,7 +208,7 @@ struct EditPlantView: View {
                     } else {
                         VStack(spacing: BotanicaTheme.Spacing.sm) {
                             Image(systemName: "leaf.fill")
-                                .font(.system(size: 40))
+                                .font(.system(size: BotanicaTheme.Sizing.iconXXXL))
                                 .foregroundColor(.white)
                             
                             Text("Add Photo")
@@ -222,16 +222,16 @@ struct EditPlantView: View {
                 }
                 
                 // Plant name preview
-                VStack(spacing: 4) {
+                VStack(spacing: BotanicaTheme.Spacing.xs) {
                     Text(displayName.isEmpty ? "Plant Name" : displayName)
                         .font(BotanicaTheme.Typography.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     if !scientificName.isEmpty {
                         Text(scientificName)
                             .font(BotanicaTheme.Typography.scientificName)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
             }
@@ -253,7 +253,7 @@ struct EditPlantView: View {
                 if let next = previewNextWaterDate {
                     Text("Next Water: \(dateString(next))")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 Button {
                     applyRecommendedBoth()
@@ -292,13 +292,13 @@ struct EditPlantView: View {
                             .fill(BotanicaTheme.Colors.primary.opacity(0.1))
                             .frame(width: 80, height: 80)
                             .overlay {
-                                VStack(spacing: 4) {
+                                VStack(spacing: BotanicaTheme.Spacing.xs) {
                                     Image(systemName: "plus")
-                                        .font(.title2)
+                                        .font(BotanicaTheme.Typography.title2)
                                         .foregroundColor(BotanicaTheme.Colors.primary)
                                     
                                     Text("Add")
-                                        .font(.caption2)
+                                        .font(BotanicaTheme.Typography.caption2)
                                         .foregroundColor(BotanicaTheme.Colors.primary)
                                 }
                             }
@@ -313,8 +313,8 @@ struct EditPlantView: View {
                                     showingDeleteConfirmation = true
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")
-                                        .font(.title3)
-                                        .foregroundStyle(.white, .red)
+                                        .font(BotanicaTheme.Typography.title3)
+                                        .foregroundStyle(.white, BotanicaTheme.Colors.error)
                                 }
                                 .offset(x: 8, y: -8)
                             }
@@ -329,7 +329,7 @@ struct EditPlantView: View {
     private var potEnvironmentSection: some View {
         Section("Pot & Environment") {
             // Units + Pot Size / Height
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                 // Units toggle
                 Picker("Units", selection: $useCentimeters) {
                     Text("in").tag(false)
@@ -343,7 +343,7 @@ struct EditPlantView: View {
                     Spacer()
                     Text(displayPotSize)
                         .font(BotanicaTheme.Typography.callout)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
 
                 HStack(spacing: BotanicaTheme.Spacing.md) {
@@ -361,7 +361,7 @@ struct EditPlantView: View {
                     Spacer()
                     Text(displayPotHeight)
                         .font(BotanicaTheme.Typography.callout)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 HStack(spacing: BotanicaTheme.Spacing.md) {
                     TextField(useCentimeters ? "Height (cm)" : "Height (in)", text: $potHeightInput)
@@ -372,7 +372,7 @@ struct EditPlantView: View {
                         }
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Pot Material")
                         .font(BotanicaTheme.Typography.headline)
                     Picker("Pot Material", selection: $potMaterial) {
@@ -385,7 +385,7 @@ struct EditPlantView: View {
             }
 
             // Light Level
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                 Text("Light Level")
                     .font(BotanicaTheme.Typography.headline)
                 Picker("Light Level", selection: $lightLevel) {
@@ -401,7 +401,7 @@ struct EditPlantView: View {
     // MARK: - Water Every
     private var waterEverySection: some View {
         Section("Water Every") {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                 HStack {
                     Text("Every \(wateringFrequency) days")
                         .font(BotanicaTheme.Typography.headline)
@@ -429,7 +429,7 @@ struct EditPlantView: View {
     // MARK: - Water Dose
     private var waterDoseSection: some View {
         Section("Water Dose") {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                 HStack {
                     Text("Amount")
                         .font(BotanicaTheme.Typography.headline)
@@ -445,10 +445,10 @@ struct EditPlantView: View {
 
                 HStack(spacing: BotanicaTheme.Spacing.md) {
                     // Amount input
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Value")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         TextField("250", value: $recommendedWaterAmount, format: .number)
                             .keyboardType(.decimalPad)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -459,10 +459,10 @@ struct EditPlantView: View {
                     }
 
                     // Unit picker
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Unit")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         Picker("Water Unit", selection: $waterUnit) {
                             ForEach(WaterUnit.allCases, id: \.self) { unit in
                                 Text(unit.fullName).tag(unit)
@@ -473,10 +473,10 @@ struct EditPlantView: View {
                     }
 
                     Spacer()
-                    VStack(alignment: .trailing, spacing: 4) {
+                    VStack(alignment: .trailing, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Current")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         Text("\(Int(recommendedWaterAmount))\(waterUnit.description)")
                             .font(BotanicaTheme.Typography.callout)
                             .foregroundColor(BotanicaTheme.Colors.waterBlue)
@@ -514,14 +514,14 @@ struct EditPlantView: View {
         Section("Advanced") {
             DisclosureGroup("Details") {
                 // Fertilizing Frequency
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     HStack {
                         Text("Fertilizing Frequency")
                             .font(BotanicaTheme.Typography.headline)
                         Spacer()
                         Text("\(fertilizingFrequency) days")
                             .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     Slider(value: Binding(
                         get: { Double(fertilizingFrequency) },
@@ -531,14 +531,14 @@ struct EditPlantView: View {
                 }
                 
                 // Repotting
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     HStack {
                         Text("Repot Every")
                             .font(BotanicaTheme.Typography.headline)
                         Spacer()
                         Text("\(repotFrequencyMonths) mo")
                             .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     Slider(value: Binding(
                         get: { Double(repotFrequencyMonths) },
@@ -546,9 +546,9 @@ struct EditPlantView: View {
                     ), in: 6...36, step: 3)
                     .tint(BotanicaTheme.Colors.nutrientOrange)
                     
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                         Toggle(isOn: $hasBeenRepotted) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: BotanicaTheme.Spacing.sm) {
                                 Image(systemName: "flowerpot.fill")
                                     .foregroundColor(BotanicaTheme.Colors.nutrientOrange)
                                 Text("Last Repotted")
@@ -560,47 +560,47 @@ struct EditPlantView: View {
                                 set: { lastRepotted = $0 }
                             ), displayedComponents: [.date])
                             .datePickerStyle(.compact)
-                            .padding(.leading, 32)
+                            .padding(.leading, BotanicaTheme.Spacing.xl)
                         }
                     }
                 }
 
                 // Humidity Preference
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     HStack {
                         Text("Humidity Preference")
                             .font(BotanicaTheme.Typography.headline)
                         Spacer()
                         Text("\(Int(humidityPreference))%")
                             .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     Slider(value: $humidityPreference, in: 20...90, step: 5)
                         .tint(BotanicaTheme.Colors.primary)
                 }
 
                 // Temperature Range
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     HStack {
                         Text("Temperature Range")
                             .font(BotanicaTheme.Typography.headline)
                         Spacer()
                         Text("\(Int(temperatureMin))° - \(Int(temperatureMax))°F")
                             .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     HStack(spacing: BotanicaTheme.Spacing.sm) {
                         VStack {
                             Text("Min")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(BotanicaTheme.Typography.caption)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             Slider(value: $temperatureMin, in: 50...85, step: 1)
                                 .tint(BotanicaTheme.Colors.primary)
                         }
                         VStack {
                             Text("Max")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(BotanicaTheme.Typography.caption)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             Slider(value: $temperatureMax, in: 60...95, step: 1)
                                 .tint(BotanicaTheme.Colors.primary)
                         }
@@ -608,7 +608,7 @@ struct EditPlantView: View {
                 }
 
                 // Location
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Location")
                         .font(BotanicaTheme.Typography.headline)
                     TextField("Living Room, Kitchen, Bedroom Window...", text: $location)
@@ -616,7 +616,7 @@ struct EditPlantView: View {
                 }
 
                 // Health Status
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Current Health Status")
                         .font(BotanicaTheme.Typography.headline)
                     Picker("Health Status", selection: $healthStatus) {
@@ -629,15 +629,15 @@ struct EditPlantView: View {
                 }
 
                 // Care History
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.smPlus) {
                     Text("Care History")
                         .font(BotanicaTheme.Typography.headline)
                     Text("Track last water and fertilizer dates to compute next due.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    VStack(alignment: .leading, spacing: 8) {
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                         Toggle(isOn: $hasBeenWatered) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: BotanicaTheme.Spacing.sm) {
                                 Image(systemName: "drop.fill")
                                     .foregroundColor(BotanicaTheme.Colors.waterBlue)
                                 Text("Last Watered")
@@ -649,13 +649,13 @@ struct EditPlantView: View {
                                 set: { lastWatered = $0 }
                             ), displayedComponents: [.date])
                             .datePickerStyle(.compact)
-                            .padding(.leading, 32)
+                            .padding(.leading, BotanicaTheme.Spacing.xl)
                         }
                     }
                     Divider()
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                         Toggle(isOn: $hasBeenFertilized) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: BotanicaTheme.Spacing.sm) {
                                 Image(systemName: "leaf.fill")
                                     .foregroundColor(BotanicaTheme.Colors.leafGreen)
                                 Text("Last Fertilized")
@@ -667,13 +667,13 @@ struct EditPlantView: View {
                                 set: { lastFertilized = $0 }
                             ), displayedComponents: [.date])
                             .datePickerStyle(.compact)
-                            .padding(.leading, 32)
+                            .padding(.leading, BotanicaTheme.Spacing.xl)
                         }
                     }
                 }
 
                 // Notes
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Notes")
                         .font(BotanicaTheme.Typography.headline)
                     TextField("Add observations, care notes, or reminders...", text: $notes, axis: .vertical)
@@ -691,14 +691,14 @@ struct EditPlantView: View {
             Button("Delete Plant") {
                 showingDeletePlantConfirmation = true
             }
-            .foregroundColor(.red)
+            .foregroundColor(BotanicaTheme.Colors.error)
             .frame(maxWidth: .infinity, alignment: .center)
         } header: {
             Text("Danger Zone")
         } footer: {
             Text("Deleting this plant will permanently remove all associated care history and photos. This action cannot be undone.")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
     }
     
@@ -880,11 +880,11 @@ struct EditPlantView: View {
         return f.string(from: date)
     }
     private func summaryItem(title: String, value: String, isManual: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
             Text(title)
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
-            HStack(spacing: 6) {
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
+            HStack(spacing: BotanicaTheme.Spacing.sm) {
                 Text(value)
                     .font(BotanicaTheme.Typography.callout)
                 if !isManual {
@@ -945,8 +945,8 @@ private struct ValueChip: View {
         Button(action: action) {
             Text(text)
                 .font(.caption.weight(.semibold))
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
+                .padding(.vertical, BotanicaTheme.Spacing.sm)
+                .padding(.horizontal, BotanicaTheme.Spacing.smPlus)
                 .background(BotanicaTheme.Colors.primary.opacity(0.1))
                 .foregroundColor(BotanicaTheme.Colors.primary)
                 .clipShape(Capsule())

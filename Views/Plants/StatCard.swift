@@ -17,7 +17,8 @@ struct StatCard: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             HStack {
                 Image(systemName: icon)
-                    .font(.system(size: 20, weight: .medium))
+                    .font(BotanicaTheme.Typography.title2)
+                    .fontWeight(.medium)
                     .foregroundColor(color)
                 
                 Spacer()
@@ -26,11 +27,11 @@ struct StatCard: View {
             Text(value)
                 .font(BotanicaTheme.Typography.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             
             Text(title)
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 .multilineTextAlignment(.leading)
         }
         .padding(BotanicaTheme.Spacing.md)

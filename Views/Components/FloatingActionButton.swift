@@ -18,7 +18,7 @@ struct FloatingActionButton: View {
             ZStack {
                 Circle()
                     .fill(BotanicaTheme.Colors.primary)
-                    .frame(width: 60, height: 60)
+                    .frame(width: BotanicaTheme.Sizing.fabSize, height: BotanicaTheme.Sizing.fabSize)
                     .shadow(
                         color: BotanicaTheme.Colors.primary.opacity(0.3),
                         radius: isPressed ? 4 : 8,
@@ -28,7 +28,7 @@ struct FloatingActionButton: View {
                     .scaleEffect(isPressed ? 0.95 : 1.0)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 24, weight: .semibold))
+                    .font(.system(size: BotanicaTheme.Sizing.iconPrimary, weight: .semibold))
                     .foregroundColor(.white)
             }
         }
@@ -75,7 +75,7 @@ extension View {
 
 #Preview {
     ZStack {
-        Color.gray.opacity(0.1)
+        BotanicaTheme.Colors.background
             .ignoresSafeArea()
         
         VStack {

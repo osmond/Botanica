@@ -79,14 +79,14 @@ struct AICoachView: View {
                     cornerRadius: BotanicaTheme.CornerRadius.medium
                 )
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text(plant.displayName)
                         .font(BotanicaTheme.Typography.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Text(plant.scientificName)
                         .font(BotanicaTheme.Typography.scientificName)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     
                     HStack(spacing: BotanicaTheme.Spacing.xs) {
                         Circle()
@@ -94,7 +94,7 @@ struct AICoachView: View {
                             .frame(width: 8, height: 8)
                         Text(plant.healthStatus.rawValue.capitalized)
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
                 
@@ -120,7 +120,7 @@ struct AICoachView: View {
                             .scaleEffect(0.8)
                     } else {
                         Image(systemName: "stethoscope")
-                            .font(.title3)
+                            .font(BotanicaTheme.Typography.title3)
                     }
                     
                     Text(healthLoadState == .loading ? "Analyzing..." : "AI Health Diagnosis")
@@ -141,21 +141,21 @@ struct AICoachView: View {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Health Analysis")
                         .font(BotanicaTheme.Typography.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Text(healthDiagnosisResult)
                         .font(BotanicaTheme.Typography.body)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(BotanicaTheme.Spacing.lg)
                 .background(
                     RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                        .fill(Color.blue.opacity(0.1))
+                        .fill(BotanicaTheme.Colors.info.opacity(0.1))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                        .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                        .stroke(BotanicaTheme.Colors.info.opacity(0.3), lineWidth: 1)
                 )
                 .padding(.horizontal, BotanicaTheme.Spacing.lg)
             }
@@ -177,7 +177,7 @@ struct AICoachView: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             Text("Quick Questions")
                 .font(BotanicaTheme.Typography.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 .padding(.horizontal, BotanicaTheme.Spacing.lg)
             
             ScrollView(.horizontal, showsIndicators: false) {
@@ -192,7 +192,7 @@ struct AICoachView: View {
                             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
                                 .fill(selectedQuickQuestion == question ? 
                                       BotanicaTheme.Colors.primary.opacity(0.1) : 
-                                      Color.gray.opacity(0.1))
+                                      BotanicaTheme.Colors.surfaceAlt)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
@@ -204,7 +204,7 @@ struct AICoachView: View {
                                 )
                         )
                         .foregroundColor(selectedQuickQuestion == question ? 
-                                       BotanicaTheme.Colors.primary : .primary)
+                                       BotanicaTheme.Colors.primary : BotanicaTheme.Colors.textPrimary)
                         .font(BotanicaTheme.Typography.callout)
                     }
                 }
@@ -237,7 +237,7 @@ struct AICoachView: View {
                     .padding(BotanicaTheme.Spacing.md)
                     .background(
                         RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                            .fill(Color.gray.opacity(0.1))
+                            .fill(BotanicaTheme.Colors.surfaceAlt)
                     )
                     .lineLimit(1...4)
                 
@@ -247,9 +247,9 @@ struct AICoachView: View {
                     }
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
-                        .font(.title2)
-                    .foregroundColor(currentQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 
-                                   .secondary : BotanicaTheme.Colors.primary)
+                        .font(BotanicaTheme.Typography.title2)
+                    .foregroundColor(currentQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?
+                                   BotanicaTheme.Colors.textSecondary : BotanicaTheme.Colors.primary)
                 }
                 .disabled(currentQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || chatLoadState == .loading)
             }
@@ -383,7 +383,7 @@ struct AICoachView: View {
                             .scaleEffect(0.8)
                         Text("Thinking...")
                             .font(BotanicaTheme.Typography.callout)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         Spacer()
                     }
                     .padding(.horizontal, BotanicaTheme.Spacing.lg)
@@ -443,14 +443,14 @@ struct ConversationBubbleView: View {
                     
                     Text(message.timestamp, style: .time)
                         .font(BotanicaTheme.Typography.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .trailing)
             } else {
                 HStack(alignment: .top, spacing: BotanicaTheme.Spacing.sm) {
                     // AI Avatar
                     Image(systemName: "brain.head.profile")
-                        .font(.title3)
+                        .font(BotanicaTheme.Typography.title3)
                         .foregroundColor(BotanicaTheme.Colors.primary)
                         .frame(width: 30, height: 30)
                         .background(
@@ -461,16 +461,16 @@ struct ConversationBubbleView: View {
                     VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text(message.content)
                             .font(BotanicaTheme.Typography.body)
-                            .foregroundColor(.primary)
+                            .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             .padding(BotanicaTheme.Spacing.md)
                             .background(
                                 RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                                    .fill(Color.gray.opacity(0.1))
+                                    .fill(BotanicaTheme.Colors.surfaceAlt)
                             )
                         
                         Text(message.timestamp, style: .time)
                             .font(BotanicaTheme.Typography.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .leading)
                 }

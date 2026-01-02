@@ -84,7 +84,7 @@ struct PhotoManager: View {
                     ProgressView()
                     Text("Saving photos…")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 .padding(.vertical, BotanicaTheme.Spacing.md)
             }
@@ -104,18 +104,18 @@ struct PhotoManager: View {
     private var emptyStateView: some View {
         VStack(spacing: BotanicaTheme.Spacing.lg) {
             Image(systemName: "camera.fill")
-                .font(.system(size: 80))
+                .font(.system(size: BotanicaTheme.Sizing.iconMega))
                 .foregroundColor(BotanicaTheme.Colors.primary.opacity(0.6))
             
             VStack(spacing: BotanicaTheme.Spacing.sm) {
                 Text("No Photos Yet")
                     .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 Text("Start capturing beautiful moments of \(plant.displayName)'s growth journey.")
                     .font(BotanicaTheme.Typography.body)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
             
@@ -159,7 +159,7 @@ struct PhotoManager: View {
         VStack(spacing: 0) {
             // Handle
             RoundedRectangle(cornerRadius: 2)
-                .fill(Color.secondary.opacity(0.3))
+                .fill(BotanicaTheme.Colors.border.opacity(0.5))
                 .frame(width: 36, height: 4)
                 .padding(.top, BotanicaTheme.Spacing.sm)
             
@@ -167,7 +167,7 @@ struct PhotoManager: View {
                 Text("Add Photo")
                     .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     .padding(.top, BotanicaTheme.Spacing.lg)
                 
                 VStack(spacing: BotanicaTheme.Spacing.md) {
@@ -209,7 +209,7 @@ struct PhotoManager: View {
                     showingAddPhotoSheet = false
                 }
                 .font(BotanicaTheme.Typography.body)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 .padding(.top, BotanicaTheme.Spacing.md)
             }
             .padding(BotanicaTheme.Spacing.xl)
@@ -280,7 +280,8 @@ struct PhotoSourceButton: View {
                         .frame(width: 50, height: 50)
                     
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .medium))
+                        .font(BotanicaTheme.Typography.title2)
+                        .fontWeight(.medium)
                         .foregroundColor(color)
                 }
                 
@@ -288,11 +289,11 @@ struct PhotoSourceButton: View {
                     Text(title)
                         .font(BotanicaTheme.Typography.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Text(subtitle)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 Spacer()
@@ -326,39 +327,39 @@ struct PhotoGridItem: View {
                 
                 // Primary badge
                 if photo.isPrimary {
-                    HStack(spacing: 4) {
+                    HStack(spacing: BotanicaTheme.Spacing.xs) {
                         Image(systemName: "star.fill")
-                            .font(.caption)
+                            .font(BotanicaTheme.Typography.caption)
                         Text("Primary")
-                            .font(.caption2)
+                            .font(BotanicaTheme.Typography.caption2)
                     }
                     .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                    .padding(.vertical, BotanicaTheme.Spacing.xs)
                     .background(.black.opacity(0.7))
                     .cornerRadius(8)
-                    .padding(8)
+                    .padding(BotanicaTheme.Spacing.sm)
                 }
                 
                 // Category badge
                 VStack {
                     Spacer()
                     HStack {
-                        HStack(spacing: 4) {
+                        HStack(spacing: BotanicaTheme.Spacing.xs) {
                             Image(systemName: photo.category.icon)
-                                .font(.caption)
+                                .font(BotanicaTheme.Typography.caption)
                             Text(photo.category.rawValue)
-                                .font(.caption2)
+                                .font(BotanicaTheme.Typography.caption2)
                         }
                         .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                        .padding(.vertical, BotanicaTheme.Spacing.xs)
                         .background(.black.opacity(0.7))
                         .cornerRadius(8)
                         
                         Spacer()
                     }
-                    .padding(8)
+                    .padding(BotanicaTheme.Spacing.sm)
                 }
             }
         }

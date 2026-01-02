@@ -8,22 +8,102 @@ struct AIHubView: View {
     var body: some View {
         NavigationStack {
             List {
-                insightsSection
-                
-                Section("Identify") {
+                Section {
                     NavigationLink {
                         PlantIdentificationView()
                     } label: {
-                        AIHubRow(
-                            title: "Plant Identification",
-                            subtitle: "Identify a plant from a photo",
+                        AIPrimaryCard(
+                            title: "Identify a plant",
+                            subtitle: "Take a photo or upload to get the name and care info.",
                             icon: "camera.viewfinder",
-                            color: BotanicaTheme.Colors.primary
+                            accent: BotanicaTheme.Colors.primary
                         )
                     }
                 }
-                
-                Section("Care") {
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+
+                if plants.isEmpty {
+                    Section(header: sectionHeader("Insights")) {
+                        HStack(spacing: BotanicaTheme.Spacing.md) {
+                            Image(systemName: "leaf.fill")
+                                .foregroundColor(BotanicaTheme.Colors.leafGreen)
+                                .font(.system(size: BotanicaTheme.Sizing.iconInline, weight: .semibold))
+                            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                                Text("Add a plant to see insights")
+                                    .font(BotanicaTheme.Typography.subheadline)
+                                Text("Care summaries appear here once you start logging.")
+                                    .font(BotanicaTheme.Typography.caption)
+                                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
+                            }
+                        }
+                        .padding(.vertical, BotanicaTheme.Spacing.xs)
+                    }
+                } else if !insightItems.isEmpty {
+                    Section(header: sectionHeader("Insights")) {
+                        ForEach(insightItems.prefix(2)) { item in
+                            switch item.destination {
+                            case .careFocus:
+                                NavigationLink {
+                                    CareFocusListView(
+                                        title: "Care Focus",
+                                        subtitle: "Plants due today or overdue.",
+                                        plants: careFocusPlants,
+                                        statusProvider: careFocusStatus(for:)
+                                    )
+                                } label: {
+                                    InsightRow(item: item)
+                                }
+                            case .attention:
+                                NavigationLink {
+                                    CareFocusListView(
+                                        title: "Needs Attention",
+                                        subtitle: "Based on your health status updates.",
+                                        plants: attentionPlants,
+                                        statusProvider: attentionStatus(for:)
+                                    )
+                                } label: {
+                                    InsightRow(item: item)
+                                }
+                            case .seasonal:
+                                NavigationLink {
+                                    SeasonalCareGuidanceView(plants: plants)
+                                } label: {
+                                    InsightRow(item: item)
+                                }
+                            case .logCare:
+                                NavigationLink {
+                                    AIPlantPickerView(
+                                        title: "Log Care",
+                                        emptyTitle: "No Plants Yet",
+                                        emptySubtitle: "Add a plant before logging care."
+                                    ) { plant in
+                                        AddCareEventView(plant: plant)
+                                    }
+                                } label: {
+                                    InsightRow(item: item)
+                                }
+                            }
+                        }
+
+                        if insightItems.count > 2 {
+                            NavigationLink("View all insights") {
+                                AIInsightsListView(
+                                    items: insightItems,
+                                    plants: plants,
+                                    careFocusPlants: careFocusPlants,
+                                    attentionPlants: attentionPlants,
+                                    careFocusStatus: careFocusStatus(for:),
+                                    attentionStatus: attentionStatus(for:)
+                                )
+                            }
+                            .font(BotanicaTheme.Typography.subheadline)
+                            .foregroundColor(BotanicaTheme.Colors.primary)
+                        }
+                    }
+                }
+
+                Section(header: sectionHeader("Ask")) {
                     NavigationLink {
                         AIPlantPickerView(
                             title: "AI Plant Coach",
@@ -40,7 +120,7 @@ struct AIHubView: View {
                             color: BotanicaTheme.Colors.leafGreen
                         )
                     }
-                    
+
                     NavigationLink {
                         AIPlantPickerView(
                             title: "AI Care Assistant",
@@ -58,8 +138,8 @@ struct AIHubView: View {
                         )
                     }
                 }
-                
-                Section("Health") {
+
+                Section(header: sectionHeader("Health")) {
                     NavigationLink {
                         PlantHealthSelectionView()
                     } label: {
@@ -71,8 +151,8 @@ struct AIHubView: View {
                         )
                     }
                 }
-                
-                Section("Settings") {
+
+                Section(header: sectionHeader("Settings")) {
                     NavigationLink {
                         AISettingsView()
                     } label: {
@@ -90,73 +170,12 @@ struct AIHubView: View {
         }
     }
     
-    private var insightsSection: some View {
-        Section("Insights") {
-            if plants.isEmpty {
-                HStack(spacing: BotanicaTheme.Spacing.md) {
-                    Image(systemName: "leaf.fill")
-                        .foregroundColor(BotanicaTheme.Colors.leafGreen)
-                        .font(.system(size: 20, weight: .semibold))
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Add a plant to see insights")
-                            .font(BotanicaTheme.Typography.subheadline)
-                        Text("Care summaries appear here once you start logging.")
-                            .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(.vertical, 4)
-            } else if insightItems.isEmpty {
-                Text("No insights yet. Keep logging care to reveal patterns.")
-                    .font(BotanicaTheme.Typography.callout)
-                    .foregroundColor(.secondary)
-            } else {
-                ForEach(insightItems) { item in
-                    switch item.destination {
-                    case .careFocus:
-                        NavigationLink {
-                            CareFocusListView(
-                                title: "Care Focus",
-                                subtitle: "Plants due today or overdue.",
-                                plants: careFocusPlants,
-                                statusProvider: careFocusStatus(for:)
-                            )
-                        } label: {
-                            InsightRow(item: item)
-                        }
-                    case .attention:
-                        NavigationLink {
-                            CareFocusListView(
-                                title: "Needs Attention",
-                                subtitle: "Based on your health status updates.",
-                                plants: attentionPlants,
-                                statusProvider: attentionStatus(for:)
-                            )
-                        } label: {
-                            InsightRow(item: item)
-                        }
-                    case .seasonal:
-                        NavigationLink {
-                            SeasonalCareGuidanceView(plants: plants)
-                        } label: {
-                            InsightRow(item: item)
-                        }
-                    case .logCare:
-                        NavigationLink {
-                            AIPlantPickerView(
-                                title: "Log Care",
-                                emptyTitle: "No Plants Yet",
-                                emptySubtitle: "Add a plant before logging care."
-                            ) { plant in
-                                AddCareEventView(plant: plant)
-                            }
-                        } label: {
-                            InsightRow(item: item)
-                        }
-                    }
-                }
-            }
-        }
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(BotanicaTheme.Typography.caption2)
+            .fontWeight(.semibold)
+            .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            .textCase(.uppercase)
     }
     
     private var insightItems: [InsightItem] {
@@ -336,24 +355,24 @@ private struct AIHubRow: View {
             ZStack {
                 Circle()
                     .fill(color.opacity(0.12))
-                    .frame(width: 36, height: 36)
+                    .frame(width: 40, height: 40)
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: BotanicaTheme.Sizing.iconSmall, weight: .semibold))
                     .foregroundColor(color)
             }
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text(title)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 Text(subtitle)
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             
             Spacer()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
     }
 }
 
@@ -382,27 +401,127 @@ private struct InsightRow: View {
             ZStack {
                 Circle()
                     .fill(item.color.opacity(0.12))
-                    .frame(width: 36, height: 36)
+                    .frame(width: 40, height: 40)
                 Image(systemName: item.icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: BotanicaTheme.Sizing.iconSmall, weight: .semibold))
                     .foregroundColor(item.color)
             }
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 Text(item.title)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 Text(item.subtitle)
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 Text(item.evidence)
                     .font(BotanicaTheme.Typography.caption2)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             
             Spacer()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
+    }
+}
+
+private struct AIPrimaryCard: View {
+    let title: String
+    let subtitle: String
+    let icon: String
+    let accent: Color
+
+    var body: some View {
+        HStack(spacing: BotanicaTheme.Spacing.lg) {
+            ZStack {
+                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
+                    .fill(accent.opacity(0.12))
+                    .frame(width: BotanicaTheme.Sizing.iconHero, height: BotanicaTheme.Sizing.iconHero)
+                Image(systemName: icon)
+                    .font(.system(size: BotanicaTheme.Sizing.iconPrimary, weight: .semibold))
+                    .foregroundStyle(accent)
+            }
+
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+                Text(title)
+                    .font(BotanicaTheme.Typography.title3)
+                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                Text(subtitle)
+                    .font(BotanicaTheme.Typography.subheadline)
+                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(BotanicaTheme.Typography.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(BotanicaTheme.Colors.textTertiary)
+        }
+        .padding(BotanicaTheme.Spacing.cardPadding)
+        .background(
+            RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
+                .fill(BotanicaTheme.Colors.surfaceAlt)
+        )
+    }
+}
+
+private struct AIInsightsListView: View {
+    let items: [InsightItem]
+    let plants: [Plant]
+    let careFocusPlants: [Plant]
+    let attentionPlants: [Plant]
+    let careFocusStatus: (Plant) -> ReviewStatus
+    let attentionStatus: (Plant) -> ReviewStatus
+
+    var body: some View {
+        List {
+            ForEach(items) { item in
+                switch item.destination {
+                case .careFocus:
+                    NavigationLink {
+                        CareFocusListView(
+                            title: "Care Focus",
+                            subtitle: "Plants due today or overdue.",
+                            plants: careFocusPlants,
+                            statusProvider: careFocusStatus
+                        )
+                    } label: {
+                        InsightRow(item: item)
+                    }
+                case .attention:
+                    NavigationLink {
+                        CareFocusListView(
+                            title: "Needs Attention",
+                            subtitle: "Based on your health status updates.",
+                            plants: attentionPlants,
+                            statusProvider: attentionStatus
+                        )
+                    } label: {
+                        InsightRow(item: item)
+                    }
+                case .seasonal:
+                    NavigationLink {
+                        SeasonalCareGuidanceView(plants: plants)
+                    } label: {
+                        InsightRow(item: item)
+                    }
+                case .logCare:
+                    NavigationLink {
+                        AIPlantPickerView(
+                            title: "Log Care",
+                            emptyTitle: "No Plants Yet",
+                            emptySubtitle: "Add a plant before logging care."
+                        ) { plant in
+                            AddCareEventView(plant: plant)
+                        }
+                    } label: {
+                        InsightRow(item: item)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Insights")
     }
 }
 
@@ -419,14 +538,14 @@ private struct AIPlantPickerView<Destination: View>: View {
             if plants.isEmpty {
                 VStack(spacing: BotanicaTheme.Spacing.md) {
                     Image(systemName: "leaf.fill")
-                        .font(.system(size: 52))
+                        .font(.system(size: BotanicaTheme.Sizing.iconHero))
                         .foregroundColor(BotanicaTheme.Colors.leafGreen)
                     Text(emptyTitle)
                         .font(BotanicaTheme.Typography.title3)
                         .fontWeight(.semibold)
                     Text(emptySubtitle)
                         .font(BotanicaTheme.Typography.body)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
@@ -442,13 +561,13 @@ private struct AIPlantPickerView<Destination: View>: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(plant.displayName)
                                     .font(BotanicaTheme.Typography.subheadline)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                                 Text(plant.scientificName)
                                     .font(BotanicaTheme.Typography.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             }
                         }
-                        .padding(.vertical, 4)
+                        .padding(.vertical, BotanicaTheme.Spacing.xs)
                     }
                 }
             }

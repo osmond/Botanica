@@ -33,7 +33,7 @@ struct SettingsToggleRow: View {
                     .frame(width: 32, height: 32)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(BotanicaTheme.Typography.bodyLargeEmphasized)
                     .foregroundColor(color)
             }
             
@@ -41,12 +41,12 @@ struct SettingsToggleRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 if let subtitle = subtitle {
                     Text(subtitle)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
             }
             
@@ -56,7 +56,7 @@ struct SettingsToggleRow: View {
             Toggle("", isOn: $isOn)
                 .labelsHidden()
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, BotanicaTheme.Spacing.xxs)
     }
 }
 
@@ -87,7 +87,7 @@ struct SettingsActionRow: View {
                         .frame(width: 32, height: 32)
                     
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .medium))
+                        .font(BotanicaTheme.Typography.bodyLargeEmphasized)
                         .foregroundColor(color)
                 }
                 
@@ -95,12 +95,12 @@ struct SettingsActionRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(BotanicaTheme.Typography.subheadline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     if let subtitle = subtitle {
                         Text(subtitle)
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
                 
@@ -108,10 +108,10 @@ struct SettingsActionRow: View {
                 
                 // Chevron
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(BotanicaTheme.Colors.textTertiary)
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, BotanicaTheme.Spacing.xxs)
         }
         .buttonStyle(.plain)
     }
@@ -143,7 +143,7 @@ struct SettingsInfoRow: View {
                     .frame(width: 32, height: 32)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(BotanicaTheme.Typography.bodyLargeEmphasized)
                     .foregroundColor(color)
             }
             
@@ -151,12 +151,12 @@ struct SettingsInfoRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 if let subtitle = subtitle {
                     Text(subtitle)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
             }
             
@@ -165,9 +165,9 @@ struct SettingsInfoRow: View {
             // Value
             Text(value)
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textTertiary)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, BotanicaTheme.Spacing.xxs)
     }
 }
 
@@ -199,7 +199,7 @@ struct SettingsPickerRow: View {
                     .frame(width: 32, height: 32)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(BotanicaTheme.Typography.bodyLargeEmphasized)
                     .foregroundColor(color)
             }
             
@@ -207,12 +207,12 @@ struct SettingsPickerRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(BotanicaTheme.Typography.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 if let subtitle = subtitle {
                     Text(subtitle)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
             }
             
@@ -226,7 +226,7 @@ struct SettingsPickerRow: View {
             }
             .pickerStyle(.menu)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, BotanicaTheme.Spacing.xxs)
     }
 }
 
@@ -262,7 +262,7 @@ struct SettingsLinkRow: View {
                         .frame(width: 32, height: 32)
                     
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .medium))
+                        .font(BotanicaTheme.Typography.bodyLargeEmphasized)
                         .foregroundColor(color)
                 }
                 
@@ -270,12 +270,12 @@ struct SettingsLinkRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(BotanicaTheme.Typography.subheadline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     if let subtitle = subtitle {
                         Text(subtitle)
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
                 
@@ -283,10 +283,10 @@ struct SettingsLinkRow: View {
                 
                 // External link icon
                 Image(systemName: "arrow.up.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(BotanicaTheme.Colors.textTertiary)
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, BotanicaTheme.Spacing.xxs)
         }
         .buttonStyle(.plain)
     }

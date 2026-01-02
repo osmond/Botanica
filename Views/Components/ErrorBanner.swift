@@ -11,13 +11,13 @@ struct ErrorBanner: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             HStack(spacing: BotanicaTheme.Spacing.sm) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundColor(.orange)
+                    .foregroundColor(BotanicaTheme.Colors.warning)
                 Text(title)
                     .font(BotanicaTheme.Typography.headline)
             }
             Text(message)
                 .font(BotanicaTheme.Typography.callout)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             if let actionLabel, let action {
                 Button(actionLabel) { action() }
                     .primaryButtonStyle()
@@ -26,11 +26,11 @@ struct ErrorBanner: View {
         .padding(BotanicaTheme.Spacing.lg)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(Color.orange.opacity(0.08))
+                .fill(BotanicaTheme.Colors.warning.opacity(0.08))
         )
         .overlay(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .stroke(Color.orange.opacity(0.25), lineWidth: 1)
+                .stroke(BotanicaTheme.Colors.warning.opacity(0.25), lineWidth: 1)
         )
     }
 }

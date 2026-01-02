@@ -55,7 +55,7 @@ struct MainTabView: View {
             // Configure tab bar appearance
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor.systemBackground
+            appearance.backgroundColor = UIColor(BotanicaTheme.Colors.background)
             
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
@@ -94,7 +94,7 @@ struct MainTabView: View {
                 VStack(spacing: BotanicaTheme.Spacing.xl) {
                     Text("Add New Plant")
                         .font(BotanicaTheme.Typography.title1)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     VStack(spacing: BotanicaTheme.Spacing.lg) {
                         Button(action: {
@@ -103,7 +103,7 @@ struct MainTabView: View {
                         }) {
                             HStack(spacing: BotanicaTheme.Spacing.sm) {
                                 Image(systemName: "camera.viewfinder")
-                                    .font(.title3)
+                                    .font(BotanicaTheme.Typography.title3)
                                 Text("Take Photo & Identify")
                                     .fontWeight(.semibold)
                             }
@@ -116,7 +116,7 @@ struct MainTabView: View {
                         }) {
                             HStack(spacing: BotanicaTheme.Spacing.sm) {
                                 Image(systemName: "plus.circle")
-                                    .font(.title3)
+                                    .font(BotanicaTheme.Typography.title3)
                                 Text("Add Manually")
                                     .fontWeight(.semibold)
                             }
@@ -240,24 +240,27 @@ struct TodayView: View {
                     } label: {
                         HStack(spacing: BotanicaTheme.Spacing.sm) {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(BotanicaTheme.Colors.primary)
-                            VStack(alignment: .leading, spacing: 4) {
+                                .foregroundColor(.white)
+                            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                                 Text("Log care")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                                    .font(BotanicaTheme.Typography.labelEmphasized)
+                                    .foregroundStyle(.white)
                                 Text("Quickly log care for multiple plants")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                                    .font(BotanicaTheme.Typography.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.white.opacity(0.85))
                             }
                             Spacer()
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
+                                .font(BotanicaTheme.Typography.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white.opacity(0.85))
                         }
                         .padding(BotanicaTheme.Spacing.md)
+                        .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
-                                .fill(Color(.secondarySystemGroupedBackground))
+                                .fill(BotanicaTheme.Gradients.primary)
                         )
                     }
                     .buttonStyle(.plain)
@@ -292,10 +295,9 @@ struct TodayView: View {
                 
                 if overdueItems.isEmpty && dueTodayItems.isEmpty {
                     Section {
-                        Text("You are all caught up today.")
-                            .font(BotanicaTheme.Typography.body)
-                            .foregroundColor(.secondary)
+                        CaughtUpCard()
                     }
+                    .listRowBackground(Color.clear)
                 }
 
                 if !tomorrowItems.isEmpty {
@@ -630,12 +632,12 @@ struct HistoryView: View {
     
     private var header: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
             Text(mode == .upcoming ? "Upcoming care" : mode == .recent ? "Recent activity" : "Calendar")
                 .font(BotanicaTheme.Typography.headline)
             Text(mode == .upcoming ? "Next water/fertilize across all plants" : mode == .recent ? "Logged care events" : "Care events by day")
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
         Spacer()
         if mode == .upcoming {
@@ -654,11 +656,11 @@ struct HistoryView: View {
     private var emptyState: some View {
         VStack(spacing: BotanicaTheme.Spacing.md) {
             Image(systemName: "calendar.badge.clock")
-                .font(.largeTitle)
-                .foregroundColor(.secondary)
+                .font(BotanicaTheme.Typography.largeTitle)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             Text(mode == .upcoming ? "No upcoming care" : "No history yet")
                 .font(BotanicaTheme.Typography.body)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .listRowSeparator(.hidden)
@@ -725,7 +727,7 @@ struct HistoryView: View {
         }
         return Text(title)
             .font(BotanicaTheme.Typography.subheadline)
-            .foregroundColor(.secondary)
+            .foregroundColor(BotanicaTheme.Colors.textSecondary)
     }
     
     private func logUpcoming(_ upcoming: SyntheticUpcoming) {
@@ -826,9 +828,9 @@ private struct ActivityRow: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: BotanicaTheme.Spacing.md) {
-            VStack(spacing: 6) {
+            VStack(spacing: BotanicaTheme.Spacing.sm) {
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: BotanicaTheme.Sizing.iconSmall, weight: .semibold))
                     .foregroundStyle(color)
                 Circle()
                     .fill(color.opacity(0.15))
@@ -843,7 +845,7 @@ private struct ActivityRow: View {
                 Spacer()
                 Text(dateText)
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             Text(typeText)
                 .font(BotanicaTheme.Typography.caption)
@@ -851,12 +853,12 @@ private struct ActivityRow: View {
             if let amount = amountText {
                 Text(amount)
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 if let notes = notes, !notes.isEmpty {
                     Text(notes)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         .lineLimit(2)
                 }
                 
@@ -864,7 +866,7 @@ private struct ActivityRow: View {
                     Button {
                         onLog(upcoming)
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: BotanicaTheme.Spacing.sm) {
                             Image(systemName: "checkmark.circle.fill")
                             Text("Log now")
                         }
@@ -1084,6 +1086,39 @@ private struct TodaySummaryCard: View {
     }
 }
 
+private struct CaughtUpCard: View {
+    var body: some View {
+        NavigationLink {
+            HistoryView()
+        } label: {
+            HStack(spacing: BotanicaTheme.Spacing.md) {
+                Image(systemName: "checkmark.seal.fill")
+                    .foregroundStyle(BotanicaTheme.Colors.success)
+                    .font(.system(size: BotanicaTheme.Sizing.iconInline, weight: .semibold))
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+                    Text("All caught up")
+                        .font(BotanicaTheme.Typography.subheadline)
+                        .foregroundStyle(BotanicaTheme.Colors.textPrimary)
+                    Text("Review recent care history")
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundStyle(BotanicaTheme.Colors.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(BotanicaTheme.Typography.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(BotanicaTheme.Colors.textTertiary)
+            }
+            .padding(BotanicaTheme.Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.large)
+                    .fill(BotanicaTheme.Colors.surfaceAlt)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 private struct ReminderListRow: View {
     let reminder: Reminder
     let onTap: () -> Void
@@ -1110,7 +1145,7 @@ private struct ReminderListRow: View {
                         .fontWeight(.semibold)
                     Text(reminder.taskType.rawValue)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 Spacer()
@@ -1118,10 +1153,10 @@ private struct ReminderListRow: View {
                 VStack(alignment: .trailing, spacing: BotanicaTheme.Spacing.xs) {
                     Text(formattedDate)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
             }
             .padding(.vertical, BotanicaTheme.Spacing.sm)
@@ -1133,7 +1168,7 @@ private struct ReminderListRow: View {
             } label: {
                 Label("Snooze", systemImage: "zzz")
             }
-            .tint(.orange)
+            .tint(BotanicaTheme.Colors.warning)
             
             Button {
                 onTap()

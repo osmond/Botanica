@@ -75,7 +75,7 @@ struct QuickPhotoCapture: View {
                     ProgressView()
                     Text("Saving photo…")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 .padding(.vertical, BotanicaTheme.Spacing.md)
             }
@@ -95,18 +95,18 @@ struct QuickPhotoCapture: View {
     private var emptyPlantsView: some View {
         VStack(spacing: BotanicaTheme.Spacing.lg) {
             Image(systemName: "leaf.fill")
-                .font(.system(size: 80))
+                .font(.system(size: BotanicaTheme.Sizing.iconMega))
                 .foregroundColor(BotanicaTheme.Colors.primary.opacity(0.6))
             
             VStack(spacing: BotanicaTheme.Spacing.sm) {
                 Text("No Plants Yet")
                     .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 Text("Add some plants to your collection first, then you can start capturing their photos.")
                     .font(BotanicaTheme.Typography.body)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -121,7 +121,7 @@ struct QuickPhotoCapture: View {
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                 Text("Select Plant")
                     .font(BotanicaTheme.Typography.headline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 
                 Button {
                     showingPlantPicker = true
@@ -134,12 +134,12 @@ struct QuickPhotoCapture: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(plant.displayName)
                                     .font(BotanicaTheme.Typography.body)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                                 
                                 if !plant.scientificName.isEmpty {
                                     Text(plant.scientificName)
                                         .font(BotanicaTheme.Typography.caption)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                         .italic()
                                 }
                             }
@@ -154,8 +154,8 @@ struct QuickPhotoCapture: View {
                         Spacer()
                         
                         Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(BotanicaTheme.Typography.caption)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     .padding(BotanicaTheme.Spacing.md)
                     .background(BotanicaTheme.Colors.surface)
@@ -171,7 +171,7 @@ struct QuickPhotoCapture: View {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Take Photo")
                         .font(BotanicaTheme.Typography.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     if let image = capturedImage {
                         // Photo preview
@@ -186,11 +186,11 @@ struct QuickPhotoCapture: View {
                                     capturedImage = nil
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")
-                                        .font(.title2)
+                                        .font(BotanicaTheme.Typography.title2)
                                         .foregroundColor(.white)
                                         .background(Circle().fill(.black.opacity(0.6)))
                                 }
-                                .padding(8)
+                                .padding(BotanicaTheme.Spacing.sm)
                             }
                     } else {
                         // Photo options
@@ -214,7 +214,7 @@ struct QuickPhotoCapture: View {
                                         .foregroundColor(BotanicaTheme.Colors.primary)
                                     Text("Take Photo")
                                         .font(BotanicaTheme.Typography.body)
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                                     Spacer()
                                 }
                                 .padding(BotanicaTheme.Spacing.md)
@@ -231,7 +231,7 @@ struct QuickPhotoCapture: View {
                                         .foregroundColor(BotanicaTheme.Colors.leafGreen)
                                     Text("Choose from Library")
                                         .font(BotanicaTheme.Typography.body)
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                                     Spacer()
                                 }
                                 .padding(BotanicaTheme.Spacing.md)
@@ -249,14 +249,14 @@ struct QuickPhotoCapture: View {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Photo Details")
                         .font(BotanicaTheme.Typography.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     VStack(spacing: BotanicaTheme.Spacing.md) {
                         // Category picker
                         HStack {
                             Text("Category")
                                 .font(BotanicaTheme.Typography.body)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             
                             Spacer()
                             
@@ -276,7 +276,7 @@ struct QuickPhotoCapture: View {
                         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                             Text("Caption (Optional)")
                                 .font(BotanicaTheme.Typography.body)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             
                             TextField("Add a caption...", text: $caption, axis: .vertical)
                                 .textFieldStyle(.roundedBorder)
@@ -352,12 +352,12 @@ struct PlantPickerView: View {
                             Text(plant.displayName)
                                 .font(BotanicaTheme.Typography.subheadline)
                                 .fontWeight(.medium)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             
                             if !plant.scientificName.isEmpty {
                                 Text(plant.scientificName)
                                     .font(BotanicaTheme.Typography.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                     .italic()
                             }
                         }

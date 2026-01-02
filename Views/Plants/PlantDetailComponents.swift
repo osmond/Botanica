@@ -17,13 +17,26 @@ struct CareStateCard: View {
     let onCTATap: ((PlantDetailViewModel.CareActionType) -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 12) {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
+            HStack(alignment: .top, spacing: BotanicaTheme.Spacing.smPlus) {
                 Text(title)
-                    .font(.system(size: 20, weight: .bold))
+                    .font(BotanicaTheme.Typography.title2)
+                    .fontWeight(.bold)
                     .foregroundStyle(BotanicaTheme.Colors.textPrimary)
 
                 Spacer(minLength: 8)
+
+                if statusType == .allSet {
+                    Text("All set")
+                        .font(BotanicaTheme.Typography.caption2Emphasized)
+                        .foregroundStyle(BotanicaTheme.Colors.success)
+                        .padding(.horizontal, BotanicaTheme.Spacing.smPlus)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(BotanicaTheme.Colors.success.opacity(0.15))
+                        )
+                }
 
                 if statusType == .needsAction, let cta, let onCTATap {
                     let buttonColor: Color = {
@@ -38,10 +51,10 @@ struct CareStateCard: View {
                         onCTATap(cta.actionType)
                     } label: {
                         Text(cta.label)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(BotanicaTheme.Typography.labelEmphasized)
                             .foregroundStyle(.white)
                             .padding(.horizontal, BotanicaTheme.Spacing.md)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, BotanicaTheme.Spacing.sm)
                             .background(buttonColor)
                             .clipShape(Capsule())
                     }
@@ -51,22 +64,24 @@ struct CareStateCard: View {
             }
 
             Text(subtitle)
-                .font(.system(size: 14, weight: .medium))
+                .font(BotanicaTheme.Typography.label)
+                .fontWeight(.medium)
                 .foregroundStyle(BotanicaTheme.Colors.textSecondary)
                 .lineLimit(1)
 
             if let meta {
                 Text(meta)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(BotanicaTheme.Typography.caption)
+                    .fontWeight(.medium)
                     .foregroundStyle(BotanicaTheme.Colors.textSecondary.opacity(0.8))
                     .lineLimit(1)
             }
         }
-        .padding(.vertical, 14)
+        .padding(.vertical, BotanicaTheme.Spacing.md)
         .padding(.horizontal, BotanicaTheme.Spacing.lg)
         .background(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)
-                .fill(Color(.secondarySystemBackground))
+                .fill(BotanicaTheme.Colors.surfaceAlt)
         )
         .overlay(
             RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium)

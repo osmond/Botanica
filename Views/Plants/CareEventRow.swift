@@ -44,11 +44,11 @@ struct CareEventRow: View {
         case .inspection:
             return BotanicaTheme.Colors.primary
         case .cleaning:
-            return .gray
+            return BotanicaTheme.Colors.textSecondary
         case .rotating:
-            return .purple
+            return BotanicaTheme.Colors.terracotta
         case .misting:
-            return .blue.opacity(0.7)
+            return BotanicaTheme.Colors.waterBlue.opacity(0.7)
         }
     }
     
@@ -61,7 +61,8 @@ struct CareEventRow: View {
                     .frame(width: 34, height: 34)
                 
                 Image(systemName: typeIcon)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(BotanicaTheme.Typography.label)
+                    .fontWeight(.medium)
                     .foregroundColor(typeColor)
             }
             
@@ -71,7 +72,7 @@ struct CareEventRow: View {
                     Text(event.type.rawValue.capitalized)
                         .font(BotanicaTheme.Typography.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Spacer()
                     

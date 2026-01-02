@@ -142,7 +142,7 @@ struct AICareAssistantView: View {
     private var generateCarePlanButton: some View {
         VStack(spacing: BotanicaTheme.Spacing.md) {
             Image(systemName: "brain.head.profile")
-                .font(.system(size: 48))
+                .font(.system(size: BotanicaTheme.Sizing.iconXXL))
                 .foregroundColor(BotanicaTheme.Colors.primary)
             
             Text("Generate AI Care Plan")
@@ -173,7 +173,7 @@ struct AICareAssistantView: View {
             careSection(
                 title: "Watering Schedule",
                 icon: "drop.fill",
-                color: .blue
+                color: BotanicaTheme.Colors.waterBlue
             ) {
                 careDetail("Frequency", plan.wateringSchedule.frequency)
                 careDetail("Amount", plan.wateringSchedule.amount)
@@ -185,7 +185,7 @@ struct AICareAssistantView: View {
             careSection(
                 title: "Light Requirements",
                 icon: "sun.max.fill",
-                color: .yellow
+                color: BotanicaTheme.Colors.sunYellow
             ) {
                 careDetail("Intensity", plan.lightRequirements.intensity)
                 careDetail("Duration", plan.lightRequirements.duration)
@@ -197,7 +197,7 @@ struct AICareAssistantView: View {
             careSection(
                 title: "Fertilizing Schedule",
                 icon: "leaf.fill",
-                color: .green
+                color: BotanicaTheme.Colors.leafGreen
             ) {
                 careDetail("Frequency", plan.fertilizingSchedule.frequency)
                 careDetail("Type", plan.fertilizingSchedule.type)
@@ -209,7 +209,7 @@ struct AICareAssistantView: View {
             careSection(
                 title: "General Care",
                 icon: "heart.fill",
-                color: .red
+                color: BotanicaTheme.Colors.terracotta
             ) {
                 careDetail("Humidity", plan.generalCare.humidity)
                 careDetail("Temperature", plan.generalCare.temperature)
@@ -225,7 +225,7 @@ struct AICareAssistantView: View {
                 careSection(
                     title: "Seasonal Tips",
                     icon: "calendar",
-                    color: .orange
+                    color: BotanicaTheme.Colors.nutrientOrange
                 ) {
                     ForEach(plan.seasonalTips, id: \.season) { tip in
                         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
@@ -245,7 +245,7 @@ struct AICareAssistantView: View {
                 careSection(
                     title: "Common Issues",
                     icon: "exclamationmark.triangle.fill",
-                    color: .orange
+                    color: BotanicaTheme.Colors.nutrientOrange
                 ) {
                     ForEach(plan.commonIssues, id: \.issue) { issue in
                         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
@@ -1031,7 +1031,7 @@ private struct CarePlanApplySheet: View {
                 Section {
                     Text("Choose what to update on this plant.")
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 Section("Schedule") {
@@ -1110,18 +1110,18 @@ private struct CarePlanApplySheet: View {
     }
     
     private func comparisonRow(title: String, current: String, proposed: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
             Text(title)
                 .font(BotanicaTheme.Typography.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             HStack {
                 Text(current)
                     .font(BotanicaTheme.Typography.body)
-                    .foregroundColor(.primary)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 Spacer()
                 Image(systemName: "arrow.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 Text(proposed)
                     .font(BotanicaTheme.Typography.body)
                     .foregroundColor(BotanicaTheme.Colors.primary)

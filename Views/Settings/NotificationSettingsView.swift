@@ -46,7 +46,7 @@ struct NotificationSettingsView: View {
                         ProgressView()
                         Text("Updating notifications…")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                     .padding(.vertical, BotanicaTheme.Spacing.md)
                 }
@@ -77,15 +77,15 @@ struct NotificationSettingsView: View {
             HStack {
                 Image(systemName: notificationStatusIcon)
                     .foregroundColor(notificationStatusColor)
-                    .font(.title2)
+                    .font(BotanicaTheme.Typography.title2)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text("Notification Status")
                         .font(BotanicaTheme.Typography.headline)
                     
                     Text(notificationStatusText)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 
                 Spacer()
@@ -157,7 +157,7 @@ struct NotificationSettingsView: View {
                 Text("Preferred Time")
                 Spacer()
                 Text(formatPreferredTime())
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
             }
             
             DatePicker(
@@ -224,7 +224,7 @@ struct NotificationSettingsView: View {
         case .provisional, .ephemeral:
             return BotanicaTheme.Colors.sunYellow
         @unknown default:
-            return .secondary
+            return BotanicaTheme.Colors.textSecondary
         }
     }
     

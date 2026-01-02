@@ -23,18 +23,18 @@ struct CareHistoryView: View {
                     // Empty state
                     VStack(spacing: BotanicaTheme.Spacing.lg) {
                         Image(systemName: "calendar.badge.plus")
-                            .font(.system(size: 60))
+                            .font(.system(size: BotanicaTheme.Sizing.iconJumbo))
                             .foregroundColor(BotanicaTheme.Colors.primary.opacity(0.6))
                         
                         VStack(spacing: BotanicaTheme.Spacing.sm) {
                             Text("No Care History")
                                 .font(BotanicaTheme.Typography.title2)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             
                             Text("Start tracking care events for \(plant.displayName) to see them here.")
                                 .font(BotanicaTheme.Typography.body)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                     }

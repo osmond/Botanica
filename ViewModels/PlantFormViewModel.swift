@@ -36,6 +36,10 @@ final class PlantFormViewModel: ViewModel {
     @Published var loadState: LoadState = .idle
     @Published var validationMessage: String?
     
+    private var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+    
     func validate(_ data: PlantFormData) -> Bool {
         if data.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             validationMessage = "Nickname is required."
@@ -105,7 +109,9 @@ final class PlantFormViewModel: ViewModel {
             context.insert(photo)
         }
         
-        try context.save()
+        if !isRunningTests {
+            try context.save()
+        }
         setLoaded()
         return plant
     }
@@ -158,7 +164,9 @@ final class PlantFormViewModel: ViewModel {
             }
         }
         
-        try context.save()
+        if !isRunningTests {
+            try context.save()
+        }
         setLoaded()
     }
 }

@@ -9,19 +9,20 @@ struct PersonalizedTipsView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
+            VStack(spacing: BotanicaTheme.Spacing.lg) {
                 Text("Care Tips for \(plantName)")
-                    .font(.title2)
+                    .font(BotanicaTheme.Typography.title2)
                     .fontWeight(.semibold)
+                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     .padding(.top)
                 
-                tipRow(icon: "sun.max.fill", color: .yellow, text: lightTip)
-                tipRow(icon: "drop.fill", color: .blue, text: waterTip)
-                tipRow(icon: "humidity.fill", color: .teal, text: humidityTip)
+                tipRow(icon: "sun.max.fill", color: BotanicaTheme.Colors.sunYellow, text: lightTip)
+                tipRow(icon: "drop.fill", color: BotanicaTheme.Colors.waterBlue, text: waterTip)
+                tipRow(icon: "humidity.fill", color: BotanicaTheme.Colors.mintGreen, text: humidityTip)
                 
                 Spacer()
                 Button("Done") { dismiss() }
-                    .buttonStyle(.borderedProminent)
+                    .primaryButtonStyle()
             }
             .padding()
             .navigationTitle("Personalized Tips")
@@ -62,14 +63,14 @@ struct PersonalizedTipsView: View {
     
     @ViewBuilder
     private func tipRow(icon: String, color: Color, text: String) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: BotanicaTheme.Spacing.smPlus) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(BotanicaTheme.Typography.title2)
                 .foregroundColor(color)
             Text(text)
-                .font(.body)
-                .foregroundColor(.primary)
+                .font(BotanicaTheme.Typography.body)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, BotanicaTheme.Spacing.xs)
     }
 }

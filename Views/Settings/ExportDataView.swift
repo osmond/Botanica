@@ -81,25 +81,25 @@ struct ExportDataView: View {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.md) {
                     HStack {
                         Image(systemName: "square.and.arrow.up.fill")
-                            .font(.largeTitle)
+                            .font(BotanicaTheme.Typography.largeTitle)
                             .foregroundColor(BotanicaTheme.Colors.primary)
                         
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                             Text("Export Your Data")
                                 .font(BotanicaTheme.Typography.title2)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             
                             Text("Create a backup of your plant collection and care history")
                                 .font(BotanicaTheme.Typography.body)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         }
                     }
                     
                     if plants.isEmpty {
                         Text("No plants to export. Add some plants first!")
                             .font(BotanicaTheme.Typography.body)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             .padding(.top, BotanicaTheme.Spacing.sm)
                     }
                 }
@@ -113,14 +113,14 @@ struct ExportDataView: View {
                         HapticManager.shared.selection()
                     } label: {
                         HStack {
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                                 Text(format.rawValue)
                                     .font(BotanicaTheme.Typography.subheadline)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(BotanicaTheme.Colors.textPrimary)
                                 
                                 Text(formatDescription(format))
                                     .font(BotanicaTheme.Typography.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                             }
                             
                             Spacer()
@@ -137,32 +137,32 @@ struct ExportDataView: View {
             
             Section("Include in Export") {
                 Toggle(isOn: $includeCareHistory) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Care History")
                             .font(BotanicaTheme.Typography.subheadline)
                         Text("\\(careEvents.count) care events")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
                 
                 Toggle(isOn: $includeReminders) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Reminders")
                             .font(BotanicaTheme.Typography.subheadline)
                         Text("\\(reminders.count) active reminders")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
                 
                 Toggle(isOn: $includePhotos) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Photos")
                             .font(BotanicaTheme.Typography.subheadline)
                         Text("Export photos as base64 data")
                             .font(BotanicaTheme.Typography.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
                 }
             }
@@ -171,9 +171,9 @@ struct ExportDataView: View {
                 VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
                     Text("Export Summary")
                         .font(BotanicaTheme.Typography.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("• \\(plants.count) plants")
                         if includeCareHistory {
                             Text("• \\(careEvents.count) care events")
@@ -187,7 +187,7 @@ struct ExportDataView: View {
                         }
                     }
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
                 .padding(.vertical, BotanicaTheme.Spacing.sm)
             }
@@ -208,11 +208,11 @@ struct ExportDataView: View {
                     Text("Exporting Data")
                         .font(BotanicaTheme.Typography.title2)
                         .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     Text("Preparing your plant data for export...")
                         .font(BotanicaTheme.Typography.body)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
             }
@@ -233,18 +233,18 @@ struct ExportDataView: View {
                     // Error state
                     VStack(spacing: BotanicaTheme.Spacing.md) {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.red)
+                            .font(.system(size: BotanicaTheme.Sizing.iconJumbo))
+                            .foregroundColor(BotanicaTheme.Colors.error)
                         
                         VStack(spacing: BotanicaTheme.Spacing.sm) {
                             Text("Export Failed")
                                 .font(BotanicaTheme.Typography.title2)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             
                             Text(error)
                                 .font(BotanicaTheme.Typography.body)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                     }
@@ -252,18 +252,18 @@ struct ExportDataView: View {
                     // Success state
                     VStack(spacing: BotanicaTheme.Spacing.md) {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 60))
+                            .font(.system(size: BotanicaTheme.Sizing.iconJumbo))
                             .foregroundColor(BotanicaTheme.Colors.leafGreen)
                         
                         VStack(spacing: BotanicaTheme.Spacing.sm) {
                             Text("Export Complete")
                                 .font(BotanicaTheme.Typography.title2)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.primary)
+                                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             
                             Text("Your plant data has been exported successfully. The file has been saved to your Files app.")
                                 .font(BotanicaTheme.Typography.body)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                     }
@@ -276,12 +276,8 @@ struct ExportDataView: View {
                         // In a real app, this would share the exported file
                         HapticManager.shared.light()
                     }
-                    .font(BotanicaTheme.Typography.headline)
-                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(BotanicaTheme.Spacing.md)
-                    .background(BotanicaTheme.Colors.primary)
-                    .cornerRadius(BotanicaTheme.CornerRadius.medium)
+                    .primaryButtonStyle()
                 }
                 
                 Button(exportError == nil ? "Done" : "Try Again") {
@@ -293,8 +289,8 @@ struct ExportDataView: View {
                         loadState = .idle
                     }
                 }
-                .font(BotanicaTheme.Typography.subheadline)
-                .foregroundColor(BotanicaTheme.Colors.primary)
+                .frame(maxWidth: .infinity)
+                .secondaryButtonStyle()
             }
             
             Spacer()

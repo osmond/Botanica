@@ -14,12 +14,12 @@ struct CoachCard: View {
                 Spacer()
                 Text("Why?")
                     .font(BotanicaTheme.Typography.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     .help(suggestion.reason)
             }
             Text(suggestion.message)
                 .font(BotanicaTheme.Typography.callout)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             if let onAction {
                 Button("Do it", action: onAction)
                     .buttonStyle(.borderedProminent)

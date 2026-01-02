@@ -20,7 +20,7 @@ struct DetailSection<Content: View>: View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             Text(title)
                 .font(BotanicaTheme.Typography.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
             
             VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                 content
@@ -40,13 +40,13 @@ struct DetailRow: View {
         HStack {
             Text(label)
                 .font(BotanicaTheme.Typography.body)
-                .foregroundColor(.secondary)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
             
             Spacer()
             
             Text(value)
                 .font(BotanicaTheme.Typography.body)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
                 .multilineTextAlignment(.trailing)
         }
         .padding(.vertical, BotanicaTheme.Spacing.xs)

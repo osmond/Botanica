@@ -11,12 +11,12 @@ struct StatusPill: View {
     let color: Color
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: BotanicaTheme.Spacing.sm) {
             Circle()
                 .fill(color)
                 .frame(width: 6, height: 6)
             Text(title)
-                .font(.caption2)
+                .font(BotanicaTheme.Typography.caption2)
                 .foregroundColor(color)
         }
         .padding(.horizontal, BotanicaTheme.Spacing.sm)
@@ -35,21 +35,21 @@ struct CareFocusRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.sm) {
             HStack(alignment: .top, spacing: BotanicaTheme.Spacing.md) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                     Text(plant.displayName)
                         .font(BotanicaTheme.Typography.callout)
                         .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BotanicaTheme.Colors.textPrimary)
 
                     Text(status.detail)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
 
                 Spacer()
 
                 Button("Log care", action: onLogCare)
-                    .font(.caption)
+                    .font(BotanicaTheme.Typography.caption)
                     .foregroundColor(BotanicaTheme.Colors.primary)
                     .padding(.horizontal, BotanicaTheme.Spacing.sm)
                     .padding(.vertical, BotanicaTheme.Spacing.xs)
@@ -59,8 +59,8 @@ struct CareFocusRow: View {
 
             StatusPill(title: status.title, color: status.color)
         }
-        .padding(BotanicaTheme.Spacing.md)
-        .background(Color(.systemBackground))
+        .padding(BotanicaTheme.Spacing.cardPadding)
+        .background(BotanicaTheme.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: BotanicaTheme.CornerRadius.medium))
         .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: 1)
         .contentShape(Rectangle())
@@ -79,11 +79,11 @@ struct PlantReviewRow: View {
             Text(plant.displayName)
                 .font(BotanicaTheme.Typography.callout)
                 .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .foregroundColor(BotanicaTheme.Colors.textPrimary)
 
             Text(status.detail)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(BotanicaTheme.Typography.caption)
+                .foregroundColor(BotanicaTheme.Colors.textSecondary)
 
             StatusPill(title: status.title, color: status.color)
         }
@@ -106,13 +106,13 @@ struct CareFocusListView: View {
                 Section {
                     Text(subtitle)
                         .font(BotanicaTheme.Typography.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 }
 
                 if plants.isEmpty {
                     Text("No plants to review right now.")
                         .font(BotanicaTheme.Typography.callout)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BotanicaTheme.Colors.textSecondary)
                 } else {
                     ForEach(plants, id: \.id) { plant in
                         NavigationLink(destination: PlantDetailView(plant: plant)) {
