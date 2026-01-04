@@ -151,7 +151,9 @@ final class Plant {
 enum ModelTransformers {
     static let stringArrayName = NSValueTransformerName("StringArrayTransformer")
     private static let registerOnce: Void = {
-        ValueTransformer.setValueTransformer(StringArrayTransformer(), forName: stringArrayName)
+        if ValueTransformer(forName: stringArrayName) == nil {
+            ValueTransformer.setValueTransformer(StringArrayTransformer(), forName: stringArrayName)
+        }
     }()
     
     static func register() {
@@ -159,32 +161,64 @@ enum ModelTransformers {
     }
 }
 
+// Ensure transformers are registered before any SwiftData work.
+private let _registerModelTransformers: Void = {
+    ModelTransformers.register()
+}()
+
 final class StringArrayTransformer: ValueTransformer {
     override class func allowsReverseTransformation() -> Bool { true }
     
     override class func transformedValueClass() -> AnyClass { NSData.self }
     
     override func transformedValue(_ value: Any?) -> Any? {
-        guard let value = value as? [String] else { return nil }
-        return try? JSONEncoder().encode(value)
+        let strings: [String]
+        if let value = value as? [String] {
+            strings = value
+        } else if let value = value as? String {
+            strings = [value]
+        } else if let value = value as? [Any] {
+            strings = value.compactMap { $0 as? String }
+        } else if let value = value as? NSArray {
+            strings = value.compactMap { $0 as? String }
+        } else {
+            strings = []
+        }
+        return try? JSONEncoder().encode(strings)
     }
     
     override func reverseTransformedValue(_ value: Any?) -> Any? {
-        guard let data = value as? Data else { return [] }
-        if let decoded = try? JSONDecoder().decode([String].self, from: data) {
-            return decoded
+        if let data = value as? Data {
+            if let decoded = try? JSONDecoder().decode([String].self, from: data) {
+                return decoded
+            }
+            if let string = String(data: data, encoding: .utf8) {
+                let parts = string.split(separator: ",").map {
+                    $0.trimmingCharacters(in: .whitespacesAndNewlines)
+                }.filter { !$0.isEmpty }
+                return parts
+            }
+            if let array = try? NSKeyedUnarchiver.unarchivedObject(
+                ofClasses: [NSArray.self, NSString.self, NSData.self],
+                from: data
+            ) as? [String] {
+                return array
+            }
         }
-        if let string = String(data: data, encoding: .utf8) {
+        if let strings = value as? [String] {
+            return strings
+        }
+        if let string = value as? String {
             let parts = string.split(separator: ",").map {
                 $0.trimmingCharacters(in: .whitespacesAndNewlines)
             }.filter { !$0.isEmpty }
             return parts
         }
-        if let array = try? NSKeyedUnarchiver.unarchivedObject(
-            ofClasses: [NSArray.self, NSString.self, NSData.self],
-            from: data
-        ) as? [String] {
-            return array
+        if let array = value as? [Any] {
+            return array.compactMap { $0 as? String }
+        }
+        if let array = value as? NSArray {
+            return array.compactMap { $0 as? String }
         }
         return []
     }

@@ -28,7 +28,7 @@ final class PlantDetailViewModel: ObservableObject {
         let primaryTitle: String
         let primarySubtitle: String
         let primaryMeta: String?
-        let primaryCTA: CareCTA?
+        let ctas: [CareCTA]
     }
     
     func quickWaterPlant(_ plant: Plant, context: ModelContext) {
@@ -104,7 +104,28 @@ final class PlantDetailViewModel: ObservableObject {
         }
 
         let waterStatus = dueStatus(for: nextWaterDate)
-        if waterStatus.isToday || waterStatus.isOverdue {
+        let fertilizeStatus = dueStatus(for: nextFertilizeDate)
+        let waterDue = waterStatus.isToday || waterStatus.isOverdue
+        let fertilizeDue = fertilizeStatus.isToday || fertilizeStatus.isOverdue
+
+        if waterDue && fertilizeDue {
+            let subtitleParts = [
+                waterStatus.isOverdue ? "Water overdue" : "Water today",
+                fertilizeStatus.isOverdue ? "Fertilize overdue" : "Fertilize today"
+            ]
+            return CareState(
+                statusType: .needsAction,
+                primaryTitle: "Care due",
+                primarySubtitle: subtitleParts.joined(separator: " · "),
+                primaryMeta: scheduleIntervalText,
+                ctas: [
+                    CareCTA(label: "Log Water", actionType: .logWater),
+                    CareCTA(label: "Log Fertilize", actionType: .logFertilize)
+                ]
+            )
+        }
+
+        if waterDue {
             let title = waterStatus.isOverdue ? "Water overdue" : "Water today"
             let subtitle: String = {
                 guard let recommendedWaterMl else { return "Use recommended amount" }
@@ -122,12 +143,11 @@ final class PlantDetailViewModel: ObservableObject {
                 primaryTitle: title,
                 primarySubtitle: subtitle,
                 primaryMeta: meta,
-                primaryCTA: CareCTA(label: "Log Water", actionType: .logWater)
+                ctas: [CareCTA(label: "Log Water", actionType: .logWater)]
             )
         }
 
-        let fertilizeStatus = dueStatus(for: nextFertilizeDate)
-        if fertilizeStatus.isToday || fertilizeStatus.isOverdue {
+        if fertilizeDue {
             let title = fertilizeStatus.isOverdue ? "Fertilize overdue" : "Fertilize today"
             let subtitle = fertilizeStatus.isOverdue
                 ? "Overdue by \(fertilizeStatus.daysOverdue) day\(fertilizeStatus.daysOverdue == 1 ? "" : "s")"
@@ -137,7 +157,7 @@ final class PlantDetailViewModel: ObservableObject {
                 primaryTitle: title,
                 primarySubtitle: subtitle,
                 primaryMeta: scheduleIntervalText,
-                primaryCTA: CareCTA(label: "Log Fertilize", actionType: .logFertilize)
+                ctas: [CareCTA(label: "Log Fertilize", actionType: .logFertilize)]
             )
         }
 
@@ -151,7 +171,7 @@ final class PlantDetailViewModel: ObservableObject {
             primaryTitle: "Next care",
             primarySubtitle: subtitle,
             primaryMeta: nil,
-            primaryCTA: nil
+            ctas: []
         )
     }
 

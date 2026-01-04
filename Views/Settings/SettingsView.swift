@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var showingDataManagement = false
     @State private var showingExportData = false
     @State private var showingImportData = false
+    @State private var showingBackups = false
     
     var body: some View {
         NavigationStack {
@@ -39,6 +40,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingImportData) {
             ImportDataView()
+        }
+        .sheet(isPresented: $showingBackups) {
+            BackupSettingsView()
         }
     }
     
@@ -127,6 +131,15 @@ struct SettingsView: View {
                 color: BotanicaTheme.Colors.nutrientOrange
             ) {
                 showingExportData = true
+            }
+
+            SettingsActionRow(
+                title: "Backups",
+                subtitle: "Automatic backups to Files",
+                icon: "arrow.clockwise.icloud",
+                color: BotanicaTheme.Colors.primary
+            ) {
+                showingBackups = true
             }
 
             SettingsActionRow(

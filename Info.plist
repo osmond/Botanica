@@ -40,6 +40,10 @@
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
     <!-- Privacy usage descriptions -->
     <key>NSCameraUsageDescription</key>
     <string>Allow camera for plant photos and AI identification.</string>
@@ -51,4 +55,3 @@
     <string>Use location for weather-based care tips.</string>
 </dict>
 </plist>
-

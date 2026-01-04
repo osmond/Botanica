@@ -102,7 +102,7 @@ struct PlantDetailView: View {
     }
 
     private var careState: PlantDetailViewModel.CareState {
-        let scheduleIntervalText = "Fertilize every \(plant.fertilizingFrequency) days"
+        let scheduleIntervalText = "Water every \(plant.wateringFrequency) days · Fertilize every \(plant.fertilizingFrequency) days"
         let recommendedMl = plant.recommendedWateringAmount.amount > 0
             ? Double(plant.recommendedWateringAmount.amount)
             : nil
@@ -391,7 +391,7 @@ extension PlantDetailView {
             title: careState.primaryTitle,
             subtitle: careState.primarySubtitle,
             meta: careState.primaryMeta,
-            cta: careState.primaryCTA
+            ctas: careState.ctas
         ) { actionType in
             guard !vm.isPerformingAction else { return }
             HapticManager.shared.light()

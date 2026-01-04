@@ -47,6 +47,7 @@ struct RootBootstrapView: View {
         await DataMigrationService.migratePotSizeFromNotesIfNeeded(context: modelContext)
         await DataMigrationService.migrateRepotDefaultsIfNeeded(context: modelContext)
         await DataMigrationService.migrateCareFrequencyMinimumsIfNeeded(context: modelContext)
+        await AutoBackupService.shared.maybeRunBackup(context: modelContext)
         await MainActor.run {
             loadState = .loaded
         }

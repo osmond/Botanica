@@ -13,7 +13,7 @@ struct CareStateCard: View {
     let title: String
     let subtitle: String
     let meta: String?
-    let cta: PlantDetailViewModel.CareCTA?
+    let ctas: [PlantDetailViewModel.CareCTA]
     let onCTATap: ((PlantDetailViewModel.CareActionType) -> Void)?
 
     var body: some View {
@@ -38,28 +38,32 @@ struct CareStateCard: View {
                         )
                 }
 
-                if statusType == .needsAction, let cta, let onCTATap {
-                    let buttonColor: Color = {
-                        switch cta.actionType {
-                        case .logWater:
-                            return BotanicaTheme.Colors.waterBlue
-                        case .logFertilize:
-                            return BotanicaTheme.Colors.leafGreen
+                if statusType == .needsAction, let onCTATap, !ctas.isEmpty {
+                    VStack(alignment: .trailing, spacing: BotanicaTheme.Spacing.xs) {
+                        ForEach(ctas, id: \.actionType) { cta in
+                            let buttonColor: Color = {
+                                switch cta.actionType {
+                                case .logWater:
+                                    return BotanicaTheme.Colors.waterBlue
+                                case .logFertilize:
+                                    return BotanicaTheme.Colors.leafGreen
+                                }
+                            }()
+                            Button {
+                                onCTATap(cta.actionType)
+                            } label: {
+                                Text(cta.label)
+                                    .font(BotanicaTheme.Typography.captionEmphasized)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, BotanicaTheme.Spacing.sm)
+                                    .padding(.vertical, BotanicaTheme.Spacing.xs)
+                                    .background(buttonColor)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(cta.label)
                         }
-                    }()
-                    Button {
-                        onCTATap(cta.actionType)
-                    } label: {
-                        Text(cta.label)
-                            .font(BotanicaTheme.Typography.labelEmphasized)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, BotanicaTheme.Spacing.md)
-                            .padding(.vertical, BotanicaTheme.Spacing.sm)
-                            .background(buttonColor)
-                            .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(cta.label)
                 }
             }
 

@@ -86,6 +86,13 @@
 			C0F100000000000000000006 /* Services/DataMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000006 /* Services/DataMigrationService.swift */; };
 			C0F100000000000000000007 /* Services/PlantImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000007 /* Services/PlantImageService.swift */; };
 			C0F100000000000000000007 /* Services/PlantImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F200000000000000000007 /* Services/PlantImageService.swift */; };
+			F20000000000000000000001 /* Services/DataExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000001 /* Services/DataExportService.swift */; };
+			F20000000000000000000002 /* Services/AutoBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000002 /* Services/AutoBackupService.swift */; };
+			F20000000000000000000003 /* Views/Settings/BackupSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000003 /* Views/Settings/BackupSettingsView.swift */; };
+			F40000000000000000000001 /* BotanicaTests/CareCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000001 /* BotanicaTests/CareCalculatorTests.swift */; };
+			F40000000000000000000002 /* BotanicaTests/DataModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000002 /* BotanicaTests/DataModelTests.swift */; };
+			F40000000000000000000003 /* BotanicaTests/ErrorMessageFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000003 /* BotanicaTests/ErrorMessageFormatterTests.swift */; };
+			F40000000000000000000004 /* BotanicaTests/ImageCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000004 /* BotanicaTests/ImageCacheTests.swift */; };
 			D10000000000000000000081 /* Core/AppServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* Core/AppServices.swift */; };
 			D10000000000000000000082 /* Utils/LoadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000002 /* Utils/LoadState.swift */; };
 			D10000000000000000000083 /* Services/OpenAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000003 /* Services/OpenAIClient.swift */; };
@@ -193,6 +200,13 @@
 		C0F200000000000000000005 /* Views/RootBootstrapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/RootBootstrapView.swift; sourceTree = "<group>"; };
 		C0F200000000000000000006 /* Services/DataMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DataMigrationService.swift; sourceTree = "<group>"; };
 		C0F200000000000000000007 /* Services/PlantImageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlantImageService.swift; sourceTree = "<group>"; };
+		F10000000000000000000001 /* Services/DataExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DataExportService.swift; sourceTree = "<group>"; };
+		F10000000000000000000002 /* Services/AutoBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AutoBackupService.swift; sourceTree = "<group>"; };
+		F10000000000000000000003 /* Views/Settings/BackupSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/BackupSettingsView.swift; sourceTree = "<group>"; };
+		F30000000000000000000001 /* BotanicaTests/CareCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareCalculatorTests.swift; sourceTree = "<group>"; };
+		F30000000000000000000002 /* BotanicaTests/DataModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModelTests.swift; sourceTree = "<group>"; };
+		F30000000000000000000003 /* BotanicaTests/ErrorMessageFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageFormatterTests.swift; sourceTree = "<group>"; };
+		F30000000000000000000004 /* BotanicaTests/ImageCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -310,6 +324,7 @@
 				A00002001F0000010000003E /* Views/Settings/AboutView.swift */,
 				A00002001F0000010000003F /* Views/Settings/DataManagementView.swift */,
 				A00002001F00000100000040 /* Views/Settings/ExportDataView.swift */,
+				F10000000000000000000003 /* Views/Settings/BackupSettingsView.swift */,
 				A00002001F00000100000041 /* Views/Settings/NotificationSettingsView.swift */,
 				A00002001F00000100000042 /* Views/Settings/SettingsComponents.swift */,
 				A00002001F00000100000043 /* Views/Settings/SettingsView.swift */,
@@ -319,6 +334,8 @@
 				C0F200000000000000000004 /* Services/DevBlossomSeeder.swift */,
 				C0F200000000000000000005 /* Views/RootBootstrapView.swift */,
 				C0F200000000000000000006 /* Services/DataMigrationService.swift */,
+				F10000000000000000000001 /* Services/DataExportService.swift */,
+				F10000000000000000000002 /* Services/AutoBackupService.swift */,
 				C0F200000000000000000007 /* Services/PlantImageService.swift */,
 			);
 			name = Sources;
@@ -345,6 +362,10 @@
 			D10000000000000000000020 /* BotanicaTests */ = {
 				isa = PBXGroup;
 				children = (
+					F30000000000000000000001 /* BotanicaTests/CareCalculatorTests.swift */,
+					F30000000000000000000002 /* BotanicaTests/DataModelTests.swift */,
+					F30000000000000000000003 /* BotanicaTests/ErrorMessageFormatterTests.swift */,
+					F30000000000000000000004 /* BotanicaTests/ImageCacheTests.swift */,
 					D10000000000000000000021 /* PlantFormViewModelTests.swift */,
 				);
 				path = BotanicaTests;
@@ -526,6 +547,7 @@
 				A00001001F0000010000003E /* Views/Settings/AboutView.swift in Sources */,
 				A00001001F0000010000003F /* Views/Settings/DataManagementView.swift in Sources */,
 				A00001001F00000100000040 /* Views/Settings/ExportDataView.swift in Sources */,
+				F20000000000000000000003 /* Views/Settings/BackupSettingsView.swift in Sources */,
 				A00001001F00000100000041 /* Views/Settings/NotificationSettingsView.swift in Sources */,
 				A00001001F00000100000042 /* Views/Settings/SettingsComponents.swift in Sources */,
 				A00001001F00000100000043 /* Views/Settings/SettingsView.swift in Sources */,
@@ -535,6 +557,8 @@
 				C0F100000000000000000004 /* Services/DevBlossomSeeder.swift in Sources */,
 				C0F100000000000000000005 /* Views/RootBootstrapView.swift in Sources */,
 				C0F100000000000000000006 /* Services/DataMigrationService.swift in Sources */,
+				F20000000000000000000001 /* Services/DataExportService.swift in Sources */,
+				F20000000000000000000002 /* Services/AutoBackupService.swift in Sources */,
 				C0F100000000000000000007 /* Services/PlantImageService.swift in Sources */,
 				D10000000000000000000081 /* Core/AppServices.swift in Sources */,
 				D10000000000000000000082 /* Utils/LoadState.swift in Sources */,
@@ -550,6 +574,10 @@
 				isa = PBXSourcesBuildPhase;
 				buildActionMask = 2147483647;
 				files = (
+					F40000000000000000000001 /* BotanicaTests/CareCalculatorTests.swift in Sources */,
+					F40000000000000000000002 /* BotanicaTests/DataModelTests.swift in Sources */,
+					F40000000000000000000003 /* BotanicaTests/ErrorMessageFormatterTests.swift in Sources */,
+					F40000000000000000000004 /* BotanicaTests/ImageCacheTests.swift in Sources */,
 					D10000000000000000000090 /* PlantFormViewModelTests.swift in Sources */,
 				);
 				runOnlyForDeploymentPostprocessing = 0;

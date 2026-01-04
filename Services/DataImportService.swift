@@ -139,6 +139,7 @@ final class DataImportService {
 
     // Shared importer for a list of internal plant DTOs
     private func importPlants(_ plants: [ImportPlantDTO], into context: ModelContext) throws -> DataImportResult {
+        ModelTransformers.register()
         var result = DataImportResult()
         for plantDTO in plants {
             let plant = makePlant(from: plantDTO, notes: &result.notes)

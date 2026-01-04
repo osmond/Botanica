@@ -203,15 +203,27 @@ struct TodayView: View {
             isOverdue(item) || item.date < start
         }
     }
+
+    private var overdueGroups: [PlantUpcomingGroup] {
+        groupUpcoming(overdueItems, bucket: .overdue)
+    }
     
     private var dueTodayItems: [SyntheticUpcoming] {
         let cal = Calendar.current
         return upcomingItems.filter { cal.isDateInToday($0.date) && !isOverdue($0) }
     }
 
+    private var dueTodayGroups: [PlantUpcomingGroup] {
+        groupUpcoming(dueTodayItems, bucket: .dueToday)
+    }
+
     private var tomorrowItems: [SyntheticUpcoming] {
         let cal = Calendar.current
         return upcomingItems.filter { cal.isDateInTomorrow($0.date) && !isOverdue($0) }
+    }
+
+    private var tomorrowGroups: [PlantUpcomingGroup] {
+        groupUpcoming(tomorrowItems, bucket: .tomorrow)
     }
     
     private var upcomingItemsNextWeek: [SyntheticUpcoming] {
@@ -220,6 +232,10 @@ struct TodayView: View {
         let end = cal.date(byAdding: .day, value: 7, to: start) ?? start
         return upcomingItems.filter { $0.date > start && $0.date <= end }
             .filter { !cal.isDateInToday($0.date) && !cal.isDateInTomorrow($0.date) }
+    }
+
+    private var upcomingGroupsNextWeek: [PlantUpcomingGroup] {
+        groupUpcoming(upcomingItemsNextWeek, bucket: .nextWeek)
     }
     
     var body: some View {
@@ -267,11 +283,11 @@ struct TodayView: View {
                 }
                 .listRowBackground(Color.clear)
                 
-                if !overdueItems.isEmpty {
+                if !overdueGroups.isEmpty {
                     Section(header: Text("Overdue").font(BotanicaTheme.Typography.headline)) {
-                        ForEach(overdueItems) { item in
-                            NavigationLink(destination: PlantDetailView(plant: item.plant)) {
-                                ActivityRow(item: .upcoming(item)) { upcoming in
+                        ForEach(overdueGroups) { group in
+                            NavigationLink(destination: PlantDetailView(plant: group.plant)) {
+                                PlantUpcomingRow(group: group) { upcoming in
                                     logUpcoming(upcoming)
                                 }
                             }
@@ -280,11 +296,11 @@ struct TodayView: View {
                     }
                 }
                 
-                if !dueTodayItems.isEmpty {
+                if !dueTodayGroups.isEmpty {
                     Section(header: Text("Due today").font(BotanicaTheme.Typography.headline)) {
-                        ForEach(dueTodayItems) { item in
-                            NavigationLink(destination: PlantDetailView(plant: item.plant)) {
-                                ActivityRow(item: .upcoming(item)) { upcoming in
+                        ForEach(dueTodayGroups) { group in
+                            NavigationLink(destination: PlantDetailView(plant: group.plant)) {
+                                PlantUpcomingRow(group: group) { upcoming in
                                     logUpcoming(upcoming)
                                 }
                             }
@@ -300,11 +316,11 @@ struct TodayView: View {
                     .listRowBackground(Color.clear)
                 }
 
-                if !tomorrowItems.isEmpty {
+                if !tomorrowGroups.isEmpty {
                     Section(header: Text("Tomorrow").font(BotanicaTheme.Typography.headline)) {
-                        ForEach(tomorrowItems) { item in
-                            NavigationLink(destination: PlantDetailView(plant: item.plant)) {
-                                ActivityRow(item: .upcoming(item)) { upcoming in
+                        ForEach(tomorrowGroups) { group in
+                            NavigationLink(destination: PlantDetailView(plant: group.plant)) {
+                                PlantUpcomingRow(group: group) { upcoming in
                                     logUpcoming(upcoming)
                                 }
                             }
@@ -313,11 +329,11 @@ struct TodayView: View {
                     }
                 }
                 
-                if !upcomingItemsNextWeek.isEmpty {
+                if !upcomingGroupsNextWeek.isEmpty {
                     Section(header: Text("Next 7 days").font(BotanicaTheme.Typography.headline)) {
-                        ForEach(upcomingItemsNextWeek) { item in
-                            NavigationLink(destination: PlantDetailView(plant: item.plant)) {
-                                ActivityRow(item: .upcoming(item)) { upcoming in
+                        ForEach(upcomingGroupsNextWeek) { group in
+                            NavigationLink(destination: PlantDetailView(plant: group.plant)) {
+                                PlantUpcomingRow(group: group) { upcoming in
                                     logUpcoming(upcoming)
                                 }
                             }
@@ -361,6 +377,22 @@ struct TodayView: View {
         case .repotting: return item.plant.isRepottingOverdue
         case .pruning, .cleaning, .rotating, .misting, .inspection:
             return false
+        }
+    }
+
+    private func groupUpcoming(_ items: [SyntheticUpcoming], bucket: UpcomingBucket) -> [PlantUpcomingGroup] {
+        let grouped = Dictionary(grouping: items, by: { $0.plant.id })
+        let groups = grouped.values.compactMap { groupItems -> PlantUpcomingGroup? in
+            guard let first = groupItems.first else { return nil }
+            return PlantUpcomingGroup(plant: first.plant, items: groupItems, bucket: bucket)
+        }
+        return groups.sorted { lhs, rhs in
+            switch bucket {
+            case .overdue:
+                return lhs.earliestDate < rhs.earliestDate
+            case .dueToday, .tomorrow, .nextWeek:
+                return lhs.plant.nickname.localizedCaseInsensitiveCompare(rhs.plant.nickname) == .orderedAscending
+            }
         }
     }
     
@@ -805,6 +837,13 @@ private enum ActivityItem: Identifiable {
     }
 }
 
+private enum UpcomingBucket: String {
+    case overdue
+    case dueToday
+    case tomorrow
+    case nextWeek
+}
+
 private struct SyntheticUpcoming: Identifiable {
     let date: Date
     let plant: Plant
@@ -812,6 +851,200 @@ private struct SyntheticUpcoming: Identifiable {
     
     var id: String {
         "\(type.rawValue)-\(plant.id.uuidString)-\(date.timeIntervalSince1970)"
+    }
+}
+
+private struct PlantUpcomingGroup: Identifiable {
+    let plant: Plant
+    let items: [SyntheticUpcoming]
+    let bucket: UpcomingBucket
+
+    var id: String {
+        "\(bucket.rawValue)-\(plant.id.uuidString)"
+    }
+
+    var sortedItems: [SyntheticUpcoming] {
+        items.sorted { $0.date < $1.date }
+    }
+
+    var earliestDate: Date {
+        sortedItems.first?.date ?? Date()
+    }
+
+    var types: [CareType] {
+        var seen = Set<CareType>()
+        var results: [CareType] = []
+        for item in sortedItems {
+            if seen.insert(item.type).inserted {
+                results.append(item.type)
+            }
+        }
+        return results
+    }
+
+    func item(for type: CareType) -> SyntheticUpcoming? {
+        sortedItems.first { $0.type == type }
+    }
+}
+
+private struct PlantUpcomingRow: View {
+    let group: PlantUpcomingGroup
+    let onLog: ((SyntheticUpcoming) -> Void)?
+
+    private var formatter: DateFormatter {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return f
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
+            HStack {
+                Text(group.plant.nickname)
+                    .font(BotanicaTheme.Typography.callout)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(dateText)
+                    .font(BotanicaTheme.Typography.caption)
+                    .foregroundColor(BotanicaTheme.Colors.textSecondary)
+            }
+
+            HStack(spacing: BotanicaTheme.Spacing.sm) {
+                if let statusText {
+                    Text(statusText)
+                        .font(BotanicaTheme.Typography.caption)
+                        .foregroundColor(statusColor)
+                }
+                Spacer()
+                HStack(spacing: BotanicaTheme.Spacing.xs) {
+                    ForEach(group.types, id: \.self) { type in
+                        careChip(for: type)
+                    }
+                }
+            }
+
+            if let onLog {
+                if group.types.count == 1, let type = group.types.first, let item = group.item(for: type) {
+                    logButton(title: "Log now") {
+                        onLog(item)
+                    }
+                } else {
+                    HStack(spacing: BotanicaTheme.Spacing.sm) {
+                        ForEach(group.types, id: \.self) { type in
+                            if let item = group.item(for: type) {
+                                logButton(title: "Log \(shortLabel(for: type))") {
+                                    onLog(item)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.vertical, BotanicaTheme.Spacing.sm)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabelText)
+    }
+
+    private var dateText: String {
+        switch group.bucket {
+        case .overdue:
+            return overdueText(since: group.earliestDate)
+        case .dueToday:
+            return "Today"
+        case .tomorrow:
+            return "Tomorrow"
+        case .nextWeek:
+            return formatter.string(from: group.earliestDate)
+        }
+    }
+
+    private var statusText: String? {
+        switch group.bucket {
+        case .overdue:
+            return "Overdue"
+        case .dueToday:
+            return "Due today"
+        case .tomorrow:
+            return "Due tomorrow"
+        case .nextWeek:
+            return nil
+        }
+    }
+
+    private var statusColor: Color {
+        switch group.bucket {
+        case .overdue:
+            return BotanicaTheme.Colors.warning
+        case .dueToday:
+            return BotanicaTheme.Colors.waterBlue
+        case .tomorrow, .nextWeek:
+            return BotanicaTheme.Colors.textSecondary
+        }
+    }
+
+    private func careChip(for type: CareType) -> some View {
+        Label(shortLabel(for: type), systemImage: type.icon)
+            .font(BotanicaTheme.Typography.caption)
+            .foregroundStyle(color(for: type))
+            .padding(.horizontal, BotanicaTheme.Spacing.sm)
+            .padding(.vertical, BotanicaTheme.Spacing.xs)
+            .background(color(for: type).opacity(0.12))
+            .clipShape(Capsule())
+    }
+
+    private func color(for type: CareType) -> Color {
+        switch type {
+        case .watering: return BotanicaTheme.Colors.waterBlue
+        case .fertilizing: return BotanicaTheme.Colors.leafGreen
+        case .repotting: return BotanicaTheme.Colors.soilBrown
+        default: return BotanicaTheme.Colors.textSecondary
+        }
+    }
+
+    private func shortLabel(for type: CareType) -> String {
+        switch type {
+        case .watering: return "Water"
+        case .fertilizing: return "Fertilize"
+        case .repotting: return "Repot"
+        case .pruning: return "Prune"
+        case .cleaning: return "Clean"
+        case .rotating: return "Rotate"
+        case .misting: return "Mist"
+        case .inspection: return "Inspect"
+        }
+    }
+
+    private func logButton(title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: BotanicaTheme.Spacing.xs) {
+                Image(systemName: "checkmark.circle.fill")
+                Text(title)
+            }
+            .font(BotanicaTheme.Typography.caption)
+            .foregroundColor(.white)
+            .padding(.horizontal, BotanicaTheme.Spacing.sm)
+            .padding(.vertical, BotanicaTheme.Spacing.xs)
+            .background(BotanicaTheme.Colors.primary)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func overdueText(since date: Date) -> String {
+        let cal = Calendar.current
+        let startDue = cal.startOfDay(for: date)
+        let startToday = cal.startOfDay(for: Date())
+        let days = max(cal.dateComponents([.day], from: startDue, to: startToday).day ?? 0, 0)
+        let value = max(days, 1)
+        return value == 1 ? "1 day late" : "\(value) days late"
+    }
+
+    private var accessibilityLabelText: String {
+        let typesText = group.types.map { shortLabel(for: $0) }.joined(separator: ", ")
+        let status = statusText ?? "Upcoming"
+        return "\(group.plant.nickname). \(status). \(typesText)."
     }
 }
 

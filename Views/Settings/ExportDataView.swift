@@ -20,22 +20,11 @@ struct ExportDataView: View {
     @State private var includePhotos = false
     @State private var includeReminders = true
     @State private var includeCareHistory = true
-    @State private var exportFormat: ExportFormat = .json
+    @State private var exportFormat: DataExportFormat = .json
     @State private var loadState: LoadState = .idle
     @State private var exportFinished = false
     @State private var exportError: String?
-    
-    enum ExportFormat: String, CaseIterable {
-        case json = "JSON"
-        case csv = "CSV"
-        
-        var fileExtension: String {
-            switch self {
-            case .json: return "json"
-            case .csv: return "csv"
-            }
-        }
-    }
+    @State private var exportResult: DataExportResult?
     
     var body: some View {
         NavigationView {
@@ -107,7 +96,7 @@ struct ExportDataView: View {
             }
             
             Section("Export Format") {
-                ForEach(ExportFormat.allCases, id: \.self) { format in
+                ForEach(DataExportFormat.allCases, id: \.self) { format in
                     Button {
                         exportFormat = format
                         HapticManager.shared.selection()
@@ -140,7 +129,7 @@ struct ExportDataView: View {
                     VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Care History")
                             .font(BotanicaTheme.Typography.subheadline)
-                        Text("\\(careEvents.count) care events")
+                        Text("\(careEvents.count) care events")
                             .font(BotanicaTheme.Typography.caption)
                             .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
@@ -150,7 +139,7 @@ struct ExportDataView: View {
                     VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
                         Text("Reminders")
                             .font(BotanicaTheme.Typography.subheadline)
-                        Text("\\(reminders.count) active reminders")
+                        Text("\(reminders.count) active reminders")
                             .font(BotanicaTheme.Typography.caption)
                             .foregroundColor(BotanicaTheme.Colors.textSecondary)
                     }
@@ -174,16 +163,15 @@ struct ExportDataView: View {
                         .foregroundColor(BotanicaTheme.Colors.textPrimary)
                     
                     VStack(alignment: .leading, spacing: BotanicaTheme.Spacing.xs) {
-                        Text("• \\(plants.count) plants")
+                        Text("• \(plants.count) plants")
                         if includeCareHistory {
-                            Text("• \\(careEvents.count) care events")
+                            Text("• \(careEvents.count) care events")
                         }
                         if includeReminders {
-                            Text("• \\(reminders.count) reminders")
+                            Text("• \(reminders.count) reminders")
                         }
                         if includePhotos {
-                            let _ = plants.reduce(0) { $0 + $1.photos.count }
-                            Text("• \\(photoCount) photos")
+                            Text("• \(photoCount) photos")
                         }
                     }
                     .font(BotanicaTheme.Typography.caption)
@@ -261,10 +249,19 @@ struct ExportDataView: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(BotanicaTheme.Colors.textPrimary)
                             
-                            Text("Your plant data has been exported successfully. The file has been saved to your Files app.")
+                            Text("Your plant data has been exported successfully. Find it in Files → On My iPhone → Botanica → Exports.")
                                 .font(BotanicaTheme.Typography.body)
                                 .foregroundColor(BotanicaTheme.Colors.textSecondary)
                                 .multilineTextAlignment(.center)
+                            
+                            if let exportResult {
+                                VStack(spacing: BotanicaTheme.Spacing.xs) {
+                                    Text("File size: \(formattedSize(exportResult.byteCount))")
+                                    Text("Plants: \(exportResult.summary.plants)")
+                                }
+                                .font(BotanicaTheme.Typography.caption)
+                                .foregroundColor(BotanicaTheme.Colors.textSecondary)
+                            }
                         }
                     }
                 }
@@ -272,12 +269,13 @@ struct ExportDataView: View {
             
             VStack(spacing: BotanicaTheme.Spacing.md) {
                 if exportError == nil {
-                    Button("Share Export File") {
-                        // In a real app, this would share the exported file
-                        HapticManager.shared.light()
+                    if let exportResult {
+                        ShareLink(item: exportResult.fileURL) {
+                            Text("Share Export File")
+                                .frame(maxWidth: .infinity)
+                                .primaryButtonStyle()
+                        }
                     }
-                    .frame(maxWidth: .infinity)
-                    .primaryButtonStyle()
                 }
                 
                 Button(exportError == nil ? "Done" : "Try Again") {
@@ -300,12 +298,12 @@ struct ExportDataView: View {
     
     // MARK: - Helper Methods
     
-    private func formatDescription(_ format: ExportFormat) -> String {
+    private func formatDescription(_ format: DataExportFormat) -> String {
         switch format {
         case .json:
             return "Structured data format, preserves all information"
         case .csv:
-            return "Spreadsheet format, compatible with Excel"
+            return "Spreadsheet format with your plant list"
         }
     }
     
@@ -313,29 +311,49 @@ struct ExportDataView: View {
         loadState = .loading
         exportFinished = false
         exportError = nil
+        exportResult = nil
         HapticManager.shared.light()
         
-        // Simulate export process with Task.sleep
-        Task {
-            try? await Task.sleep(for: .seconds(2.0))
-            await MainActor.run {
-                // In a real app, this would perform the actual export
-                completeExport()
+        Task { @MainActor in
+            do {
+                let options = DataExportOptions(
+                    includePhotos: includePhotos,
+                    includeCareHistory: includeCareHistory,
+                    includeReminders: includeReminders
+                )
+                let result = try DataExportService.shared.exportData(
+                    context: modelContext,
+                    format: exportFormat,
+                    options: options,
+                    filePrefix: "Botanica Export",
+                    destinationDirectory: exportDirectory()
+                )
+                exportResult = result
+                exportFinished = true
+                loadState = .loaded
+                HapticManager.shared.success()
+            } catch {
+                exportError = error.localizedDescription
+                exportFinished = true
+                loadState = .loaded
+                HapticManager.shared.error()
             }
         }
     }
+
+    private func formattedSize(_ bytes: Int) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: Int64(bytes))
+    }
     
-    private func completeExport() {
-        // Simulate random success/failure for demo
-        if Bool.random() {
-            exportFinished = true
-            loadState = .loaded
-            HapticManager.shared.success()
-        } else {
-            exportError = "Failed to create export file. Please try again."
-            loadState = .failed(exportError ?? "Export failed")
-            HapticManager.shared.error()
-        }
+    private func exportDirectory() -> URL {
+        let base = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return base.appendingPathComponent("Exports", isDirectory: true)
+    }
+    
+    private var photoCount: Int {
+        plants.reduce(0) { $0 + $1.photos.count }
     }
 }
 
