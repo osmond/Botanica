@@ -89,6 +89,7 @@
 			F20000000000000000000001 /* Services/DataExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000001 /* Services/DataExportService.swift */; };
 			F20000000000000000000002 /* Services/AutoBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000002 /* Services/AutoBackupService.swift */; };
 			F20000000000000000000003 /* Views/Settings/BackupSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000003 /* Views/Settings/BackupSettingsView.swift */; };
+			F60000000000000000000001 /* plants_import.json in Resources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000001 /* plants_import.json */; };
 			F40000000000000000000001 /* BotanicaTests/CareCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000001 /* BotanicaTests/CareCalculatorTests.swift */; };
 			F40000000000000000000002 /* BotanicaTests/DataModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000002 /* BotanicaTests/DataModelTests.swift */; };
 			F40000000000000000000003 /* BotanicaTests/ErrorMessageFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000003 /* BotanicaTests/ErrorMessageFormatterTests.swift */; };
@@ -203,6 +204,7 @@
 		F10000000000000000000001 /* Services/DataExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DataExportService.swift; sourceTree = "<group>"; };
 		F10000000000000000000002 /* Services/AutoBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AutoBackupService.swift; sourceTree = "<group>"; };
 		F10000000000000000000003 /* Views/Settings/BackupSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/BackupSettingsView.swift; sourceTree = "<group>"; };
+		F50000000000000000000001 /* plants_import.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = plants_import.json; sourceTree = "<group>"; };
 		F30000000000000000000001 /* BotanicaTests/CareCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareCalculatorTests.swift; sourceTree = "<group>"; };
 		F30000000000000000000002 /* BotanicaTests/DataModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModelTests.swift; sourceTree = "<group>"; };
 		F30000000000000000000003 /* BotanicaTests/ErrorMessageFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageFormatterTests.swift; sourceTree = "<group>"; };
@@ -345,6 +347,7 @@
 			isa = PBXGroup;
 			children = (
 				A00002001F00000100000045 /* Assets.xcassets */,
+				F50000000000000000000001 /* plants_import.json */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -443,6 +446,7 @@
 				buildActionMask = 2147483647;
 				files = (
 					A00001001F00000100000045 /* Assets.xcassets in Resources */,
+					F60000000000000000000001 /* plants_import.json in Resources */,
 				);
 				runOnlyForDeploymentPostprocessing = 0;
 			};

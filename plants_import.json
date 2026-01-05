@@ -1,0 +1,262 @@
+{
+  "version": 1,
+  "exportedAt": "2026-01-05T14:23:50.675190Z",
+  "plants": [
+    {
+      "scientificName": "Black-eyed Susan",
+      "nickname": "Black-eyed Susan",
+      "source": "Imported from plants_extracted.csv"
+    },
+    {
+      "scientificName": "Yarrow",
+      "nickname": "Yarrow",
+      "source": "Imported from plants_extracted.csv"
+    },
+    {
+      "scientificName": "Chinese Money Plant",
+      "nickname": "Chinese Money Plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Christmas Cactus",
+      "nickname": "Christmas Cactus",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Bunny Ear Cactus White",
+      "nickname": "Bunny Ear Cactus White",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Aloe Vera",
+      "nickname": "Aloe Vera",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Jade Plant",
+      "nickname": "Jade Plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Kitchen"
+    },
+    {
+      "scientificName": "ZZ Plant",
+      "nickname": "ZZ Plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Kitchen"
+    },
+    {
+      "scientificName": "Bunny Ear Cactus",
+      "nickname": "Bunny Ear Cactus",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Blue Torch Column Cactus",
+      "nickname": "Blue Torch Column Cactus",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Fiddle Leaf Fig Tree",
+      "nickname": "Fiddle Leaf Fig Tree",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Dining Room"
+    },
+    {
+      "scientificName": "India Rubber Plant",
+      "nickname": "India Rubber Plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Dining Room"
+    },
+    {
+      "scientificName": "Coffee",
+      "nickname": "Coffee",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Croton",
+      "nickname": "Croton",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Kitchen"
+    },
+    {
+      "scientificName": "Chinese money plant",
+      "nickname": "Chinese money plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Kitchen"
+    },
+    {
+      "scientificName": "Coffee Mini",
+      "nickname": "Coffee Mini",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Emory's Barrel Cactus",
+      "nickname": "Emory's Barrel Cactus",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Spinystar",
+      "nickname": "Spinystar",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Golden Barrel Cactus",
+      "nickname": "Golden Barrel Cactus",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Golden Pothos",
+      "nickname": "Golden Pothos",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Heart of Jesus",
+      "nickname": "Heart of Jesus",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Hilo Beauty",
+      "nickname": "Hilo Beauty",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Red-Headed Irishman",
+      "nickname": "Red-Headed Irishman",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Mammillaria Disco",
+      "nickname": "Mammillaria Disco",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Monstera",
+      "nickname": "Monstera",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Neoraimondia herzogiana",
+      "nickname": "Neoraimondia herzogiana",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Peace Lily",
+      "nickname": "Peace Lily",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Living Room"
+    },
+    {
+      "scientificName": "Persian Shield",
+      "nickname": "Persian Shield",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Birkin",
+      "nickname": "Birkin",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Pink Princess Philodendron",
+      "nickname": "Pink Princess Philodendron",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Rattlesnake Plant",
+      "nickname": "Rattlesnake Plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Rex Begonia Prop",
+      "nickname": "Rex Begonia Prop",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Snake Plant",
+      "nickname": "Snake Plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Living Room"
+    },
+    {
+      "scientificName": "Snake Plant Norma",
+      "nickname": "Snake Plant Norma",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "ZZ Prop",
+      "nickname": "ZZ Prop",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Jade Plant",
+      "nickname": "Jade Plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Maranta Prayer Plant",
+      "nickname": "Maranta Prayer Plant",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Burgundy Rubber Tree",
+      "nickname": "Burgundy Rubber Tree",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Living Room"
+    },
+    {
+      "scientificName": "Andy's Christmas Cactus",
+      "nickname": "Andy's Christmas Cactus",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Library"
+    },
+    {
+      "scientificName": "Coffea arabica",
+      "nickname": "Coffea arabica",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Kitchen"
+    },
+    {
+      "scientificName": "Venus Fly Trap",
+      "nickname": "Venus Fly Trap",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Library"
+    },
+    {
+      "scientificName": "Wandering Jew",
+      "nickname": "Wandering Jew",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    },
+    {
+      "scientificName": "Lil Fiddle",
+      "nickname": "Lil Fiddle",
+      "source": "Imported from plants_extracted.csv",
+      "location": "Office"
+    }
+  ]
+}
