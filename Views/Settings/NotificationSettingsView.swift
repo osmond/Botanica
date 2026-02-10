@@ -1,7 +1,9 @@
 import SwiftUI
+import SwiftData
 import UserNotifications
 
 struct NotificationSettingsView: View {
+    @Query private var plants: [Plant]
     @StateObject private var notificationManager = NotificationManager.shared
     @State private var showingPermissionAlert = false
     @State private var preferredNotificationTime = Date()
@@ -275,7 +277,8 @@ struct NotificationSettingsView: View {
             loadState = .idle
             return
         }
-        // TODO: inject plants and reschedule via NotificationService
+        let notificationService = AppServices.shared.notifications
+        await notificationService.scheduleAll(plants: plants)
         loadState = .loaded
     }
     
